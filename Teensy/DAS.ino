@@ -10,6 +10,7 @@ static const int REED_PIN = 2; // Pin connected to reed switch
 static const int GREEN_LED = 3, RED_LED = 4;
 static const int POT_PIN = 0;
 static const int GPS_RXPin = 7, GPS_TXPin = 8;
+#define RPISERIAL Serial2 // Pin 9 (RX) & PIN 10 (TX) for Teensy LC
 //const int SDchipSelect = 10;
 const int LMS6DS3chipSelect = 6;
 
@@ -20,6 +21,11 @@ LSM6DS3 myIMU(SPI_MODE, LMS6DS3chipSelect);
 static const uint32_t GPS_Baud = 9600;
 TinyGPSPlus gps;
 SoftwareSerial ss(GPS_RXPin, GPS_TXPin);
+
+// Raspberry Pi Communication
+// Fastest speed for Teensy LC before errors occuring
+// See here: https://www.pjrc.com/teensy/td_uart.html
+int rpi_baud_rate = 500000;   // Set baud rate to 500000 
 
 // Variables
 float ax;
@@ -45,6 +51,8 @@ void setup()
 {
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
+  // Open Raspberry Pi Serial communication
+  HWSERIAL.begin(rpi_baud_rate, SERIAL_8N1/*8 Data bits, No Parity bits*/);  // Hardware Serial (RX & TX pins)    
 
   // Set Up Reed Switch
   pinMode(REED_PIN, INPUT_PULLUP);
