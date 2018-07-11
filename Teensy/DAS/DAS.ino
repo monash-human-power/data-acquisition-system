@@ -8,8 +8,12 @@
 #define DEBUG // Comment this line out if not using debug mode
 
 #ifdef DEBUG
-  #define DEBUG_PRINT(input_text) Serial.println(input_text);
+  #define DEBUG_PRINTLN(input_text) Serial.println(input_text);
+  #define DEBUG_PRINT_DEC(input_text, text_length) Serial.print(input_text, text_length);
+  #define DEBUG_PRINT(input_text) Serial.print(input_text);
 #else
+   #define DEBUG_PRINTLN(input_text)
+  #define DEBUG_PRINT_DEC(input_text, text_length)
   #define DEBUG_PRINT(input_text)
 #endif
 
@@ -35,8 +39,16 @@ SoftwareSerial ss(GPS_RXPin, GPS_TXPin);
 // See here: https://www.pjrc.com/teensy/td_uart.html
 int rpi_baud_rate = 500000;   // Set baud rate to 500000
 
+
+// Define structs
+struct Accelerometer
+{
+  float x;
+  float y;
+  float z;
+};
+
 // Global Variables
-float ax, ay, az;
 float gx, gy, gz;
 float tempC, tempF;
 int pot;
@@ -91,35 +103,43 @@ void loop()
       GPS_Data = getGPSData(gps);
       
       // Output GPS Data
-      DEBUG_PRINT("GPS DATA:\n" + GPS_Data);
+      DEBUG_PRINTLN("GPS DATA:\n" + GPS_Data);
       RPISERIAL.write("GPS DATA:\n");
       writeStringToRPi(GPS_Data);
-
+      RPISERIAL.flush();
+      
       /* Reed Switch */
-      Serial.print("REED SWITCH:\n");
-      int proximity = digitalRead(REED_PIN); // Read the state of the switch
-      if (proximity == LOW) // If the pin reads low, the switch is closed.
-      {
-        Serial.println("Switch = 1");
-      }
-      else
-      {
-        Serial.println("Switch = 0");
-      }
+      String reed_Data;
+      reed_Data = getReedData();
 
-      // Service Accelerometer
-      Serial.print("\nACCELEROMETER:\n");
-      Serial.print(" X = ");
-      ax = myIMU.readFloatAccelX();
-      Serial.println(ax, 4);
+      // Output Reed Data
+      DEBUG_PRINTLN("REED DATA:\n" + reed_Data);
+      RPISERIAL.write("REED DATA:\n");
+      writeStringToRPi(reed_Data);
+      RPISERIAL.flush();
 
-      Serial.print(" Y = ");
-      ay = myIMU.readFloatAccelY();
-      Serial.println(ay, 4);
+      /* Accelerometer */
+      String accelerometer_data;
+      Accelerometer accelerometer;
+      accelerometer = getAccelerometerData(myIMU);
 
-      Serial.print(" Z = ");
-      az = myIMU.readFloatAccelZ();
-      Serial.println(az, 4);
+      // Output accelerometer data
+      DEBUG_PRINTLN("ACCELEROMETER DATA:");
+      DEBUG_PRINT("X = ");
+      DEBUG_PRINT_DEC(accelerometer.x, 4);
+      DEBUG_PRINT("Y = ");
+      DEBUG_PRINT_DEC(accelerometer.y, 4);
+      DEBUG_PRINT("Z = ");
+      DEBUG_PRINT_DEC(accelerometer.z, 4);
+
+      RPISERIAL.write("ACCELEROMETER DATA:\n");
+      RPISERIAL.write("X = ");
+      writeStringToRPi(accelerometer.x);
+      RPISERIAL.write(" Y = ");
+      writeStringToRPi(accelerometer.y);
+      RPISERIAL.write(" Z = ");
+      writeStringToRPi(accelerometer.z);
+      
 
       // Service Gyroscope
       Serial.print("\nGYROSCOPE:\n");
@@ -185,8 +205,33 @@ String getGPSData(TinyGPSPlus gps)
   }
   else
   {
-    output_data = "No Data\n\n";
+    output_data = "No Data\n";
   }
   return output_data;
+}
+
+String getReedData()
+{
+  String output_data;
+  int proximity = digitalRead(REED_PIN); // Read the state of the switch
+  if (proximity == LOW) // If the pin reads low, the switch is closed.
+  {
+    output_data = "Switch = 1\n";
+  }
+  else
+  {
+    output_data = "Switch = 0\n";
+  }
+  return output_data;
+}
+
+Accelerometer getAccelerometerData(LSM6DS3 input_IMU)
+{
+  Accelerometer accelerometer; 
+
+  accelerometer.x = myIMU.readFloatAccelX();
+  accelerometer.y = myIMU.readFloatAccelY();
+  accelerometer.z = myIMU.readFloatAccelZ();
+  return accelerometer;
 }
 
