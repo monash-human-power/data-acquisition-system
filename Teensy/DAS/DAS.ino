@@ -27,23 +27,12 @@ SoftwareSerial ss(GPS_RXPin, GPS_TXPin);
 int rpi_baud_rate = 500000;   // Set baud rate to 500000
 
 // Variables
-float ax;
-float ay;
-float az;
-float gx;
-float gy;
-float gz;
-float tempC;
-float tempF;
+float ax, ay, az;
+float gx, gy, gz;
+float tempC, tempF;
 int pot;
-int gps_date;
-int gps_time;
-int gps_satellites;
-double gps_latitude;
-double gps_longitude;
-double gps_altitude;
-double gps_course;
-double gps_speed;
+int gps_date, gps_time, gps_satellites;
+double gps_latitude, gps_longitude, gps_altitude, gps_course, gps_speed;
 String GPS_Data;
 
 void setup()
