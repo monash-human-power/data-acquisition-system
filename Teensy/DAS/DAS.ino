@@ -62,7 +62,6 @@ struct Temperature
 };
 
 // Global Variables
-int pot;
 int gps_date, gps_time, gps_satellites;
 double gps_latitude, gps_longitude, gps_altitude, gps_course, gps_speed;
 
@@ -194,12 +193,16 @@ void loop()
       writeStringToRPi(temperature.fahrenheit);
       RPISERIAL.write("\n");
 
-      // Service Pot
-      Serial.print("\nPOTENTIOMETER:");
-      pot = analogRead(POT_PIN);
-      Serial.print("\nPot = ");
-      Serial.println(pot);
-      Serial.print("\n");
+      /* Pot */
+      String pot_data;
+      pot_data = getPotData();
+
+      DEBUG_PRINTLN("POTENTIOMETER DATA:\n");
+      DEBUG_PRINTLN(pot_data);
+
+      RPISERIAL.write("POTENTIOMETER DATA:\n");
+      writeStringToRPi(pot_data);
+      RPISERIAL.write("\n");      
     }
   }
 }
@@ -283,5 +286,16 @@ Temperature getTemperatureData(LSM6DS3 input_IMU)
   temperature.celsius = myIMU.readTempC();
   temperature.fahrenheit = myIMU.readTempF();
   return temperature;
+}
+
+String getPotData()
+{
+  int pot;
+  pot = analogRead(POT_PIN);
+  
+  String output_data = "POT = ";
+  output_data += pot ;
+  output_data += "\n";
+  return output_data;
 }
 
