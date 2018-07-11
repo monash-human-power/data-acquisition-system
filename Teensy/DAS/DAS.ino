@@ -4,6 +4,15 @@
 #include <SoftwareSerial.h>
 #include "SPI.h"
 
+/* Debug Mode */
+#define DEBUG // Comment this line out if not using debug mode
+
+#ifdef DEBUG
+  #define DEBUG_PRINT(input_text) Serial.println(input_text);
+#else
+  #define DEBUG_PRINT(input_text)
+#endif
+
 // Pin Values
 static const int REED_PIN = 2; // Pin connected to reed switch
 static const int GREEN_LED = 3, RED_LED = 4;
@@ -77,15 +86,16 @@ void loop()
       digitalWrite(GREEN_LED, HIGH);
       digitalWrite(RED_LED, LOW);
 
-      // Get GPS Information
+      /* GPS */ 
       String GPS_Data;
       GPS_Data = getGPSData(gps);
-
-      Serial.println("GPS DATA:\n" + GPS_Data);
+      
+      // Output GPS Data
+      DEBUG_PRINT("GPS DATA:\n" + GPS_Data);
       RPISERIAL.write("GPS DATA:\n");
       writeStringToRPi(GPS_Data);
 
-      /// Service Reed Switch
+      /* Reed Switch */
       Serial.print("REED SWITCH:\n");
       int proximity = digitalRead(REED_PIN); // Read the state of the switch
       if (proximity == LOW) // If the pin reads low, the switch is closed.
