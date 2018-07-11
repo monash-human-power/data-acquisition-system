@@ -55,8 +55,13 @@ struct Gyroscope
   float z;
 };
 
+struct Temperature
+{
+  float celsius;
+  float fahrenheit;
+};
+
 // Global Variables
-float tempC, tempF;
 int pot;
 int gps_date, gps_time, gps_satellites;
 double gps_latitude, gps_longitude, gps_altitude, gps_course, gps_speed;
@@ -170,14 +175,24 @@ void loop()
       writeStringToRPi(gyroscope.z);
       RPISERIAL.write("\n");
       
-      // Service Thermometer
-      Serial.print("\nTHERMOMETER:\n");
-      Serial.print(" Degrees C = ");
-      tempC = myIMU.readTempC();
-      Serial.println(tempC, 4);
-      Serial.print(" Degrees F = ");
-      tempF = myIMU.readTempF();
-      Serial.println(tempF, 4);
+      /* Thermometer */
+      Temperature temperature;
+      temperature = getTemperatureData(myIMU);
+      
+      // Output thermometer data
+      DEBUG_PRINTLN("THERMOMETER DATA:");
+      DEBUG_PRINT("Celsius = ");
+      DEBUG_PRINT_DEC(temperature.celsius, 4);
+      DEBUG_PRINT(" Fahrenheit = ");
+      DEBUG_PRINT_DEC(temperature.fahrenheit, 4);
+      DEBUG_PRINT("\n");
+
+      RPISERIAL.write("THERMOMETER DATA:\n");
+      RPISERIAL.write("Celsius = ");
+      writeStringToRPi(temperature.celsius);
+      RPISERIAL.write(" Fahrenheit = ");
+      writeStringToRPi(temperature.fahrenheit);
+      RPISERIAL.write("\n");
 
       // Service Pot
       Serial.print("\nPOTENTIOMETER:");
@@ -260,5 +275,13 @@ Gyroscope getGyroscopeData(LSM6DS3 input_IMU)
   gyroscope.y = myIMU.readFloatGyroY();
   gyroscope.z = myIMU.readFloatGyroZ();
   return gyroscope;
+}
+
+Temperature getTemperatureData(LSM6DS3 input_IMU)
+{
+  Temperature temperature;
+  temperature.celsius = myIMU.readTempC();
+  temperature.fahrenheit = myIMU.readTempF();
+  return temperature;
 }
 
