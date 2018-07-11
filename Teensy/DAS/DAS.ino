@@ -1,6 +1,5 @@
 #include "SparkFunLSM6DS3.h"
 #include "Wire.h"
-#include <SD.h>
 #include <TinyGPS++.h>
 #include <SoftwareSerial.h>
 #include "SPI.h"
@@ -25,7 +24,7 @@ SoftwareSerial ss(GPS_RXPin, GPS_TXPin);
 // Raspberry Pi Communication
 // Fastest speed for Teensy LC before errors occuring
 // See here: https://www.pjrc.com/teensy/td_uart.html
-int rpi_baud_rate = 500000;   // Set baud rate to 500000 
+int rpi_baud_rate = 500000;   // Set baud rate to 500000
 
 // Variables
 float ax;
@@ -47,16 +46,16 @@ double gps_course;
 double gps_speed;
 String GPS_Data;
 
-void setup() 
+void setup()
 {
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   // Open Raspberry Pi Serial communication
-  HWSERIAL.begin(rpi_baud_rate, SERIAL_8N1/*8 Data bits, No Parity bits*/);  // Hardware Serial (RX & TX pins)    
+  RPISERIAL.begin(rpi_baud_rate, SERIAL_8N1/*8 Data bits, No Parity bits*/);  // Hardware Serial (RX & TX pins)
 
   // Set Up Reed Switch
   pinMode(REED_PIN, INPUT_PULLUP);
-  
+
   // Set up LEDs
   pinMode(GREEN_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
@@ -67,7 +66,7 @@ void setup()
   digitalWrite(RED_LED, HIGH);
 
   // Nothing to do to set up POT
-  
+
   // Set Up IMU
   SPI1.setMOSI(0);
   SPI1.setMISO(1);
@@ -89,7 +88,7 @@ void loop()
       // Indicate System is Working
       digitalWrite(GREEN_LED, HIGH);
       digitalWrite(RED_LED, LOW);
-      
+
       // Get GPS Information
       gps_latitude = gps.location.lat();
       gps_longitude = gps.location.lng();
@@ -115,6 +114,9 @@ void loop()
       Serial.println("GPS DATA:");
       Serial.print(GPS_Data);
 
+      RPISERIAL.write("GPS DATA:\n");
+      writeStringToRPi(GPS_Data);
+
       /// Service Reed Switch
       Serial.print("REED SWITCH:\n");
       int proximity = digitalRead(REED_PIN); // Read the state of the switch
@@ -132,15 +134,15 @@ void loop()
       Serial.print(" X = ");
       ax = myIMU.readFloatAccelX();
       Serial.println(ax, 4);
-      
+
       Serial.print(" Y = ");
       ay = myIMU.readFloatAccelY();
       Serial.println(ay, 4);
-      
+
       Serial.print(" Z = ");
       az = myIMU.readFloatAccelZ();
       Serial.println(az, 4);
-    
+
       // Service Gyroscope
       Serial.print("\nGYROSCOPE:\n");
       Serial.print(" X = ");
@@ -152,7 +154,7 @@ void loop()
       Serial.print(" Z = ");
       gz = myIMU.readFloatGyroZ();
       Serial.println(gz, 4);
-    
+
       // Service Thermometer
       Serial.print("\nTHERMOMETER:\n");
       Serial.print(" Degrees C = ");
@@ -161,7 +163,7 @@ void loop()
       Serial.print(" Degrees F = ");
       tempF = myIMU.readTempF();
       Serial.println(tempF, 4);
-    
+
       // Service Pot
       Serial.print("\nPOTENTIOMETER:");
       pot = analogRead(POT_PIN);
@@ -172,3 +174,10 @@ void loop()
   }
 }
 
+void writeStringToRPi(String stringData) 
+{ 
+  for (int i = 0; i < stringData.length(); i++)
+  {
+    RPISERIAL.write(stringData[i]);
+  }
+}
