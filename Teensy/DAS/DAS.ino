@@ -26,14 +26,13 @@ SoftwareSerial ss(GPS_RXPin, GPS_TXPin);
 // See here: https://www.pjrc.com/teensy/td_uart.html
 int rpi_baud_rate = 500000;   // Set baud rate to 500000
 
-// Variables
+// Global Variables
 float ax, ay, az;
 float gx, gy, gz;
 float tempC, tempF;
 int pot;
 int gps_date, gps_time, gps_satellites;
 double gps_latitude, gps_longitude, gps_altitude, gps_course, gps_speed;
-String GPS_Data;
 
 void setup()
 {
@@ -79,30 +78,10 @@ void loop()
       digitalWrite(RED_LED, LOW);
 
       // Get GPS Information
-      gps_latitude = gps.location.lat();
-      gps_longitude = gps.location.lng();
-      gps_altitude = gps.altitude.meters();
-      gps_course = gps.course.value();
-      gps_time = gps.time.value();
-      gps_speed = gps.speed.kmph();
-      gps_satellites = gps.satellites.value();
+      String GPS_Data;
+      GPS_Data = getGPSData(gps);
 
-      if (gps_satellites > 0)
-      {
-        GPS_Data = "Location = " + String(gps_latitude) + ", " + String(gps_longitude) + ", " + String(gps_altitude) + "\n";
-        GPS_Data += "Course = " + String(gps_course) + "\n";
-        GPS_Data += "Speed = " + String(gps_speed) + "\n";
-        GPS_Data += "Satellites = " + String(gps_satellites) + "\n";
-        GPS_Data += "\n";
-      }
-      else
-      {
-        GPS_Data = "No Data\n\n";
-      }
-
-      Serial.println("GPS DATA:");
-      Serial.print(GPS_Data);
-
+      Serial.println("GPS DATA:\n" + GPS_Data);
       RPISERIAL.write("GPS DATA:\n");
       writeStringToRPi(GPS_Data);
 
@@ -163,6 +142,9 @@ void loop()
   }
 }
 
+/*
+ * Function to write String variable type since Serial.write("input") does not allow String variable as input
+ */
 void writeStringToRPi(String stringData) 
 { 
   for (int i = 0; i < stringData.length(); i++)
@@ -170,3 +152,31 @@ void writeStringToRPi(String stringData)
     RPISERIAL.write(stringData[i]);
   }
 }
+
+String getGPSData(TinyGPSPlus gps)
+{
+  String output_data;
+  
+  gps_latitude = gps.location.lat();
+  gps_longitude = gps.location.lng();
+  gps_altitude = gps.altitude.meters();
+  gps_course = gps.course.value();
+  gps_time = gps.time.value();
+  gps_speed = gps.speed.kmph();
+  gps_satellites = gps.satellites.value();
+
+  if (gps_satellites > 0)
+  {
+    output_data = "Location = " + String(gps_latitude) + ", " + String(gps_longitude) + ", " + String(gps_altitude) + "\n";
+    output_data += "Course = " + String(gps_course) + "\n";
+    output_data += "Speed = " + String(gps_speed) + "\n";
+    output_data += "Satellites = " + String(gps_satellites) + "\n";
+    output_data += "\n";
+  }
+  else
+  {
+    output_data = "No Data\n\n";
+  }
+  return output_data;
+}
+
