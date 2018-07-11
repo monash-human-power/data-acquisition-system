@@ -48,8 +48,14 @@ struct Accelerometer
   float z;
 };
 
+struct Gyroscope
+{
+  float x;
+  float y;
+  float z;
+};
+
 // Global Variables
-float gx, gy, gz;
 float tempC, tempF;
 int pot;
 int gps_date, gps_time, gps_satellites;
@@ -119,7 +125,6 @@ void loop()
       RPISERIAL.flush();
 
       /* Accelerometer */
-      String accelerometer_data;
       Accelerometer accelerometer;
       accelerometer = getAccelerometerData(myIMU);
 
@@ -131,7 +136,8 @@ void loop()
       DEBUG_PRINT_DEC(accelerometer.y, 4);
       DEBUG_PRINT("Z = ");
       DEBUG_PRINT_DEC(accelerometer.z, 4);
-
+      DEBUG_PRINT("\n\n");
+      
       RPISERIAL.write("ACCELEROMETER DATA:\n");
       RPISERIAL.write("X = ");
       writeStringToRPi(accelerometer.x);
@@ -139,20 +145,31 @@ void loop()
       writeStringToRPi(accelerometer.y);
       RPISERIAL.write(" Z = ");
       writeStringToRPi(accelerometer.z);
+      RPISERIAL.write("\n");
+
+      /* Gyroscope */
+      Gyroscope gyroscope;
+      gyroscope = getGyroscopeData(myIMU);
       
+      // Output gyroscope data
+      DEBUG_PRINTLN("GYROSCOPE DATA:");
+      DEBUG_PRINT("X = ");
+      DEBUG_PRINT_DEC(gyroscope.x, 4);
+      DEBUG_PRINT("Y = ");
+      DEBUG_PRINT_DEC(gyroscope.y, 4);
+      DEBUG_PRINT("Z = ");
+      DEBUG_PRINT_DEC(gyroscope.z, 4);
+      DEBUG_PRINT("\n");
 
-      // Service Gyroscope
-      Serial.print("\nGYROSCOPE:\n");
-      Serial.print(" X = ");
-      gx = myIMU.readFloatGyroX();
-      Serial.println(gx, 4);
-      Serial.print(" Y = ");
-      gy = myIMU.readFloatGyroY();
-      Serial.println(gy, 4);
-      Serial.print(" Z = ");
-      gz = myIMU.readFloatGyroZ();
-      Serial.println(gz, 4);
-
+      RPISERIAL.write("GYROSCOPE DATA:\n");
+      RPISERIAL.write("X = ");
+      writeStringToRPi(gyroscope.x);
+      RPISERIAL.write(" Y = ");
+      writeStringToRPi(gyroscope.y);
+      RPISERIAL.write(" Z = ");
+      writeStringToRPi(gyroscope.z);
+      RPISERIAL.write("\n");
+      
       // Service Thermometer
       Serial.print("\nTHERMOMETER:\n");
       Serial.print(" Degrees C = ");
@@ -233,5 +250,15 @@ Accelerometer getAccelerometerData(LSM6DS3 input_IMU)
   accelerometer.y = myIMU.readFloatAccelY();
   accelerometer.z = myIMU.readFloatAccelZ();
   return accelerometer;
+}
+
+Gyroscope getGyroscopeData(LSM6DS3 input_IMU)
+{
+  Gyroscope gyroscope; 
+
+  gyroscope.x = myIMU.readFloatGyroX();
+  gyroscope.y = myIMU.readFloatGyroY();
+  gyroscope.z = myIMU.readFloatGyroZ();
+  return gyroscope;
 }
 
