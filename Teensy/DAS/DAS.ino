@@ -61,10 +61,6 @@ struct Temperature
   float fahrenheit;
 };
 
-// Global Variables
-int gps_date, gps_time, gps_satellites;
-double gps_latitude, gps_longitude, gps_altitude, gps_course, gps_speed;
-
 void setup()
 {
   // Open serial communications and wait for port to open:
@@ -221,7 +217,9 @@ void writeStringToRPi(String stringData)
 String getGPSData(TinyGPSPlus gps)
 {
   String output_data;
-  
+  int gps_date, gps_time, gps_satellites;
+  double gps_latitude, gps_longitude, gps_altitude, gps_course, gps_speed;
+
   gps_latitude = gps.location.lat();
   gps_longitude = gps.location.lng();
   gps_altitude = gps.altitude.meters();
