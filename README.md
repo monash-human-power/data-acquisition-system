@@ -2,6 +2,11 @@
 
 This repository contains all the code related to Monash Human Power's Data Acquisition System (DAS).
 
+# Getting Started
+## Installation Steps
+1. Type `git clone https://github.com/Monash-Human-Power/MHP_DAS.git` on the command line to download the whole repository.
+2. Type `git submodule update --init` on the command line to download and update the submodules within the repository.
+
 # Packaging
 Contains various Solidworks models that packages the DAS into a neat package.
 
