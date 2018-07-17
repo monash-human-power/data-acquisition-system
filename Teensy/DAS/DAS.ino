@@ -218,11 +218,11 @@ String getGPSData(TinyGPSPlus gps)
 
   if (gps_satellites > 0)
   {
-    output_data = "Location = " + String(gps_latitude) + ", " + String(gps_longitude) + ", " + String(gps_altitude) + "\n";
-    output_data += "Course = " + String(gps_course) + "\n";
-    output_data += "Speed = " + String(gps_speed) + "\n";
-    output_data += "Satellites = " + String(gps_satellites) + "\n";
-    output_data += "\n";
+    output_data = "1";
+    output_data += "&gps_location=" + String(gps_latitude) + "," + String(gps_longitude) + "," + String(gps_altitude);
+    output_data += "&gps_course=" + String(gps_course);
+    output_data += "&gps_speed=" + String(gps_speed);
+    output_data += "&gps_satellites=" + String(gps_satellites);
   }
   else
   {
