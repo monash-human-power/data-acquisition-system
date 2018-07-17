@@ -95,34 +95,34 @@ void setup()
 
 void loop()
 {
+  
   // Service GPS
   if (ss.available() > 0)
   {
     if (gps.encode(ss.read()))
     {
+      // Clear output string
+      String output_data = "";
+      
       // Indicate System is Working
       digitalWrite(GREEN_LED, HIGH);
       digitalWrite(RED_LED, LOW);
 
       /* GPS */ 
-      String GPS_Data;
-      GPS_Data = getGPSData(gps);
+      String GPS_data;
+      GPS_data = getGPSData(gps);
       
       // Output GPS Data
-      DEBUG_PRINTLN("GPS DATA:\n" + GPS_Data);
-      RPISERIAL.write("GPS DATA:\n");
-      writeStringToRPi(GPS_Data);
-      RPISERIAL.flush();
+      DEBUG_PRINTLN("GPS DATA:\n" + GPS_data);
+      output_data += "gps=" + GPS_data;
       
       /* Reed Switch */
-      String reed_Data;
-      reed_Data = getReedData();
+      String reed_data;
+      reed_data = getReedData();
 
       // Output Reed Data
-      DEBUG_PRINTLN("REED DATA:\n" + reed_Data);
-      RPISERIAL.write("REED DATA:\n");
-      writeStringToRPi(reed_Data);
-      RPISERIAL.flush();
+      DEBUG_PRINTLN("REED DATA:\n" + reed_data);
+      output_data += "&reed=" + reed_data;
 
       /* Accelerometer */
       Accelerometer accelerometer;
@@ -132,20 +132,15 @@ void loop()
       DEBUG_PRINTLN("ACCELEROMETER DATA:");
       DEBUG_PRINT("X = ");
       DEBUG_PRINT_DEC(accelerometer.x, 4);
-      DEBUG_PRINT("Y = ");
+      DEBUG_PRINT("\nY = ");
       DEBUG_PRINT_DEC(accelerometer.y, 4);
-      DEBUG_PRINT("Z = ");
+      DEBUG_PRINT("\nZ = ");
       DEBUG_PRINT_DEC(accelerometer.z, 4);
-      DEBUG_PRINT("\n\n");
-      
-      RPISERIAL.write("ACCELEROMETER DATA:\n");
-      RPISERIAL.write("X = ");
-      writeStringToRPi(accelerometer.x);
-      RPISERIAL.write(" Y = ");
-      writeStringToRPi(accelerometer.y);
-      RPISERIAL.write(" Z = ");
-      writeStringToRPi(accelerometer.z);
-      RPISERIAL.write("\n");
+      DEBUG_PRINT("\n");
+
+      output_data += "&aX=" + (String) accelerometer.x;
+      output_data += "&aY=" + (String) accelerometer.y;
+      output_data += "&aZ=" + (String) accelerometer.z;
 
       /* Gyroscope */
       Gyroscope gyroscope;
@@ -155,20 +150,15 @@ void loop()
       DEBUG_PRINTLN("GYROSCOPE DATA:");
       DEBUG_PRINT("X = ");
       DEBUG_PRINT_DEC(gyroscope.x, 4);
-      DEBUG_PRINT("Y = ");
+      DEBUG_PRINT("\nY = ");
       DEBUG_PRINT_DEC(gyroscope.y, 4);
-      DEBUG_PRINT("Z = ");
+      DEBUG_PRINT("\nZ = ");
       DEBUG_PRINT_DEC(gyroscope.z, 4);
       DEBUG_PRINT("\n");
 
-      RPISERIAL.write("GYROSCOPE DATA:\n");
-      RPISERIAL.write("X = ");
-      writeStringToRPi(gyroscope.x);
-      RPISERIAL.write(" Y = ");
-      writeStringToRPi(gyroscope.y);
-      RPISERIAL.write(" Z = ");
-      writeStringToRPi(gyroscope.z);
-      RPISERIAL.write("\n");
+      output_data += "&gX=" + (String) gyroscope.x;
+      output_data += "&gY=" + (String) gyroscope.y;
+      output_data += "&gZ=" + (String) gyroscope.z;
       
       /* Thermometer */
       Temperature temperature;
@@ -182,23 +172,20 @@ void loop()
       DEBUG_PRINT_DEC(temperature.fahrenheit, 4);
       DEBUG_PRINT("\n");
 
-      RPISERIAL.write("THERMOMETER DATA:\n");
-      RPISERIAL.write("Celsius = ");
-      writeStringToRPi(temperature.celsius);
-      RPISERIAL.write(" Fahrenheit = ");
-      writeStringToRPi(temperature.fahrenheit);
-      RPISERIAL.write("\n");
+      output_data += "&thermoC=" + (String) temperature.celsius;
+      output_data += "&thermoF=" + (String) temperature.fahrenheit;
 
       /* Pot */
       String pot_data;
       pot_data = getPotData();
 
-      DEBUG_PRINTLN("POTENTIOMETER DATA:\n");
+      DEBUG_PRINTLN("POTENTIOMETER DATA:");
       DEBUG_PRINTLN(pot_data);
+      DEBUG_PRINTLN("");
+      output_data += "&pot=" + pot_data;
 
-      RPISERIAL.write("POTENTIOMETER DATA:\n");
-      writeStringToRPi(pot_data);
-      RPISERIAL.write("\n");      
+      writeStringToRPi(output_data);
+      Serial.println(output_data);
     }
   }
 }
@@ -208,6 +195,7 @@ void loop()
  */
 void writeStringToRPi(String stringData) 
 { 
+  RPISERIAL.clear();
   for (int i = 0; i < stringData.length(); i++)
   {
     RPISERIAL.write(stringData[i]);
@@ -238,7 +226,7 @@ String getGPSData(TinyGPSPlus gps)
   }
   else
   {
-    output_data = "No Data\n";
+    output_data = "0";
   }
   return output_data;
 }
@@ -249,11 +237,11 @@ String getReedData()
   int proximity = digitalRead(REED_PIN); // Read the state of the switch
   if (proximity == LOW) // If the pin reads low, the switch is closed.
   {
-    output_data = "Switch = 1\n";
+    output_data = "1";
   }
   else
   {
-    output_data = "Switch = 0\n";
+    output_data = "0";
   }
   return output_data;
 }
@@ -290,10 +278,6 @@ String getPotData()
 {
   int pot;
   pot = analogRead(POT_PIN);
-  
-  String output_data = "POT = ";
-  output_data += pot ;
-  output_data += "\n";
-  return output_data;
+  return pot;
 }
 
