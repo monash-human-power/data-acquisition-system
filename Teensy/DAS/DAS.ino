@@ -4,6 +4,8 @@
 #include <SoftwareSerial.h>
 #include "SPI.h"
 
+#include "SensorStructures.h"
+
 /* Debug Mode */
 #define DEBUG // Comment this line out if not using debug mode
 
@@ -39,39 +41,6 @@ SoftwareSerial ss(GPS_RXPin, GPS_TXPin);
 // See here: https://www.pjrc.com/teensy/td_uart.html
 int rpi_baud_rate = 500000;   // Set baud rate to 500000
 
-
-// Define structs
-struct GPS
-{
-  double latitude;
-  double longitude;
-  double altitude;
-  double course;
-  int time;
-  double speed;
-  int satellites;
-};
-
-struct Accelerometer
-{
-  float x;
-  float y;
-  float z;
-};
-
-struct Gyroscope
-{
-  float x;
-  float y;
-  float z;
-};
-
-struct Temperature
-{
-  float celsius;
-  float fahrenheit;
-};
-
 void setup()
 {
   // Open serial communications and wait for port to open:
@@ -102,7 +71,6 @@ void setup()
   // Set Up GPS
   ss.begin(GPS_Baud);
 }
-
 
 void loop()
 {
