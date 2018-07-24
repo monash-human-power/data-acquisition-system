@@ -31,7 +31,7 @@ LSM6DS3 myIMU(SPI_MODE, LMS6DS3chipSelect);
 
 // GPS Variables & Setup
 static const uint32_t GPS_Baud = 9600;
-TinyGPSPlus gps;
+TinyGPSPlus tinyGPS;
 SoftwareSerial ss(GPS_RXPin, GPS_TXPin);
 
 // Raspberry Pi Communication
@@ -41,6 +41,17 @@ int rpi_baud_rate = 500000;   // Set baud rate to 500000
 
 
 // Define structs
+struct GPS
+{
+  double latitude;
+  double longitude;
+  double altitude;
+  double course;
+  int time;
+  double speed;
+  int satellites;
+};
+
 struct Accelerometer
 {
   float x;
@@ -99,7 +110,7 @@ void loop()
   // Service GPS
   if (ss.available() > 0)
   {
-    if (gps.encode(ss.read()))
+    if (tinyGPS.encode(ss.read()))
     {
       // Clear output string
       String output_data = "";
@@ -109,12 +120,31 @@ void loop()
       digitalWrite(RED_LED, LOW);
 
       /* GPS */ 
-      String GPS_data;
-      GPS_data = getGPSData(gps);
+      GPS gps;
+      gps = getGPSData(tinyGPS);
       
       // Output GPS Data
-      DEBUG_PRINTLN("GPS DATA:\n" + GPS_data);
-      output_data += "gps=" + GPS_data;
+      output_data += "gps=";
+      if (gps.satellites > 0)
+      {
+        output_data += "1";
+        output_data += "&gps_location=" + String(gps.latitude) + "," + String(gps.longitude) + "," + String(gps.altitude);
+        output_data += "&gps_course=" + String(gps.course);
+        output_data += "&gps_speed=" + String(gps.speed);
+        output_data += "&gps_satellites=" + String(gps.satellites);
+        DEBUG_PRINTLN("GPS DATA:");
+        DEBUG_PRINTLN("Latitude = " + String(gps.latitude));
+        DEBUG_PRINTLN("Longitude = " + String(gps.longitude));
+        DEBUG_PRINTLN("Altitude = " + String(gps.altitude));
+        DEBUG_PRINTLN("Speed = " + String(gps.speed));
+        DEBUG_PRINTLN("Satellites = " + String(gps.satellites));
+      }
+      else
+      {
+        output_data += "0";
+        DEBUG_PRINTLN("GPS DATA:\nNONE");
+      }
+
       
       /* Reed Switch */
       String reed_data;
@@ -185,7 +215,6 @@ void loop()
       output_data += "&pot=" + pot_data;
 
       writeStringToRPi(output_data);
-      Serial.println(output_data);
     }
   }
 }
@@ -202,33 +231,20 @@ void writeStringToRPi(String stringData)
   }
 }
 
-String getGPSData(TinyGPSPlus gps)
+GPS getGPSData(TinyGPSPlus gps)
 {
-  String output_data;
-  int gps_date, gps_time, gps_satellites;
-  double gps_latitude, gps_longitude, gps_altitude, gps_course, gps_speed;
+  GPS GPS_data;
 
-  gps_latitude = gps.location.lat();
-  gps_longitude = gps.location.lng();
-  gps_altitude = gps.altitude.meters();
-  gps_course = gps.course.value();
-  gps_time = gps.time.value();
-  gps_speed = gps.speed.kmph();
-  gps_satellites = gps.satellites.value();
+  // Store data
+  GPS_data.latitude = gps.location.lat();
+  GPS_data.longitude = gps.location.lng();
+  GPS_data.altitude = gps.altitude.meters();
+  GPS_data.course = gps.course.value();
+  GPS_data.time = gps.time.value();
+  GPS_data.speed = gps.speed.kmph();
+  GPS_data.satellites = gps.satellites.value();
 
-  if (gps_satellites > 0)
-  {
-    output_data = "1";
-    output_data += "&gps_location=" + String(gps_latitude) + "," + String(gps_longitude) + "," + String(gps_altitude);
-    output_data += "&gps_course=" + String(gps_course);
-    output_data += "&gps_speed=" + String(gps_speed);
-    output_data += "&gps_satellites=" + String(gps_satellites);
-  }
-  else
-  {
-    output_data = "0";
-  }
-  return output_data;
+  return GPS_data;
 }
 
 String getReedData()
