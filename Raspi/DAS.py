@@ -14,7 +14,7 @@ while True:
 	if serial_in_waiting > 0:
 		# Read and print the contents of the buffer
 		serial_output = ser.read(serial_in_waiting)
-		output = serial_output.decode('utf-8')
+		output = str(serial_output.decode('utf-8'))
 
 		# Tell server to create a new csv file due to start of recording data
 		if (output == 'start'):
