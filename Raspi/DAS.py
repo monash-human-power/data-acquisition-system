@@ -25,6 +25,9 @@ while True:
 			start_body = {'filename' : filename}
 			requests.post(DAS_server_address + '/start', data=start_body)
 			print(filename)
+		# Check if the WHOLE data has been transmitted to the RPi properly
+		elif (len(output) > 100):
+			requests.post(DAS_server_address + '/result', data=output)
 		print(output)
 
 	# Introduce some sort of delay so that the buffer can be cleared in time
