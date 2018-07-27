@@ -8,7 +8,7 @@ ser = serial.Serial(
 	bytesize=serial.EIGHTBITS
 	)
 
-DAS_server_address = "192.168.0.200:5000"
+DAS_server_address = "http://127.0.0.1:5000"
 
 while True:
 	# Check if there is anything in the buffer
