@@ -1,6 +1,6 @@
 #include "SparkFunLSM6DS3.h"
 #include "Wire.h"
-#include <TinyGPS++.h>
+#include <TinyGPS++.h> // https://github.com/mikalhart/TinyGPSPlus/releases
 #include <SoftwareSerial.h>
 #include "SPI.h"
 
