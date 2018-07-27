@@ -8,6 +8,8 @@ ser = serial.Serial(
 	bytesize=serial.EIGHTBITS
 	)
 
+DAS_server_address = "127.0.0.1:5000"
+
 while True:
 	# Check if there is anything in the buffer
 	serial_in_waiting = ser.in_waiting
@@ -20,6 +22,8 @@ while True:
 		if (output == 'start'):
 			current_date_time = time.strftime('%Y_%m_%d_%H_%M_%S')
 			filename = 'data_' + current_date_time
+			start_body = {'filename' : filename}
+			requests.post(DAS_server_address + '/start', data=start_body)
 			print(filename)
 		print(output)
 
