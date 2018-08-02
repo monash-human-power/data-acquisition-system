@@ -9,6 +9,17 @@ ser = serial.Serial(
 	)
 
 DAS_server_address = "http://127.0.0.1:5000"
+filename = ""
+
+# Query server until it is online
+is_server_online = False
+while not is_server_online:
+	try:
+		server_status = requests.get(DAS_server_address + '/server/status', timeout=0.001)
+		is_server_online = server_status.json()["status"]
+	# If server is not online
+	except requests.exceptions.Timeout as error:
+		continue
 
 while True:
 	# Check if there is anything in the buffer
@@ -27,7 +38,10 @@ while True:
 			print(filename)
 		# Check if the WHOLE data has been transmitted to the RPi properly
 		elif (len(output) > 100):
-			requests.post(DAS_server_address + '/result', data=output)
+			# Specify which file to write to
+			output += "&filename=" + filename
+			headers = {'Content-Type' : 'application/x-www-form-urlencoded'}
+			requests.post(DAS_server_address + '/result', data=output, header=headers)
 		print(output)
 
 	# Introduce some sort of delay so that the buffer can be cleared in time
