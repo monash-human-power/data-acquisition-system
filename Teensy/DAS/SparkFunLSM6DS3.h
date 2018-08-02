@@ -2084,3 +2084,4 @@ typedef enum {
 } LSM6DS3_ACC_GYRO_INT2_SLEEP_t;
 
 #endif  // End of __LSM6DS3IMU_H__ definition check
+

@@ -872,3 +872,4 @@ void LSM6DS3::fifoEnd( void ) {
 	writeRegister(LSM6DS3_ACC_GYRO_FIFO_STATUS1, 0x00);  //Disable
 }
 
+
