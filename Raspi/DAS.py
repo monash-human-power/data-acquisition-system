@@ -15,12 +15,14 @@ DAS_server_address = "http://127.0.0.1:5000"
 is_server_online = False
 while not is_server_online:
 	try:
-		server_status = requests.get(DAS_server_address + '/server/status', timeout=0.001)
+		print("Finding server")
+		server_status = requests.get(DAS_server_address + '/server/status')
 		is_server_online = server_status.json()["status"]
 	# If server is not online
-	except requests.exceptions.Timeout as error:
+	except requests.exceptions.RequestException as error:
 		continue
 
+print("Connected to server")
 is_recording = False
 filename = ""
 
@@ -28,14 +30,15 @@ filename = ""
 while True:
 	# Actually tell Teensy that server is ready continuously until button is pressed 
 	if not is_recording:
-		output_message = "ready"
+		print("Sent message to Teensy")
+		output_message = "r"
 		ser.write(output_message.encode('utf-8'))
 
 	# Check if there is anything in the input serial port
 	serial_in_waiting = ser.in_waiting
 	if serial_in_waiting > 0:
 		# Read the contents of the input serial port
-		serial_output = ser.read(serial_in_waiting) # Try ser.readline() ??
+		serial_output = ser.readline() # Try ser.readline() ??
 		output = str(serial_output.decode('utf-8'))
 
 		# Tell server to create a new csv file due to start of recording data
