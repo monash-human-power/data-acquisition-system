@@ -30,9 +30,9 @@ filename = ""
 while True:
 	# Actually tell Teensy that server is ready continuously until button is pressed 
 	if not is_recording:
-		print("Sent message to Teensy")
-		output_message = "r"
+		output_message = "reading"
 		ser.write(output_message.encode('utf-8'))
+		time.sleep(0.1)
 
 	# Check if there is anything in the input serial port
 	serial_in_waiting = ser.in_waiting
