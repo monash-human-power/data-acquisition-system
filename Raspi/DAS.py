@@ -9,9 +9,9 @@ ser = serial.Serial(
 	)
 
 DAS_server_address = "http://127.0.0.1:5000"
-filename = ""
 
 # Query server until it is online
+# This will let Teensy know that the web server/Raspberry Pi is ready
 is_server_online = False
 while not is_server_online:
 	try:
@@ -21,28 +21,49 @@ while not is_server_online:
 	except requests.exceptions.Timeout as error:
 		continue
 
+is_recording = False
+filename = ""
+
+# Main loop
 while True:
-	# Check if there is anything in the buffer
+	# Actually tell Teensy that server is ready continuously until button is pressed 
+	if not is_recording:
+		output_message = "ready"
+		ser.write(output_message.encode('utf-8'))
+
+	# Check if there is anything in the input serial port
 	serial_in_waiting = ser.in_waiting
 	if serial_in_waiting > 0:
-		# Read and print the contents of the buffer
-		serial_output = ser.read(serial_in_waiting)
+		# Read the contents of the input serial port
+		serial_output = ser.read(serial_in_waiting) # Try ser.readline() ??
 		output = str(serial_output.decode('utf-8'))
 
 		# Tell server to create a new csv file due to start of recording data
-		if (output == 'start'):
-			current_date_time = time.strftime('%Y_%m_%d_%H_%M_%S')
-			filename = 'data_' + current_date_time
+		if output == 'start':
+			filename = create_file_name()
 			start_body = {'filename' : filename}
+
+			# TODO: Catch exceptions for the line below
 			requests.post(DAS_server_address + '/start', data=start_body)
-			print(filename)
-		# Check if the WHOLE data has been transmitted to the RPi properly
-		elif (len(output) > 100):
+			is_recording = True
+		elif output == 'stop':
+			is_recording = False
+
+		# Check if the button has been pressed  WHOLE data has been transmitted to the RPi properly
+		if is_recording and (len(output) > 100):
 			# Specify which file to write to
 			output += "&filename=" + filename
 			headers = {'Content-Type' : 'application/x-www-form-urlencoded'}
+			# TODO: Catch exceptions for the line below
 			requests.post(DAS_server_address + '/result', data=output, header=headers)
+		
 		print(output)
 
 	# Introduce some sort of delay so that the buffer can be cleared in time
 	time.sleep(0.01)
+
+# Will create a filename of the format: data_YYYY_MM_DD_HH_MM_SS
+def create_file_name():
+	current_date_time = time.strftime('%Y_%m_%d_%H_%M_%S')
+	output_filename = 'data_' + current_date_time
+	return output_filename
