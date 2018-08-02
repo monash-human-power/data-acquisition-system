@@ -95,12 +95,10 @@ void setup()
   ss.begin(GPS_Baud);
 
   DEBUG_PRINTLN("Waiting for Raspberry Pi to boot");
-  delay(60000);
+  //delay(60000);
   
   DEBUG_PRINTLN("Waiting for serial communication");
   while (true) {
-    //DEBUG_PRINTLN("waiting");
-    //DEBUG_PRINTLN(RPISERIAL.available());
     if (RPISERIAL.available() > 0) {
       if (RPISERIAL.read()) {
         DEBUG_PRINTLN("Serial communication established.");
@@ -239,6 +237,7 @@ void loop()
   
         writeStringToRPi(output_data);
       }
+      /*
       // Check if stop recording
       next = digitalRead(BUTTON_PIN);
       if ((previous != next) and (next == 0))
@@ -247,6 +246,7 @@ void loop()
         break;
       }
       previous = next;
+      */
     }
   }
 }
