@@ -59,12 +59,12 @@ while True:
 			is_recording = False
 
 		# Check if the button has been pressed  WHOLE data has been transmitted to the RPi properly
-		if is_recording and (len(output) > 100):
+		if is_recording:
 			# Specify which file to write to
 			output += "&filename=" + filename
-			headers = {'Content-Type' : 'application/x-www-form-urlencoded'}
+			body_headers = {'Content-Type' : 'application/x-www-form-urlencoded'}
 			# TODO: Catch exceptions for the line below
-			requests.post(DAS_server_address + '/result', data=output, header=headers)
+			requests.request('POST', DAS_server_address + '/result', data=output, headers=body_headers)
 		
 		print(output)
 
