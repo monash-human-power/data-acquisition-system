@@ -8,6 +8,12 @@ ser = serial.Serial(
 	bytesize=serial.EIGHTBITS
 	)
 
+# Will create a filename of the format: data_YYYY_MM_DD_HH_MM_SS
+def create_file_name():
+	current_date_time = time.strftime('%Y_%m_%d_%H_%M_%S')
+	output_filename = 'data_' + current_date_time
+	return output_filename
+	
 DAS_server_address = "http://127.0.0.1:5000"
 
 # Query server until it is online
@@ -39,7 +45,7 @@ while True:
 	if serial_in_waiting > 0:
 		# Read the contents of the input serial port
 		serial_output = ser.readline() # Try ser.readline() ??
-		output = str(serial_output.decode('utf-8'))
+		output = str(serial_output.decode('utf-8')).rstrip()
 
 		# Tell server to create a new csv file due to start of recording data
 		if output == 'start':
@@ -64,9 +70,3 @@ while True:
 
 	# Introduce some sort of delay so that the buffer can be cleared in time
 	time.sleep(0.01)
-
-# Will create a filename of the format: data_YYYY_MM_DD_HH_MM_SS
-def create_file_name():
-	current_date_time = time.strftime('%Y_%m_%d_%H_%M_%S')
-	output_filename = 'data_' + current_date_time
-	return output_filename
