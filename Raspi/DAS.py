@@ -31,6 +31,7 @@ while not is_server_online:
 print("Connected to server")
 is_recording = False
 filename = ""
+initial_time = 0
 
 # Main loop
 while True:
@@ -51,7 +52,7 @@ while True:
 		if output == 'start':
 			filename = create_file_name()
 			start_body = {'filename' : filename}
-
+			initial_time = int(time.time() * 1000)
 			# TODO: Catch exceptions for the line below
 			requests.post(DAS_server_address + '/start', data=start_body)
 			is_recording = True
@@ -62,7 +63,9 @@ while True:
 		if is_recording:
 			# Specify which file to write to
 			output += "&filename=" + filename
+			output += "&time=" + (int(time.time() * 1000) - initial_time)
 			body_headers = {'Content-Type' : 'application/x-www-form-urlencoded'}
+
 			# TODO: Catch exceptions for the line below
 			requests.request('POST', DAS_server_address + '/result', data=output, headers=body_headers)
 		
