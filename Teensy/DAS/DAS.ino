@@ -52,6 +52,14 @@ void setup()
   // Open Raspberry Pi Serial communication
   RPISERIAL.begin(rpi_baud_rate, SERIAL_8N1/*8 Data bits, No Parity bits*/);  // Hardware Serial (RX & TX pins)
 
+  DEBUG_PRINTLN("Waiting for Raspberry Pi to boot");
+  int countdown = 0;
+  while (countdown != 30) {
+    led_blink(); // This takes 2 seconds
+    countdown++;
+    DEBUG_PRINTLN("Booting...");
+  }
+  
   // Set Up Reed Switch
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
@@ -93,21 +101,16 @@ void setup()
 
   // Set Up GPS
   ss.begin(GPS_Baud);
-
-  DEBUG_PRINTLN("Waiting for Raspberry Pi to boot");
-  //delay(60000);
   
   DEBUG_PRINTLN("Waiting for serial communication");
   while (true) {
-    if (RPISERIAL.available() > 0) {
-      if (RPISERIAL.read()) {
+    if (RPISERIAL.available()) {
+      DEBUG_PRINTLN("rpiserial.available");
+      if(RPISERIAL.read()) {
         DEBUG_PRINTLN("Serial communication established.");
-        digitalWrite(GREEN_LED, HIGH);
-        digitalWrite(RED_LED, HIGH);
-        delay(1000);
-        digitalWrite(GREEN_LED, LOW);
-        digitalWrite(RED_LED, LOW);
-        delay(1000);
+
+        // Blink lights if communications established
+        led_blink();
         break;
       }
     }
@@ -119,12 +122,12 @@ void loop()
   while (true)
   {
     // Start recording
-    //DEBUG_PRINTLN("Waiting for button press");
     next = digitalRead(BUTTON_PIN);
     if ((next != previous) and (next == 0))
     {
       DEBUG_PRINTLN("Start recording");
       writeStringToRPi("start");
+      previous = next;
       break;
     }
     previous = next;
@@ -140,6 +143,9 @@ void loop()
         // Clear output string
         String output_data = "";
         
+        // Indicate System is Working
+        digitalWrite(GREEN_LED, HIGH);
+        digitalWrite(RED_LED, LOW);
   
         /* GPS */ 
         GPS gps;
@@ -160,18 +166,13 @@ void loop()
           DEBUG_PRINTLN("Altitude = " + String(gps.altitude));
           DEBUG_PRINTLN("Speed = " + String(gps.speed));
           DEBUG_PRINTLN("Satellites = " + String(gps.satellites));
-
-          // Indicate System is Working
-          digitalWrite(GREEN_LED, HIGH);
-          digitalWrite(RED_LED, LOW);
         }
         else
         {
           output_data += "0";
           DEBUG_PRINTLN("GPS DATA:\nNONE");
 
-          // Indicate System is Working
-          digitalWrite(GREEN_LED, LOW);
+          // Show red LED when GPS is not working
           digitalWrite(RED_LED, HIGH);
         }
   
@@ -237,16 +238,22 @@ void loop()
   
         writeStringToRPi(output_data);
       }
-      /*
+      
       // Check if stop recording
       next = digitalRead(BUTTON_PIN);
       if ((previous != next) and (next == 0))
       {
+        DEBUG_PRINTLN("Stop recording");
         writeStringToRPi("stop");
+        previous = next;
+        // Turn off both status lights
+        digitalWrite(GREEN_LED, LOW);
+        digitalWrite(RED_LED, LOW);
+        delay(3000);
         break;
       }
       previous = next;
-      */
+      
     }
   }
 }
@@ -315,4 +322,13 @@ String getPotData()
   return pot;
 }
 
+void led_blink() 
+{
+  digitalWrite(GREEN_LED, HIGH);
+  digitalWrite(RED_LED, HIGH);
+  delay(1000);
+  digitalWrite(GREEN_LED, LOW);
+  digitalWrite(RED_LED, LOW);
+  delay(1000);
+}
 
