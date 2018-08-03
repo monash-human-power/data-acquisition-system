@@ -3,12 +3,6 @@
 #include <TinyGPS++.h> // https://github.com/mikalhart/TinyGPSPlus/releases
 #include <SoftwareSerial.h>
 #include "SPI.h"
-#include <avr/io.h>         // interrupt library
-#include <avr/interrupt.h>   // interrupt library
-
-// Notes
-// - define shared variables used in ISRs as "volatile" to prevent the compiler from optimizing this variable
-// - disable interrupts at start of ISR with "cli()". Enable at end of ISR with sei().
 
 #include "SensorStructures.h"
 
@@ -30,7 +24,7 @@ int next = 0;
 #endif
 
 // Pin Values
-static const int BUTTON_PIN = 2; // Pin connected to button switch
+static const int BUTTON_PIN = 2; // Pin connected to reed switch
 static const int GREEN_LED = 4, RED_LED = 3;
 static const int POT_PIN = 0;
 static const int GPS_RXPin = 7, GPS_TXPin = 8;
@@ -51,12 +45,10 @@ SoftwareSerial ss(GPS_RXPin, GPS_TXPin);
 // See here: https://www.pjrc.com/teensy/td_uart.html
 int rpi_baud_rate = 500000;   // Set baud rate to 500000
 
-
 void setup()
 {
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
-  
   // Open Raspberry Pi Serial communication
   RPISERIAL.begin(rpi_baud_rate, SERIAL_8N1/*8 Data bits, No Parity bits*/);  // Hardware Serial (RX & TX pins)
 
@@ -68,9 +60,8 @@ void setup()
     DEBUG_PRINTLN("Booting...");
   }
   
-  // Interrupt setup
+  // Set Up Reed Switch
   pinMode(BUTTON_PIN, INPUT_PULLUP);
-  attachInterrupt(BUTTON_PIN, isrService, FALLING); // interrrupt 1 is data ready
 
   // Set up LEDs
   pinMode(GREEN_LED, OUTPUT);
@@ -99,6 +90,9 @@ void setup()
   digitalWrite(GREEN_LED, LOW);
   digitalWrite(RED_LED, LOW);
   
+
+  // Nothing to do to set up POT
+
   // Set Up IMU
   SPI1.setMOSI(0);
   SPI1.setMISO(1);
@@ -108,22 +102,19 @@ void setup()
   // Set Up GPS
   ss.begin(GPS_Baud);
   
-//  DEBUG_PRINTLN("Waiting for serial communication");
-//  while (true) {
-//    if (RPISERIAL.available()) {
-//      DEBUG_PRINTLN("rpiserial.available");
-//      if(RPISERIAL.read()) {
-//        DEBUG_PRINTLN("Serial communication established.");
-//
-//        // Blink lights if communications established
-//        led_blink();
-//        break;
-//      }
-//    }
+  DEBUG_PRINTLN("Waiting for serial communication");
+  while (true) {
+    if (RPISERIAL.available()) {
+      DEBUG_PRINTLN("rpiserial.available");
+      if(RPISERIAL.read()) {
+        DEBUG_PRINTLN("Serial communication established.");
+
+        // Blink lights if communications established
+        led_blink();
+        break;
+      }
+    }
   }
-  
-  // Enable global interrupts
-  sei();
 }
 
 void loop()
@@ -341,9 +332,3 @@ void led_blink()
   delay(1000);
 }
 
-void isrService()
-{
-  cli();
-  Serial.println("At ISR0");
-  sei();
-}
