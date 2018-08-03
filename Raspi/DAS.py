@@ -44,7 +44,7 @@ while True:
 	serial_in_waiting = ser.in_waiting
 	if serial_in_waiting > 0:
 		# Read the contents of the input serial port
-		serial_output = ser.readline() # Try ser.readline() ??
+		serial_output = ser.readline()
 		output = str(serial_output.decode('utf-8')).rstrip()
 
 		# Tell server to create a new csv file due to start of recording data
