@@ -3,15 +3,19 @@
 #include <TinyGPS++.h> // https://github.com/mikalhart/TinyGPSPlus/releases
 #include <SoftwareSerial.h>
 #include "SPI.h"
-
 #include "SensorStructures.h"
 
 /* Debug Mode */
 #define DEBUG // Comment this line out if not using debug mode
+#define WAIT 60 // delay for teensy to start serial comms
 
 /* Variables for edge trigger */
 int previous = 0;
 int next = 0;
+
+/* Variables for interrupts */
+volatile int is_recording = 0;
+volatile int button_state = 0;
 
 #ifdef DEBUG
   #define DEBUG_PRINTLN(input_text) Serial.println(input_text);
@@ -47,6 +51,17 @@ int rpi_baud_rate = 500000;   // Set baud rate to 500000
 
 void setup()
 {
+  // Set Up Button Pin
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+
+  // Set up LEDs
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
+
+  // Set up LEDs
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
+  
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   // Open Raspberry Pi Serial communication
@@ -54,43 +69,12 @@ void setup()
 
   DEBUG_PRINTLN("Waiting for Raspberry Pi to boot");
   int countdown = 0;
-  while (countdown != 30) {
-    led_blink(); // This takes 2 seconds
+  while (countdown != WAIT) {
+    led_blink(1000); // This takes 1 seconds
     countdown++;
     DEBUG_PRINTLN("Booting...");
   }
   
-  // Set Up Reed Switch
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
-
-  // Set up LEDs
-  pinMode(GREEN_LED, OUTPUT);
-  pinMode(RED_LED, OUTPUT);
-
-  // Indicate system is until it works
-  // change functionality here later on to indicate communication with pi
-  digitalWrite(GREEN_LED, LOW);
-  digitalWrite(RED_LED, LOW);
-  delay(200);
-  digitalWrite(GREEN_LED, HIGH);
-  digitalWrite(RED_LED, HIGH);
-  delay(200);
-  digitalWrite(GREEN_LED, LOW);
-  digitalWrite(RED_LED, LOW);
-  delay(200);
-  digitalWrite(GREEN_LED, HIGH);
-  digitalWrite(RED_LED, HIGH);
-  delay(200);
-  digitalWrite(GREEN_LED, LOW);
-  digitalWrite(RED_LED, LOW);
-  delay(200);
-  digitalWrite(GREEN_LED, HIGH);
-  digitalWrite(RED_LED, HIGH);
-  delay(200);
-  digitalWrite(GREEN_LED, LOW);
-  digitalWrite(RED_LED, LOW);
-  
-
   // Nothing to do to set up POT
 
   // Set Up IMU
@@ -103,158 +87,134 @@ void setup()
   ss.begin(GPS_Baud);
   
   DEBUG_PRINTLN("Waiting for serial communication");
-  while (true) {
-    if (RPISERIAL.available()) {
+  digitalWrite(RED_LED, HIGH);
+  while (true) 
+  {
+    if (RPISERIAL.available()) 
+    {
       DEBUG_PRINTLN("rpiserial.available");
-      if(RPISERIAL.read()) {
+      if(RPISERIAL.read()) 
+      {
         DEBUG_PRINTLN("Serial communication established.");
 
         // Blink lights if communications established
-        led_blink();
+        led_blink(1000);
         break;
       }
     }
   }
+
+  // Set up interrupts
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  attachInterrupt(BUTTON_PIN, isrService, CHANGE); // interrrupt 1 is data ready
+  sei();
 }
 
 void loop()
 {
-  while (true)
+  // Service GPS
+  if ((ss.available() > 0) and (is_recording == 1))
   {
-    // Start recording
-    next = digitalRead(BUTTON_PIN);
-    if ((next != previous) and (next == 0))
+    if (tinyGPS.encode(ss.read()))
     {
-      DEBUG_PRINTLN("Start recording");
-      writeStringToRPi("start");
-      previous = next;
-      break;
-    }
-    previous = next;
-  }
-
-  while (true)
-  {
-    // Service GPS
-    if (ss.available() > 0)
-    {
-      if (tinyGPS.encode(ss.read()))
-      {
-        // Clear output string
-        String output_data = "";
-        
-        // Indicate System is Working
-        digitalWrite(GREEN_LED, HIGH);
-        digitalWrite(RED_LED, LOW);
-  
-        /* GPS */ 
-        GPS gps;
-        gps = getGPSData(tinyGPS);
-        
-        // Output GPS Data
-        output_data += "gps=";
-        if (gps.satellites > 0)
-        {
-          output_data += "1";
-          output_data += "&gps_location=" + String(gps.latitude) + "," + String(gps.longitude) + "," + String(gps.altitude);
-          output_data += "&gps_course=" + String(gps.course);
-          output_data += "&gps_speed=" + String(gps.speed);
-          output_data += "&gps_satellites=" + String(gps.satellites);
-          DEBUG_PRINTLN("GPS DATA:");
-          DEBUG_PRINTLN("Latitude = " + String(gps.latitude));
-          DEBUG_PRINTLN("Longitude = " + String(gps.longitude));
-          DEBUG_PRINTLN("Altitude = " + String(gps.altitude));
-          DEBUG_PRINTLN("Speed = " + String(gps.speed));
-          DEBUG_PRINTLN("Satellites = " + String(gps.satellites));
-        }
-        else
-        {
-          output_data += "0";
-          DEBUG_PRINTLN("GPS DATA:\nNONE");
-
-          // Show red LED when GPS is not working
-          digitalWrite(RED_LED, HIGH);
-        }
-  
-        /* Accelerometer */
-        Accelerometer accelerometer;
-        accelerometer = getAccelerometerData(myIMU);
-  
-        // Output accelerometer data
-        DEBUG_PRINTLN("ACCELEROMETER DATA:");
-        DEBUG_PRINT("X = ");
-        DEBUG_PRINT_DEC(accelerometer.x, 4);
-        DEBUG_PRINT("\nY = ");
-        DEBUG_PRINT_DEC(accelerometer.y, 4);
-        DEBUG_PRINT("\nZ = ");
-        DEBUG_PRINT_DEC(accelerometer.z, 4);
-        DEBUG_PRINT("\n");
-  
-        output_data += "&aX=" + (String) accelerometer.x;
-        output_data += "&aY=" + (String) accelerometer.y;
-        output_data += "&aZ=" + (String) accelerometer.z;
-  
-        /* Gyroscope */
-        Gyroscope gyroscope;
-        gyroscope = getGyroscopeData(myIMU);
-        
-        // Output gyroscope data
-        DEBUG_PRINTLN("GYROSCOPE DATA:");
-        DEBUG_PRINT("X = ");
-        DEBUG_PRINT_DEC(gyroscope.x, 4);
-        DEBUG_PRINT("\nY = ");
-        DEBUG_PRINT_DEC(gyroscope.y, 4);
-        DEBUG_PRINT("\nZ = ");
-        DEBUG_PRINT_DEC(gyroscope.z, 4);
-        DEBUG_PRINT("\n");
-  
-        output_data += "&gX=" + (String) gyroscope.x;
-        output_data += "&gY=" + (String) gyroscope.y;
-        output_data += "&gZ=" + (String) gyroscope.z;
-        
-        /* Thermometer */
-        Temperature temperature;
-        temperature = getTemperatureData(myIMU);
-        
-        // Output thermometer data
-        DEBUG_PRINTLN("THERMOMETER DATA:");
-        DEBUG_PRINT("Celsius = ");
-        DEBUG_PRINT_DEC(temperature.celsius, 4);
-        DEBUG_PRINT(" Fahrenheit = ");
-        DEBUG_PRINT_DEC(temperature.fahrenheit, 4);
-        DEBUG_PRINT("\n");
-  
-        output_data += "&thermoC=" + (String) temperature.celsius;
-        output_data += "&thermoF=" + (String) temperature.fahrenheit;
-  
-        /* Pot */
-        String pot_data;
-        pot_data = getPotData();
-  
-        DEBUG_PRINTLN("POTENTIOMETER DATA:");
-        DEBUG_PRINTLN(pot_data);
-        DEBUG_PRINTLN("");
-        output_data += "&pot=" + pot_data;
-  
-        writeStringToRPi(output_data);
-      }
+      // Clear output string
+      String output_data = "";
       
-      // Check if stop recording
-      next = digitalRead(BUTTON_PIN);
-      if ((previous != next) and (next == 0))
-      {
-        DEBUG_PRINTLN("Stop recording");
-        writeStringToRPi("stop");
-        previous = next;
-        // Turn off both status lights
-        digitalWrite(GREEN_LED, LOW);
-        digitalWrite(RED_LED, LOW);
-        delay(3000);
-        break;
-      }
-      previous = next;
+      // Indicate System is Working
+      digitalWrite(GREEN_LED, HIGH);
+      digitalWrite(RED_LED, LOW);
+
+      /* GPS */ 
+      GPS gps;
+      gps = getGPSData(tinyGPS);
       
-    }
+      // Output GPS Data
+      output_data += "gps=";
+      if (gps.satellites > 0)
+      {
+        output_data += "1";
+        output_data += "&gps_location=" + String(gps.latitude) + "," + String(gps.longitude) + "," + String(gps.altitude);
+        output_data += "&gps_course=" + String(gps.course);
+        output_data += "&gps_speed=" + String(gps.speed);
+        output_data += "&gps_satellites=" + String(gps.satellites);
+        DEBUG_PRINTLN("GPS DATA:");
+        DEBUG_PRINTLN("Latitude = " + String(gps.latitude));
+        DEBUG_PRINTLN("Longitude = " + String(gps.longitude));
+        DEBUG_PRINTLN("Altitude = " + String(gps.altitude));
+        DEBUG_PRINTLN("Speed = " + String(gps.speed));
+        DEBUG_PRINTLN("Satellites = " + String(gps.satellites));
+      }
+      else
+      {
+        output_data += "0";
+        DEBUG_PRINTLN("GPS DATA:\nNONE");
+
+        // Show red LED when GPS is not working
+        digitalWrite(RED_LED, HIGH);
+      }
+
+      /* Accelerometer */
+      Accelerometer accelerometer;
+      accelerometer = getAccelerometerData(myIMU);
+
+      // Output accelerometer data
+      DEBUG_PRINTLN("ACCELEROMETER DATA:");
+      DEBUG_PRINT("X = ");
+      DEBUG_PRINT_DEC(accelerometer.x, 4);
+      DEBUG_PRINT("\nY = ");
+      DEBUG_PRINT_DEC(accelerometer.y, 4);
+      DEBUG_PRINT("\nZ = ");
+      DEBUG_PRINT_DEC(accelerometer.z, 4);
+      DEBUG_PRINT("\n");
+
+      output_data += "&aX=" + (String) accelerometer.x;
+      output_data += "&aY=" + (String) accelerometer.y;
+      output_data += "&aZ=" + (String) accelerometer.z;
+
+      /* Gyroscope */
+      Gyroscope gyroscope;
+      gyroscope = getGyroscopeData(myIMU);
+      
+      // Output gyroscope data
+      DEBUG_PRINTLN("GYROSCOPE DATA:");
+      DEBUG_PRINT("X = ");
+      DEBUG_PRINT_DEC(gyroscope.x, 4);
+      DEBUG_PRINT("\nY = ");
+      DEBUG_PRINT_DEC(gyroscope.y, 4);
+      DEBUG_PRINT("\nZ = ");
+      DEBUG_PRINT_DEC(gyroscope.z, 4);
+      DEBUG_PRINT("\n");
+
+      output_data += "&gX=" + (String) gyroscope.x;
+      output_data += "&gY=" + (String) gyroscope.y;
+      output_data += "&gZ=" + (String) gyroscope.z;
+      
+      /* Thermometer */
+      Temperature temperature;
+      temperature = getTemperatureData(myIMU);
+      
+      // Output thermometer data
+      DEBUG_PRINTLN("THERMOMETER DATA:");
+      DEBUG_PRINT("Celsius = ");
+      DEBUG_PRINT_DEC(temperature.celsius, 4);
+      DEBUG_PRINT(" Fahrenheit = ");
+      DEBUG_PRINT_DEC(temperature.fahrenheit, 4);
+      DEBUG_PRINT("\n");
+
+      output_data += "&thermoC=" + (String) temperature.celsius;
+      output_data += "&thermoF=" + (String) temperature.fahrenheit;
+
+      /* Pot */
+      String pot_data;
+      pot_data = getPotData();
+
+      DEBUG_PRINTLN("POTENTIOMETER DATA:");
+      DEBUG_PRINTLN(pot_data);
+      DEBUG_PRINTLN("");
+      output_data += "&pot=" + pot_data;
+
+      writeStringToRPi(output_data);
+    }     
   }
 }
 
@@ -322,13 +282,38 @@ String getPotData()
   return pot;
 }
 
-void led_blink() 
+void led_blink(int time_delay) 
 {
   digitalWrite(GREEN_LED, HIGH);
   digitalWrite(RED_LED, HIGH);
-  delay(1000);
+  delay(time_delay/2);
   digitalWrite(GREEN_LED, LOW);
   digitalWrite(RED_LED, LOW);
-  delay(1000);
+  delay(time_delay);
+}
+
+void isrService()
+{
+  button_state = digitalRead(BUTTON_PIN);
+  if (button_state == 0)
+  {
+    if (is_recording == 0)
+    {
+    digitalWrite(GREEN_LED,!button_state);
+    digitalWrite(RED_LED,!button_state);
+    is_recording = 1;
+    writeStringToRPi("start");
+    DEBUG_PRINTLN("Start recording");
+    }
+    else
+    {
+      digitalWrite(GREEN_LED,button_state);
+      digitalWrite(RED_LED,button_state);
+      is_recording = 0;
+      writeStringToRPi("stop");
+      DEBUG_PRINTLN("Stop recording");
+    }
+    delay(1000);
+  }
 }
 
