@@ -8,9 +8,9 @@ ser = serial.Serial(
 	bytesize=serial.EIGHTBITS
 	)
 
-# Will create a filename of the format: data_YYYY_MM_DD_HH_MM_SS
+# Will create a filename of the format: data_YYYY_MM_DD_HHMMSS
 def create_file_name():
-	current_date_time = time.strftime('%Y_%m_%d_%H_%M_%S')
+	current_date_time = time.strftime('%Y_%m_%d_%H%M%S')
 	output_filename = 'data_' + current_date_time
 	return output_filename
 	
