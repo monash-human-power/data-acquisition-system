@@ -63,7 +63,7 @@ while True:
 		if is_recording:
 			# Specify which file to write to
 			output += "&filename=" + filename
-			output += "&time=" + (int(time.time() * 1000) - initial_time)
+			output += "&time=" + (str(int(time.time() * 1000) - initial_time))
 			body_headers = {'Content-Type' : 'application/x-www-form-urlencoded'}
 
 			# TODO: Catch exceptions for the line below
