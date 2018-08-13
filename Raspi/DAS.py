@@ -7,14 +7,24 @@ ser = serial.Serial(
 	baudrate=500000,
 	bytesize=serial.EIGHTBITS
 	)
-
-# Will create a filename of the format: data_YYYY_MM_DD_HHMMSS
-def create_file_name():
-	current_date_time = time.strftime('%Y_%m_%d_%H%M%S')
-	output_filename = 'data_' + current_date_time
-	return output_filename
 	
 DAS_server_address = "http://127.0.0.1:5000"
+
+# Will create a filename of the format: data_i where i will continue to increment
+# Doesn't use time because Raspberry Pi does not have a RTC
+def create_file_name():
+	# Get list of files stored
+	files_stored_json = requests.get(DAS_server_address + '/files')
+
+	# If no file stored, send default filename
+	if (files_stored_json['files'].length == 0):
+		return 'data_0' 
+
+	# Keep iterating until filename not found
+	i = 0
+	while ('data_%s' % i) in files_stored_json['files']:
+		i += 1
+	return 'data_%s' % i
 
 # Query server until it is online
 # This will let Teensy know that the web server/Raspberry Pi is ready
