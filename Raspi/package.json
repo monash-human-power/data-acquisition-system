@@ -1,0 +1,11 @@
+{
+  "name": "das",
+  "version": "1.0.0",
+  "description": "node.js script to communicate to the Teensy",
+  "main": "DAS.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
