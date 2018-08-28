@@ -25,8 +25,7 @@ serialPort.pipe(parser);
 // Check if server is connected
 while (!IS_SERVER_CONNECTED) {
 	console.log('Finding server');
-	requests
-		.get(DAS_server_address + '/server/status')
+	request.get(DAS_SERVER_ADDR + '/server/status')
 		.on('response', (response) => {
 			console.log(response);
 		})
