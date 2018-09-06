@@ -4,6 +4,7 @@ const request = require('request');
 const DAS_SERVER_ADDR = "http://127.0.0.1:5000";
 var IS_SERVER_CONNECTED = false;
 
+
 // Set up serial port connection
 var serialport = require('serialport');
 var serialport_options = {
@@ -21,14 +22,37 @@ var Readline = serialport.parsers.Readline;
 var parser = new Readline();
 serialPort.pipe(parser);
 
+
 /* Start of main code */
 // Check if server is connected
-while (!IS_SERVER_CONNECTED) {
-	console.log('Finding server');
-	request.get(DAS_SERVER_ADDR + '/server/status')
-		.on('response', (response) => {
-			console.log(response);
-		})
+function check_if_server_online() {
+	request.get(DAS_SERVER_ADDR + '/server/status', {timeout: 1000}, (error, res, body) => {
+		if (error) {
+			console.log(error);
+			return false;
+		}
+
+		if (res.statusCode == 200) {
+			// Stop asking server if online
+			clearInterval(find_server_interval);
+			// Run main code after function returns
+			setImmediate(main);
+			return true;
+		} else {
+			return false;
+		}
+	});
+
+}
+
+// Check if server is online every 1.5 seconds
+const find_server_interval = setInterval(() => {
+	console.log("Finding server");
+	check_if_server_online()
+}, 1500);
+
+function main(){
+	IS_SERVER_CONNECTED = true;
 }
 
 // Open event to tell us when connection with teensy has been made
