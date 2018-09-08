@@ -18,7 +18,7 @@ var serialPort = new SerialPort('/dev/serial0', serialport_options, (err) => {
 	console.log(err);
 });
 // Parse incoming data;
-var Readline = serialport.parsers.Readline;
+var Readline = SerialPort.parsers.Readline;
 var parser = new Readline();
 serialPort.pipe(parser);
 
