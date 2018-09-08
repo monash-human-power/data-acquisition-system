@@ -1,6 +1,6 @@
 /* Set up modules */
 // Set up server connection
-const request = require('request-promise');
+const request = require('request-promise-native');
 const DAS_SERVER_ADDR = "http://127.0.0.1:5000";
 var IS_SERVER_CONNECTED = false;
 
