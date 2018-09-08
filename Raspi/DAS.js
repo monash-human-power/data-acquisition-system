@@ -8,6 +8,7 @@ var IS_SERVER_CONNECTED = false;
 // Set up serial port connection
 var SerialPort = require('serialport');
 var serialport_options = {
+	autoOpen: false,
 	baudRate: 500000,
 	dataBits: 8,
 	stopBits: 1,
@@ -15,7 +16,9 @@ var serialport_options = {
 }
 var serialPort = new SerialPort('/dev/serial0', serialport_options, (err) => {
 	// Print out error with opening serial port
-	console.log(err);
+	if (err) {
+		console.log(err);
+	}
 });
 // Parse incoming data;
 var Readline = SerialPort.parsers.Readline;
@@ -53,12 +56,19 @@ const find_server_interval = setInterval(() => {
 
 function main(){
 	// Open event to tell us when connection with teensy has been made
-	serialPort.on("open", () => {
-		console.log('Port opened with Teensy');
-		
-		// Server and Teensy need to be both connected to receive data
-		parser.on('data', (data) => {
-			console.log(data);
-		});
+	serialPort.open((err) => {
+		if (err) {
+			return console.log(err.message);
+		}
+		console.log('Serial port open');
 	})
 }
+
+serialPort.on("open", () => {
+	console.log('Port opened with Teensy');
+	
+	// Server and Teensy need to be both connected to receive data
+	parser.on('data', (data) => {
+		console.log(data);
+	});
+})
