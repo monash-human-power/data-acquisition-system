@@ -95,6 +95,7 @@ function create_file_name() {
 }
 
 var initial_time = 0;
+var IS_RECORDING = false;
 serialPort.on("open", () => {
 	console.log('Port opened with Teensy');
 	
@@ -118,11 +119,16 @@ serialPort.on("open", () => {
 							console.error(error);
 						}
 						// TODO: Tell Teensy that Raspberry Pi was unable to start a new file
- 					})
+					 })
+					 .then(() => {
+						IS_RECORDING = true;
+					 })
 				})
 				.catch((error) => {
 					console.error(error);
 				})
+		} else if (data == "stop") {
+			IS_RECORDING = false;
 		}
 	});
 })
