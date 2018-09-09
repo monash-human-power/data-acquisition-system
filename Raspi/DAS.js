@@ -24,7 +24,6 @@ var Readline = SerialPort.parsers.Readline;
 var parser = new Readline();
 serialPort.pipe(parser);
 
-
 /* Start of main code */
 // Check if server is connected
 function check_if_server_online() {
@@ -78,16 +77,15 @@ function create_file_name() {
 	return request.get(file_name_request_options)
 		.then((response) => {
 			let files = response.files;
-
 			if (files.length == 0) {
 				return 'data_0';
 			}
 
-			let i = 0;
+			var i = 0;
 			do {
 				var filename = 'data_' + i;
 				i++;
-			} while (files.includes(filename));
+			} while (files.includes(filename + '.csv'));
 			return filename;
 		})
 		.catch((error) => {
