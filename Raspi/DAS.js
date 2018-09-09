@@ -90,6 +90,10 @@ function create_file_name() {
 			} while (files.includes(filename));
 			return filename;
 		})
+		.catch((error) => {
+			console.error("Error in asking server for list of files");
+			return Promise.reject(error);
+		})
 }
 
 var initial_time = 0;
