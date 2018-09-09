@@ -110,7 +110,8 @@ serialPort.on("open", () => {
 					let create_file_name_post_options = {
 						method: 'POST',
 						url: DAS_SERVER_ADDR + '/start',
-						body: start_body
+						body: start_body,
+						json: true
 					};
 					// Save the time we send the first data point
 					initial_time = Math.floor(Date.now());
