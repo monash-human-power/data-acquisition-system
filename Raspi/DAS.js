@@ -96,6 +96,7 @@ function create_file_name() {
 
 var initial_time = 0;
 var IS_RECORDING = false;
+var current_filename = "";
 serialPort.on("open", () => {
 	console.log('Port opened with Teensy');
 	
@@ -105,7 +106,8 @@ serialPort.on("open", () => {
 		if (data == 'start') {
 			create_file_name()
 				.then((created_filename) => {
-					var start_body = {filename: created_filename};
+					current_filename = created_filename;
+					var start_body = {filename: current_filename};
 					let create_file_name_post_options = {
 						method: 'POST',
 						url: DAS_SERVER_ADDR + '/start',
@@ -129,6 +131,25 @@ serialPort.on("open", () => {
 				})
 		} else if (data == "stop") {
 			IS_RECORDING = false;
+		}
+
+		if (IS_RECORDING) {
+			let current_time = Math.floor(Date.now());
+			data += "&filename=" + current_filename;
+			data += "&time=" + (current_time - initial_time);
+			let post_data_request_options = {
+				method: 'POST',
+				url: DAS_SERVER_ADDR + '/result',
+				body: data,
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded'
+				}
+			}
+			request(post_data_request_options, (error, response, body) => {
+				if (error) {
+					console.error(error);
+				}
+			})
 		}
 	});
 })
