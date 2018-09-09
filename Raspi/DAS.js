@@ -27,7 +27,6 @@ serialPort.pipe(parser);
 
 /* Start of main code */
 // Check if server is connected
-
 function check_if_server_online() {
 	// Sends a GET request to the /server/status endpoint
 	request.get(DAS_SERVER_ADDR + '/server/status', {timeout: 1000}, (error, res, body) => {
@@ -93,6 +92,7 @@ function create_file_name() {
 		})
 }
 
+var initial_time = 0;
 serialPort.on("open", () => {
 	console.log('Port opened with Teensy');
 	
@@ -108,7 +108,9 @@ serialPort.on("open", () => {
 						uri: DAS_SERVER_ADDR + '/start',
 						body: start_body
 					};
-					request(create_file_name_post_options);
+					// Save the time we send the first data point
+					initial_time = Math.floor(Date.now());
+					request(create_file_name_post_options)
 				})
 		}
 	});
