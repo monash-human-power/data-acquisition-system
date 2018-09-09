@@ -105,8 +105,8 @@ serialPort.on("open", () => {
 		console.log(data);
 		if (data == 'start') {
 			create_file_name()
-				.then((filename) => {
-					let start_body = {'filename': filename};
+				.then((created_filename) => {
+					var start_body = {filename: created_filename};
 					let create_file_name_post_options = {
 						method: 'POST',
 						url: DAS_SERVER_ADDR + '/start',
