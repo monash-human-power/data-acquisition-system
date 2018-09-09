@@ -115,8 +115,8 @@ serialPort.on("open", () => {
 					// Save the time we send the first data point
 					initial_time = Math.floor(Date.now());
 					request(create_file_name_post_options, (error, response, body) => {
-						if (err) {
-							console.error(err);
+						if (error) {
+							console.error(error);
 						}
 						// TODO: Tell Teensy that Raspberry Pi was unable to start a new file
  					})
