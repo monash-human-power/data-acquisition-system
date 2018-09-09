@@ -109,7 +109,7 @@ serialPort.on("open", () => {
 					let start_body = {'filename': filename};
 					let create_file_name_post_options = {
 						method: 'POST',
-						uri: DAS_SERVER_ADDR + '/start',
+						url: DAS_SERVER_ADDR + '/start',
 						body: start_body
 					};
 					// Save the time we send the first data point
