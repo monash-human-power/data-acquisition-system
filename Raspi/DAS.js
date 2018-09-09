@@ -57,7 +57,7 @@ function main(){
 	// Open event to tell us when connection with teensy has been made
 	serialPort.open((err) => {
 		if (err) {
-			return console.log(err.message);
+			return console.error(err.message);
 		}
 		console.log('Serial port open');
 	})
@@ -114,7 +114,15 @@ serialPort.on("open", () => {
 					};
 					// Save the time we send the first data point
 					initial_time = Math.floor(Date.now());
-					request(create_file_name_post_options)
+					request(create_file_name_post_options, (error, response, body) => {
+						if (err) {
+							console.error(err);
+						}
+						// TODO: Tell Teensy that Raspberry Pi was unable to start a new file
+ 					})
+				})
+				.catch((error) => {
+					console.error(error);
 				})
 		}
 	});
