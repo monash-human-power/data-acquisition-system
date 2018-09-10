@@ -194,7 +194,7 @@ serialPort.on("open", () => {
             };
             request(post_data_request_options)
                 .catch((error) => {
-                    console.error("Error code: " + error.statusCode + "\nError Message: " + error.message);
+                    console.error("Error Message: " + error.message);
                 })
         }
     });
