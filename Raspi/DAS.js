@@ -24,6 +24,11 @@ var Readline = SerialPort.parsers.Readline;
 var parser = new Readline();
 serialPort.pipe(parser);
 
+// Set up ant-plus dongle
+var Ant = require('ant-plus');
+var ant_plus = new Ant.GarminStick3();
+var bicyclePowerSensor = new Ant.bicyclePowerSensor(ant_plus);
+
 /* Start of main code */
 // Check if server is connected
 function check_if_server_online() {
