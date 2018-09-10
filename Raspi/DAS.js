@@ -175,6 +175,9 @@ serialPort.on("open", () => {
             let current_time = Math.floor(Date.now());
             data += "&filename=" + current_filename;
             data += "&time=" + (current_time - initial_time);
+            data += "&power=" + ant_plus_power;
+            data += "&cadence=" + ant_plus_cadence;
+
             let post_data_request_options = {
                 method: "POST",
                 url: DAS_SERVER_ADDR + "/result",
