@@ -191,12 +191,11 @@ serialPort.on("open", () => {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded"
                 }
-            }
-            request(post_data_request_options, (error, response, body) => {
-                if (error) {
+            };
+            request(post_data_request_options)
+                .catch((error) => {
                     console.error(error);
-                }
-            })
+                })
         }
     });
 })
