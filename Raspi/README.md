@@ -2,7 +2,7 @@
 Scripts that are ran on the Raspberry Pi Zero W located on the DAS.
 
 ## Getting Started
-### Installing node.js on Raspberry Pi Zero W
+### Installing node.js and npm on Raspberry Pi Zero W
 *TBA*
 
 ### Setting up node.js libraries
