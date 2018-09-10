@@ -42,8 +42,12 @@ function check_if_server_online() {
         if (res.statusCode == 200) {
             // Stop asking server if online
             clearInterval(find_server_interval);
-            // Run main code after function returns
-            setImmediate(main);
+            // Look for ant-plus dongle after connection with server
+            const find_ant_plus_interval = setInterval(() => {
+                console.log("Finding ant-plus USB...");
+                check_ant_plus_connection();
+            }, 1000);
+
             return true;
         } else {
             return false;
@@ -54,9 +58,28 @@ function check_if_server_online() {
 // Check if server is online every 1.5 seconds
 const find_server_interval = setInterval(() =>
 {
-    console.log("Finding server");
+    console.log("Finding server...");
     check_if_server_online();
 }, 1500);
+
+// Check if ant-plus dongle is connected to Raspberry Pi
+function check_ant_plus_connection() {
+    if (!ant_plus.open()) {
+        console.error("Ant-plus usb stick not found!");
+        return false;
+    } else {
+        // Stop looking for ant-plus dongle
+        clearInterval(find_ant_plus_interval);
+        setImmediate(main);
+        return true;
+    }
+}
+
+ant_plus.on("startup", () => {
+    console.log("ant-plus stick initialized");
+    // Connect to the first device found
+    bicyclePowerSensor.attach(0, 0);
+});
 
 function main(){
     // Open event to tell us when connection with teensy has been made
@@ -79,7 +102,7 @@ function create_file_name() {
         method: "GET",
         url: DAS_SERVER_ADDR + "/files",
         json: true
-    }
+    };
     return request.get(file_name_request_options)
         .then((response) => {
             let files = response.files;
@@ -103,8 +126,17 @@ function create_file_name() {
 var initial_time = 0;
 var IS_RECORDING = false;
 var current_filename = "";
+var ant_plus_cadence = 0, ant_plus_power = 0;
 serialPort.on("open", () => {
     console.log("Port opened with Teensy");
+
+    // Power meter data
+    bicyclePowerSensor.on("powerData", data => {
+        // Store power meter into global variable
+        ant_plus_cadence = data.cadence;
+        ant_plus_power = data.Power;
+        console.log(`ID: ${data.DeviceID}, Cadence: ${ant_plus_cadence}, Power: ${ant_plus_power}`);
+    });
 
     // Server and Teensy need to be both connected to receive data
     parser.on("data", (data) => {
