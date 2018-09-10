@@ -27,9 +27,10 @@ serialPort.pipe(parser);
 // Set up ant-plus dongle
 var Ant = require("ant-plus");
 var ant_plus = new Ant.GarminStick3();
-var bicyclePowerSensor = new Ant.bicyclePowerSensor(ant_plus);
+var bicyclePowerSensor = new Ant.BicyclePowerSensor(ant_plus);
 
 /* Start of main code */
+var find_ant_plus_interval;
 // Check if server is connected
 function check_if_server_online() {
     // Sends a GET request to the /server/status endpoint
@@ -43,7 +44,7 @@ function check_if_server_online() {
             // Stop asking server if online
             clearInterval(find_server_interval);
             // Look for ant-plus dongle after connection with server
-            const find_ant_plus_interval = setInterval(() => {
+            find_ant_plus_interval = setInterval(() => {
                 console.log("Finding ant-plus USB...");
                 check_ant_plus_connection();
             }, 1000);
