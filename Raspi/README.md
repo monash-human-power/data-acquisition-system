@@ -14,6 +14,9 @@ sudo npm install serialport --unsafe-perm --build-from-source
 ```
 Running without the flags will lead to errors. See [this](https://github.com/node-serialport/node-serialport/tree/master/packages/serialport#raspberry-pi-linux) for more information about this.
 
+#### Installing ant-plus
+See [ant-plus-app](https://github.com/khanguslee/ant-plus-app) for full installation details.
+
 ## DAS Scripts
 The DAS scripts (python and node.js) serves as the middle-man between the Teensy and the DAS web server. They enable the Teensy to send a string of data onto the Raspberry Pi which can then be used with these scripts and sent to the DAS web server.
 
