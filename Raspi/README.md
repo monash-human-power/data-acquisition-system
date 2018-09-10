@@ -20,7 +20,8 @@ The DAS scripts (python and node.js) serves as the middle-man between the Teensy
 The basic flow of the program is as follows:
 
 1. Check if server is online every 1.5 seconds
-2. When server is online, open serial port
+2. When server is online, check if ant-plus dongle is connected
+3. When ant-plus dongle is connected, open up serial port
 3. Handle incoming data from serial port
 
 There is currently a python and a node.js version. Note that the python version does not connect with the power meter.
