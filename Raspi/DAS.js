@@ -133,10 +133,12 @@ serialPort.on("open", () => {
 
     // Power meter data
     bicyclePowerSensor.on("powerData", data => {
-        // Store power meter into global variable
-        ant_plus_cadence = data.cadence;
-        ant_plus_power = data.Power;
-        console.log(`ID: ${data.DeviceID}, Cadence: ${ant_plus_cadence}, Power: ${ant_plus_power}`);
+        if (IS_RECORDING) {
+            // Store power meter into global variable
+            ant_plus_cadence = data.Cadence;
+            ant_plus_power = data.Power;
+            console.log(`ID: ${data.DeviceID}, Cadence: ${ant_plus_cadence}, Power: ${ant_plus_power}`);
+        }
     });
 
     // Server and Teensy need to be both connected to receive data
@@ -169,7 +171,10 @@ serialPort.on("open", () => {
                     console.error(error);
                 })
         } else if (data == "stop") {
+            // Reset variables
             IS_RECORDING = false;
+            ant_plus_cadence = 0
+            ant_plus_power = 0;
         }
 
         if (IS_RECORDING) {
