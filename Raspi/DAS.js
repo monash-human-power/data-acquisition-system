@@ -1,4 +1,9 @@
 /* Set up modules */
+const path = require("path");
+
+// Set up logging
+var winston = require(path.join(__dirname, "config/winston"));
+
 // Set up server connection
 const request = require("request-promise-native");
 const DAS_SERVER_ADDR = "http://127.0.0.1:5000";
@@ -16,7 +21,7 @@ var serialport_options = {
 var serialPort = new SerialPort("/dev/serial0", serialport_options, (err) => {
     // Print out error with opening serial port
     if (err) {
-        console.log(err);
+        winston.error(err);
     }
 });
 // Parse incoming data;
@@ -34,18 +39,14 @@ var find_ant_plus_interval;
 // Check if server is connected
 function check_if_server_online() {
     // Sends a GET request to the /server/status endpoint
-    request.get(DAS_SERVER_ADDR + "/server/status", {timeout: 1000}, (error, res, body) => {
-        if (error) {
-            console.log(error);
-            return false;
-        }
-
-        if (res.statusCode == 200) {
+    request.get(DAS_SERVER_ADDR + "/server/status", {json: true, timeout: 1000})
+    .then(response => {
+        if (response.status == "True") {
             // Stop asking server if online
             clearInterval(find_server_interval);
             // Look for ant-plus dongle after connection with server
             find_ant_plus_interval = setInterval(() => {
-                console.log("Finding ant-plus USB...");
+                winston.info("Finding ant-plus USB...");
                 check_ant_plus_connection();
             }, 1000);
 
@@ -53,20 +54,24 @@ function check_if_server_online() {
         } else {
             return false;
         }
+    })
+    .catch(error => {
+        winston.error(error);
+        return false;
     });
 }
 
 // Check if server is online every 1.5 seconds
 const find_server_interval = setInterval(() =>
 {
-    console.log("Finding server...");
+    winston.info("Finding server...");
     check_if_server_online();
 }, 1500);
 
 // Check if ant-plus dongle is connected to Raspberry Pi
 function check_ant_plus_connection() {
     if (!ant_plus.open()) {
-        console.error("Ant-plus usb stick not found!");
+        winston.error("Ant-plus usb stick not found!");
         return false;
     } else {
         // Stop looking for ant-plus dongle
@@ -77,7 +82,7 @@ function check_ant_plus_connection() {
 }
 
 ant_plus.on("startup", () => {
-    console.log("ant-plus stick initialized");
+    winston.info("ant-plus stick initialized");
     // Connect to the first device found
     bicyclePowerSensor.attach(0, 0);
 });
@@ -86,9 +91,9 @@ function main(){
     // Open event to tell us when connection with teensy has been made
     serialPort.open((err) => {
         if (err) {
-            return console.error(err.message);
+            return winston.error(err.message);
         }
-        console.log("Serial port open");
+        winston.info("Serial port open");
     });
 }
 
@@ -119,7 +124,7 @@ function create_file_name() {
             return filename;
         })
         .catch((error) => {
-            console.error("Error in asking server for list of files");
+            winston.error("Error in asking server for list of files");
             return Promise.reject(error);
         })
 }
@@ -129,7 +134,7 @@ var IS_RECORDING = false;
 var current_filename = "";
 var ant_plus_cadence = 0, ant_plus_power = 0;
 serialPort.on("open", () => {
-    console.log("Port opened with Teensy");
+    winston.info("Port opened with Teensy");
 
     // Power meter data
     bicyclePowerSensor.on("powerData", data => {
@@ -137,13 +142,13 @@ serialPort.on("open", () => {
             // Store power meter into global variable
             ant_plus_cadence = data.Cadence;
             ant_plus_power = data.Power;
-            console.log(`ID: ${data.DeviceID}, Cadence: ${ant_plus_cadence}, Power: ${ant_plus_power}`);
+            winston.info(`ID: ${data.DeviceID}, Cadence: ${ant_plus_cadence}, Power: ${ant_plus_power}`);
         }
     });
 
     // Server and Teensy need to be both connected to receive data
     parser.on("data", (data) => {
-        console.log(data);
+        winston.info("Teensy - " + data);
         if (data == "start") {
             create_file_name()
                 .then((created_filename) => {
@@ -159,7 +164,7 @@ serialPort.on("open", () => {
                     initial_time = Math.floor(Date.now());
                     request(create_file_name_post_options, (error, response, body) => {
                         if (error) {
-                            console.error(error);
+                            winston.error(error);
                         }
                         // TODO: Tell Teensy that Raspberry Pi was unable to start a new file
                      })
@@ -168,7 +173,7 @@ serialPort.on("open", () => {
                      })
                 })
                 .catch((error) => {
-                    console.error(error);
+                    winston.error(error);
                 })
         } else if (data == "stop") {
             // Reset variables
@@ -194,7 +199,7 @@ serialPort.on("open", () => {
             };
             request(post_data_request_options)
                 .catch((error) => {
-                    console.error("Error Message: " + error.message);
+                    winston.error("Error Message: " + error.message);
                 })
         }
     });
