@@ -1,5 +1,5 @@
 const path = require('path');
-var winston = require(path.join(__dirname, "../winston"));
+var winston = require("../node_modules/winston");
 
 var options = {
     file: {
@@ -9,28 +9,24 @@ var options = {
         json: true,
         maxsize: 5242880, // 5MB
         maxFiles: 5,
-        colorize: false,
     },
     console: {
+        format: winston.format.combine(
+            winston.format.colorize({level: true}),
+            winston.format.simple()
+          ),
         level: "debug",
         handleExceptions: true,
         json: false,
-        colorize: true,
     },
 }
 
-var logger = new winston.Logger({
+var logger = winston.createLogger({
     transports: [
       new winston.transports.File(options.file),
       new winston.transports.Console(options.console)
     ],
     exitOnError: false,
   });
-  
-  logger.stream = {
-    write: function(message, encoding) {
-      logger.info(message);
-    },
-  };
-  
-  module.exports = logger;
+
+ module.exports = logger;
