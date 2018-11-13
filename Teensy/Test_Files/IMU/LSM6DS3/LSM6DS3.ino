@@ -38,20 +38,37 @@ Distributed as-is; no warranty is given.
 #include "Wire.h"
 #include "SPI.h"
 
-LSM6DS3 myIMU(SPI_MODE, 6);
+// Set pins
+const int LED_OUTPUT = 13;
+const int CHIP_SELECT = 10;
+const int SCK_PIN = 20;
+const int MISO_PIN = 1;
+const int MOSI_PIN = 0;
+
+// Set IMU to use SPI and make pin 10 to be the chip select pin
+LSM6DS3 myIMU(SPI_MODE, CHIP_SELECT);  // CS output to pin 10
 //LSM6DS3 myIMU; //Default constructor is I2C, addr 0x6B
 
 void setup() {
+  
+  // Set pins
+  pinMode(LED_OUTPUT, OUTPUT);
   // put your setup code here, to run once:
   Serial.begin(9600);
   delay(1000); //relax...
   Serial.println("Processor came out of reset.\n");
+
+  // Set new SPI pins
+  // *** Each device is different, change assigned pins above (Below tested with Teensy 3.6) ***
+  SPI1.setMOSI(MOSI_PIN);  // MOSI output to pin 0
+  SPI1.setMISO(MISO_PIN);  // MISO output to pin 1
+  SPI1.setSCK(SCK_PIN);  // SCK output to pin 20
   
   //Call .begin() to configure the IMU
-  SPI1.setMOSI(0);
-  SPI1.setMISO(1);
-  SPI1.setSCK(20);
-  myIMU.begin();
+  if(myIMU.begin() != 0){
+    Serial.println("Problem starting sensor...");
+    Serial.println("Check wiring connections\n");  
+  }
   
 }
 
@@ -80,6 +97,10 @@ void loop()
   Serial.println(myIMU.readTempC(), 4);
   Serial.print(" Degrees F = ");
   Serial.println(myIMU.readTempF(), 4);
-  
+
+  // Blink LED when data has been 'sent'
   delay(10);
+  digitalWrite(LED_OUTPUT, HIGH);
+  delay(10);
+  digitalWrite(LED_OUTPUT, LOW);
 }
