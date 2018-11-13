@@ -40,13 +40,13 @@ Distributed as-is; no warranty is given.
 
 // Set pins
 const int LED_OUTPUT = 13;
-const int CHIP_SELECT = 10;
+const int CHIP_SELECT = 6;
 const int SCK_PIN = 20;
 const int MISO_PIN = 1;
 const int MOSI_PIN = 0;
 
-// Set IMU to use SPI and make pin 10 to be the chip select pin
-LSM6DS3 myIMU(SPI_MODE, CHIP_SELECT);  // CS output to pin 10
+// Set IMU to use SPI and make pin 6 to be the chip select pin
+LSM6DS3 myIMU(SPI_MODE, CHIP_SELECT);  // CS output to pin 6
 //LSM6DS3 myIMU; //Default constructor is I2C, addr 0x6B
 
 void setup() {
