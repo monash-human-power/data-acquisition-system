@@ -95,6 +95,13 @@ function main(){
         }
         winston.info("Serial port open");
     });
+
+    serialPort.write("reading", (err) => {
+        if (err) {
+            console.log("Error on write: ", err.message);
+        }
+        console.log("Reading Teensy Data!");
+    })
 }
 
 /*
