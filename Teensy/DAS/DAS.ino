@@ -30,7 +30,7 @@ volatile int button_state = 0;
 // Pin Values
 static const int BUTTON_PIN = 2; // Pin connected to reed switch
 static const int GREEN_LED = 4, RED_LED = 3;
-static const int POT_PIN = 0;
+static const int POT_PIN = A0;
 static const int GPS_RXPin = 7, GPS_TXPin = 8;
 #define RPISERIAL Serial2 // Pin 9 (RX) & PIN 10 (TX) for Teensy LC
 //const int SDchipSelect = 10;
@@ -85,15 +85,15 @@ void setup()
 
   // Set Up GPS
   ss.begin(GPS_Baud);
-  
+
   DEBUG_PRINTLN("Waiting for serial communication");
   digitalWrite(RED_LED, HIGH);
-  while (true) 
+  while (true)
   {
-    if (RPISERIAL.available()) 
+    if (RPISERIAL.available())
     {
       DEBUG_PRINTLN("rpiserial.available");
-      if(RPISERIAL.read()) 
+      if(RPISERIAL.read())
       {
         DEBUG_PRINTLN("Serial communication established.");
 
@@ -122,7 +122,6 @@ void loop()
       
       // Indicate System is Working
       digitalWrite(GREEN_LED, HIGH);
-      digitalWrite(RED_LED, LOW);
 
       /* GPS */ 
       GPS gps;
@@ -132,16 +131,18 @@ void loop()
       output_data += "gps=";
       if (gps.satellites > 0)
       {
+        // Only disable red LED if GPS is working
+        digitalWrite(RED_LED, LOW);
         output_data += "1";
-        output_data += "&gps_location=" + String(gps.latitude) + "," + String(gps.longitude) + "," + String(gps.altitude);
-        output_data += "&gps_course=" + String(gps.course);
-        output_data += "&gps_speed=" + String(gps.speed);
+        output_data += "&gps_location=" + String(gps.latitude, 4) + "," + String(gps.longitude, 4) + "," + String(gps.altitude, 4);
+        output_data += "&gps_course=" + String(gps.course, 4);
+        output_data += "&gps_speed=" + String(gps.speed, 4);
         output_data += "&gps_satellites=" + String(gps.satellites);
         DEBUG_PRINTLN("GPS DATA:");
-        DEBUG_PRINTLN("Latitude = " + String(gps.latitude));
-        DEBUG_PRINTLN("Longitude = " + String(gps.longitude));
-        DEBUG_PRINTLN("Altitude = " + String(gps.altitude));
-        DEBUG_PRINTLN("Speed = " + String(gps.speed));
+        DEBUG_PRINTLN("Latitude = " + String(gps.latitude, 4));
+        DEBUG_PRINTLN("Longitude = " + String(gps.longitude, 4));
+        DEBUG_PRINTLN("Altitude = " + String(gps.altitude, 4));
+        DEBUG_PRINTLN("Speed = " + String(gps.speed, 4));
         DEBUG_PRINTLN("Satellites = " + String(gps.satellites));
       }
       else
@@ -167,9 +168,9 @@ void loop()
       DEBUG_PRINT_DEC(accelerometer.z, 4);
       DEBUG_PRINT("\n");
 
-      output_data += "&aX=" + (String) accelerometer.x;
-      output_data += "&aY=" + (String) accelerometer.y;
-      output_data += "&aZ=" + (String) accelerometer.z;
+      output_data += "&aX=" + String(accelerometer.x, 4);
+      output_data += "&aY=" + String(accelerometer.y, 4);
+      output_data += "&aZ=" + String(accelerometer.z, 4);
 
       /* Gyroscope */
       Gyroscope gyroscope;
@@ -185,9 +186,9 @@ void loop()
       DEBUG_PRINT_DEC(gyroscope.z, 4);
       DEBUG_PRINT("\n");
 
-      output_data += "&gX=" + (String) gyroscope.x;
-      output_data += "&gY=" + (String) gyroscope.y;
-      output_data += "&gZ=" + (String) gyroscope.z;
+      output_data += "&gX=" + String(gyroscope.x, 4);
+      output_data += "&gY=" + String(gyroscope.y, 4);
+      output_data += "&gZ=" + String(gyroscope.z, 4);
       
       /* Thermometer */
       Temperature temperature;
@@ -201,8 +202,8 @@ void loop()
       DEBUG_PRINT_DEC(temperature.fahrenheit, 4);
       DEBUG_PRINT("\n");
 
-      output_data += "&thermoC=" + (String) temperature.celsius;
-      output_data += "&thermoF=" + (String) temperature.fahrenheit;
+      output_data += "&thermoC=" + String(temperature.celsius, 4);
+      output_data += "&thermoF=" + String(temperature.fahrenheit, 4);
 
       /* Pot */
       String pot_data;
@@ -212,7 +213,8 @@ void loop()
       DEBUG_PRINTLN(pot_data);
       DEBUG_PRINTLN("");
       output_data += "&pot=" + pot_data;
-
+      
+      DEBUG_PRINTLN(output_data);
       writeStringToRPi(output_data);
     }     
   }
@@ -234,7 +236,7 @@ void writeStringToRPi(String stringData)
 GPS getGPSData(TinyGPSPlus gps)
 {
   GPS GPS_data;
-
+  
   // Store data
   GPS_data.latitude = gps.location.lat();
   GPS_data.longitude = gps.location.lng();
@@ -300,7 +302,6 @@ void isrService()
     if (is_recording == 0)
     {
     digitalWrite(GREEN_LED,!button_state);
-    digitalWrite(RED_LED,!button_state);
     is_recording = 1;
     writeStringToRPi("start");
     DEBUG_PRINTLN("Start recording");
@@ -308,7 +309,6 @@ void isrService()
     else
     {
       digitalWrite(GREEN_LED,button_state);
-      digitalWrite(RED_LED,button_state);
       is_recording = 0;
       writeStringToRPi("stop");
       DEBUG_PRINTLN("Stop recording");
