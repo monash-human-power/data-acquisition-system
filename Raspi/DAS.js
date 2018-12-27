@@ -4,6 +4,25 @@ const path = require("path");
 // Set up logging
 var winston = require(path.join(__dirname, "config/winston"));
 
+// Set up argument parsing
+var ArgumentParser = require('argparse').ArgumentParser;
+var argumentParser = new ArgumentParser({
+    version: '1.0.0',
+    addHelp: true,
+    description: 'MHP DAS'
+});
+
+argumentParser.addArgument(
+    ['-a', '--antplus'],
+    {
+        help: 'Disable ant plus from DAS',
+        action: 'storeTrue'
+    }
+);
+
+var args = argumentParser.parseArgs();
+winston.info('Disable antplus: ' +  args['antplus']);
+
 // Set up server connection
 const request = require("request-promise-native");
 const DAS_SERVER_ADDR = "http://127.0.0.1:5000";
@@ -70,7 +89,7 @@ const find_server_interval = setInterval(() =>
 
 // Check if ant-plus dongle is connected to Raspberry Pi
 function check_ant_plus_connection() {
-    if (!ant_plus.open()) {
+    if (!args['antplus'] && !ant_plus.open()) {
         winston.error("Ant-plus usb stick not found!");
         return false;
     } else {
