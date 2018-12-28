@@ -52,6 +52,7 @@ serialPort.pipe(parser);
 var Ant = require("ant-plus");
 var ant_plus = new Ant.GarminStick3();
 var bicyclePowerSensor = new Ant.BicyclePowerSensor(ant_plus);
+var heartRateSensor = new Ant.HeartRateSensor(ant_plus);
 
 /* Start of main code */
 var find_ant_plus_interval;
@@ -104,6 +105,7 @@ ant_plus.on("startup", () => {
     winston.info("ant-plus stick initialized");
     // Connect to the first device found
     bicyclePowerSensor.attach(0, 0);
+    heartRateSensor.attach(0,0);
 });
 
 function main(){
@@ -168,7 +170,16 @@ serialPort.on("open", () => {
             // Store power meter into global variable
             ant_plus_cadence = data.Cadence;
             ant_plus_power = data.Power;
+            // TODO: Change winston logging to debug mode instead
             winston.info(`ID: ${data.DeviceID}, Cadence: ${ant_plus_cadence}, Power: ${ant_plus_power}`);
+        }
+    });
+
+    // Heart rate sensor data
+    heartRateSensor.on("hbData", data => {
+        if(IS_RECORDING) {
+            // TODO: Change winston logging to debug mode instead
+            winston.info(data);
         }
     });
 
