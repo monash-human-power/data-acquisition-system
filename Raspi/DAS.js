@@ -1,213 +1,149 @@
-/* Set up modules */
-const path = require("path");
+let findAntPlusInterval;
+let FILENAME = null;
+
+/* Modules */
+const path = require('path');
 
 // Set up logging
-var winston = require(path.join(__dirname, "config/winston"));
+const winston = require(path.join(__dirname, 'config/winston'));
 
-// Set up server connection
-const request = require("request-promise-native");
-const DAS_SERVER_ADDR = "http://127.0.0.1:5000";
-var IS_SERVER_CONNECTED = false;
-
+/* Serial connection */
 // Set up serial port connection
-var SerialPort = require("serialport");
-var serialport_options = {
-    autoOpen: false,
-    baudRate: 500000,
-    dataBits: 8,
-    stopBits: 1,
-    parity: "none"
-}
-var serialPort = new SerialPort("/dev/serial0", serialport_options, (err) => {
-    // Print out error with opening serial port
-    if (err) {
-        winston.error(err);
-    }
+const SerialPort = require('serialport');
+
+const serialportOptions = {
+  autoOpen: false,
+  baudRate: 500000,
+  dataBits: 8,
+  stopBits: 1,
+  parity: 'none',
+};
+const serialPort = new SerialPort('/dev/serial0', serialportOptions, (err) => {
+  // Print out error with opening serial port
+  if (err) {
+    winston.error(err);
+  }
 });
 // Parse incoming data;
-var Readline = SerialPort.parsers.Readline;
-var parser = new Readline();
+const Readline = SerialPort.parsers.Readline;
+const parser = new Readline();
 serialPort.pipe(parser);
 
+/* ANT++ */
 // Set up ant-plus dongle
-var Ant = require("ant-plus");
-var ant_plus = new Ant.GarminStick3();
-var bicyclePowerSensor = new Ant.BicyclePowerSensor(ant_plus);
+const Ant = require('ant-plus');
+
+const antPlus = new Ant.GarminStick3();
+const bicyclePowerSensor = new Ant.BicyclePowerSensor(antPlus);
+
+/* MQTT */
+// Set up mqtt
+const mqtt = require('mqtt');
+
+const mqttOptions = {
+  reconnectPeriod: 1000,
+  connectTimeout: 5000,
+};
+const mqttClient = mqtt.connect('mqtt://localhost:1883', mqttOptions);
 
 /* Start of main code */
-var find_ant_plus_interval;
-// Check if server is connected
-function check_if_server_online() {
-    // Sends a GET request to the /server/status endpoint
-    request.get(DAS_SERVER_ADDR + "/server/status", {json: true, timeout: 1000})
-    .then(response => {
-        if (response.status == "True") {
-            // Stop asking server if online
-            clearInterval(find_server_interval);
-            // Look for ant-plus dongle after connection with server
-            find_ant_plus_interval = setInterval(() => {
-                winston.info("Finding ant-plus USB...");
-                check_ant_plus_connection();
-            }, 1000);
 
-            return true;
-        } else {
-            return false;
-        }
-    })
-    .catch(error => {
-        winston.error(error);
-        return false;
-    });
+function connectWithTeensy() {
+  // Open event to tell us when connection with teensy has been made
+  serialPort.open((err) => {
+    if (err) {
+      winston.error(err.message);
+    } else {
+      winston.info('Serial port open');
+    }
+  });
+
+  serialPort.write('reading', (err) => {
+    if (err) {
+      winston.error('Error on write: ', err.message);
+    } else {
+      winston.info('Reading Teensy Data!');
+    }
+  })
 }
-
-// Check if server is online every 1.5 seconds
-const find_server_interval = setInterval(() =>
-{
-    winston.info("Finding server...");
-    check_if_server_online();
-}, 1500);
 
 // Check if ant-plus dongle is connected to Raspberry Pi
-function check_ant_plus_connection() {
-    if (!ant_plus.open()) {
-        winston.error("Ant-plus usb stick not found!");
-        return false;
-    } else {
-        // Stop looking for ant-plus dongle
-        clearInterval(find_ant_plus_interval);
-        setImmediate(main);
-        return true;
-    }
+function checkAntPlusConnection() {
+  if (!antPlus.open()) {
+    winston.error('Ant-plus usb stick not found!');
+    //return false;
+  }
+  // Stop looking for ant-plus dongle
+  clearInterval(findAntPlusInterval);
+  setImmediate(connectWithTeensy);
+  return true;
 }
 
-ant_plus.on("startup", () => {
-    winston.info("ant-plus stick initialized");
-    // Connect to the first device found
-    bicyclePowerSensor.attach(0, 0);
+// Only ran if connected to mqtt broker
+function mqttConnected() {
+  findAntPlusInterval = setInterval(() => {
+    winston.info('Finding ant-plus USB...');
+    checkAntPlusConnection();
+  }, 1000);
+}
+
+// Receive filename for us to use
+let IS_RECORDING = false;
+let INITIAL_TIME = 0;
+function main(topic, message) {
+  switch (topic) {
+    // Filename to use
+    case 'filename':
+      FILENAME = message.toString();
+      IS_RECORDING = true;
+      break;
+    default:
+      winston.error(`Unexpected topic: ${topic}`);
+  }
+}
+
+winston.info('Connecting to mqtt server...');
+mqttClient.on('connect', mqttConnected);
+mqttClient.on('message', main);
+
+antPlus.on('startup', () => {
+  winston.info('ant-plus stick initialized');
+  // Connect to the first device found
+  bicyclePowerSensor.attach(0, 0);
 });
 
-function main(){
-    // Open event to tell us when connection with teensy has been made
-    serialPort.open((err) => {
-        if (err) {
-            return winston.error(err.message);
-        }
-        winston.info("Serial port open");
-    });
+let CADENCE = 0;
+let POWER = 0;
+serialPort.on('open', () => {
+  winston.info('Port opened with Teensy');
+  // Power meter data
+  bicyclePowerSensor.on('powerData', (data) => {
+    if (IS_RECORDING) {
+      // Store power meter into global variable
+      CADENCE = data.Cadence;
+      POWER = data.Power;
+      winston.info(`ID: ${data.DeviceID}, Cadence: ${CADENCE}, Power: ${POWER}`);
+    }
+  });
 
-    serialPort.write("reading", (err) => {
-        if (err) {
-            console.log("Error on write: ", err.message);
-        }
-        console.log("Reading Teensy Data!");
-    })
-}
+  // mqtt broker and Teensy need to be both connected to receive data
+  parser.on('data', (data) => {
+    winston.info(`Teensy - ${data}`);
+    if (data === 'start') {
+      // Let mqtt broker know we have started recording
+      mqttClient.publish('start');
+      INITIAL_TIME = Math.floor(Date.now());
+    } else if (data === 'stop') {
+      // Reset variables
+      IS_RECORDING = false;
+      CADENCE = 0;
+      POWER = 0;
+    }
 
-/*
-    File name is created by asking the server what files are currently stored on the server.
-    The file name will be of the format data_i where i will continue to increment
-
-    This file name convention was created since the Raspberry Pi Zero W does not have an onboard RTC.
-*/
-function create_file_name() {
-    let file_name_request_options = {
-        method: "GET",
-        url: DAS_SERVER_ADDR + "/files",
-        json: true
-    };
-    return request.get(file_name_request_options)
-        .then((response) => {
-            let files = response.files;
-            if (files.length == 0) {
-                return "data_0";
-            }
-
-            var i = 0;
-            do {
-                var filename = "data_" + i;
-                i++;
-            } while (files.includes(filename + ".csv"));
-            return filename;
-        })
-        .catch((error) => {
-            winston.error("Error in asking server for list of files");
-            return Promise.reject(error);
-        })
-}
-
-var initial_time = 0;
-var IS_RECORDING = false;
-var current_filename = "";
-var ant_plus_cadence = 0, ant_plus_power = 0;
-serialPort.on("open", () => {
-    winston.info("Port opened with Teensy");
-
-    // Power meter data
-    bicyclePowerSensor.on("powerData", data => {
-        if (IS_RECORDING) {
-            // Store power meter into global variable
-            ant_plus_cadence = data.Cadence;
-            ant_plus_power = data.Power;
-            winston.info(`ID: ${data.DeviceID}, Cadence: ${ant_plus_cadence}, Power: ${ant_plus_power}`);
-        }
-    });
-
-    // Server and Teensy need to be both connected to receive data
-    parser.on("data", (data) => {
-        winston.info("Teensy - " + data);
-        if (data == "start") {
-            create_file_name()
-                .then((created_filename) => {
-                    current_filename = created_filename;
-                    var start_body = {filename: current_filename};
-                    let create_file_name_post_options = {
-                        method: "POST",
-                        url: DAS_SERVER_ADDR + "/start",
-                        body: start_body,
-                        json: true
-                    };
-                    // Save the time we send the first data point
-                    initial_time = Math.floor(Date.now());
-                    request(create_file_name_post_options, (error, response, body) => {
-                        if (error) {
-                            winston.error(error);
-                        }
-                        // TODO: Tell Teensy that Raspberry Pi was unable to start a new file
-                     })
-                     .then(() => {
-                        IS_RECORDING = true;
-                     })
-                })
-                .catch((error) => {
-                    winston.error(error);
-                })
-        } else if (data == "stop") {
-            // Reset variables
-            IS_RECORDING = false;
-            ant_plus_cadence = 0
-            ant_plus_power = 0;
-        }
-
-        if (IS_RECORDING) {
-            let current_time = Math.floor(Date.now());
-            data += "&filename=" + current_filename;
-            data += "&time=" + (current_time - initial_time);
-            data += "&power=" + ant_plus_power;
-            data += "&cadence=" + ant_plus_cadence;
-
-            let post_data_request_options = {
-                method: "POST",
-                url: DAS_SERVER_ADDR + "/result",
-                body: data,
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                }
-            };
-            request(post_data_request_options)
-                .catch((error) => {
-                    winston.error("Error Message: " + error.message);
-                })
-        }
-    });
-})
+    if (IS_RECORDING) {
+      const currentTime = Math.floor(Date.now());
+      const outputData = `${data}&filename=${FILENAME}&time=${(currentTime - INITIAL_TIME)}&power=${POWER}&cadence=${CADENCE}`;
+      mqttClient.publish('data', outputData);
+    }
+  });
+});
