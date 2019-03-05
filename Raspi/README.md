@@ -8,7 +8,26 @@ Scripts that are ran on the Raspberry Pi Zero W located on the DAS.
 ### Setting up node.js libraries
 To install the necessary libraries for node.js you may need to manually install them instead of running `npm install`.
 
-#### Installing serialport
+#### Installing serialport (Windows)
+Install required tools and configurations.
+```
+npm install --global --production windows-build-tools
+```
+Run the above command using an 'elevated PowerShell or CMD.exe (run as Administrator)'
+
+Download `node-gyp`
+```
+$ npm install -g node-gyp
+```
+
+Install `serialport`
+```
+npm install serialport --build-from-source
+```
+
+
+#### Installing serialport (Raspberry Pi)
+
 ```
 sudo npm install serialport --unsafe-perm --build-from-source 
 ```
