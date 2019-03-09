@@ -28,8 +28,9 @@ volatile int button_state = 0;
 #endif
 
 // Pin Values
-static const int BUTTON_PIN = 2; // Pin connected to reed switch
-static const int GREEN_LED = 4, RED_LED = 3;
+static const int BUTTON_PIN = 5;
+static const int RECORD_LED = 13;
+static const int STATUS_LED = 12, WARNING_LED = 11 , ERROR_LED = 4;
 static const int POT_PIN = A0;
 static const int GPS_RXPin = 7, GPS_TXPin = 8;
 #define RPISERIAL Serial2 // Pin 9 (RX) & PIN 10 (TX) for Teensy LC
@@ -55,12 +56,10 @@ void setup()
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   // Set up LEDs
-  pinMode(GREEN_LED, OUTPUT);
-  pinMode(RED_LED, OUTPUT);
-
-  // Set up LEDs
-  pinMode(GREEN_LED, OUTPUT);
-  pinMode(RED_LED, OUTPUT);
+  pinMode(RECORD_LED, OUTPUT);
+  pinMode(STATUS_LED, OUTPUT);
+  pinMode(WARNING_LED, OUTPUT);
+  pinMode(ERROR_LED, OUTPUT);
   
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -87,7 +86,7 @@ void setup()
   ss.begin(GPS_Baud);
 
   DEBUG_PRINTLN("Waiting for serial communication");
-  digitalWrite(RED_LED, HIGH);
+  digitalWrite(ERROR_LED, HIGH);
   while (true)
   {
     if (RPISERIAL.available())
@@ -103,6 +102,7 @@ void setup()
       }
     }
   }
+  digitalWrite(ERROR_LED, LOW);
 
   // Set up interrupts
   pinMode(BUTTON_PIN, INPUT_PULLUP);
@@ -121,7 +121,7 @@ void loop()
       String output_data = "";
       
       // Indicate System is Working
-      digitalWrite(GREEN_LED, HIGH);
+      digitalWrite(STATUS_LED, HIGH);
 
       /* GPS */ 
       GPS gps;
@@ -132,7 +132,7 @@ void loop()
       if (gps.satellites > 0)
       {
         // Only disable red LED if GPS is working
-        digitalWrite(RED_LED, LOW);
+        digitalWrite(ERROR_LED, LOW);
         output_data += "1";
         output_data += "&gps_location=" + String(gps.latitude, 4) + "," + String(gps.longitude, 4) + "," + String(gps.altitude, 4);
         output_data += "&gps_course=" + String(gps.course, 4);
@@ -151,7 +151,7 @@ void loop()
         DEBUG_PRINTLN("GPS DATA:\nNONE");
 
         // Show red LED when GPS is not working
-        digitalWrite(RED_LED, HIGH);
+        digitalWrite(ERROR_LED, HIGH);
       }
 
       /* Accelerometer */
@@ -286,29 +286,28 @@ String getPotData()
 
 void led_blink(int time_delay) 
 {
-  digitalWrite(GREEN_LED, HIGH);
-  digitalWrite(RED_LED, HIGH);
+  digitalWrite(STATUS_LED, HIGH);
   delay(time_delay/2);
-  digitalWrite(GREEN_LED, LOW);
-  digitalWrite(RED_LED, LOW);
+  digitalWrite(STATUS_LED, LOW);
   delay(time_delay);
 }
 
 void isrService()
 {
+  DEBUG_PRINTLN("ISR");
   button_state = digitalRead(BUTTON_PIN);
   if (button_state == 0)
   {
     if (is_recording == 0)
     {
-    digitalWrite(GREEN_LED,!button_state);
+    digitalWrite(RECORD_LED,!button_state);
     is_recording = 1;
     writeStringToRPi("start");
     DEBUG_PRINTLN("Start recording");
     }
     else
     {
-      digitalWrite(GREEN_LED,button_state);
+      digitalWrite(RECORD_LED,button_state);
       is_recording = 0;
       writeStringToRPi("stop");
       DEBUG_PRINTLN("Stop recording");
