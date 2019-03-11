@@ -71,7 +71,7 @@ function connectWithTeensy() {
 function checkAntPlusConnection() {
   if (!antPlus.open()) {
     winston.error('Ant-plus usb stick not found!');
-    //return false;
+    return false;
   }
   // Stop looking for ant-plus dongle
   clearInterval(findAntPlusInterval);
