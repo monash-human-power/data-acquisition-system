@@ -91,6 +91,7 @@ function mqttConnected() {
 let IS_RECORDING = false;
 let INITIAL_TIME = 0;
 function main(topic, message) {
+  winston.info(`Topic fired: ${topic}`);
   switch (topic) {
     // Filename to use
     case 'filename':
