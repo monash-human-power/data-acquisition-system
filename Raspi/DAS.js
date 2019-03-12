@@ -104,6 +104,7 @@ function main(topic, message) {
 }
 
 winston.info('Connecting to mqtt server...');
+mqttClient.subscribe('filename');
 mqttClient.on('connect', mqttConnected);
 mqttClient.on('message', main);
 
