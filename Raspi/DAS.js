@@ -140,6 +140,7 @@ serialPort.on('open', () => {
       IS_RECORDING = false;
       CADENCE = 0;
       POWER = 0;
+      mqttClient.publish('stop');
     }
 
     if (IS_RECORDING) {
