@@ -5,6 +5,8 @@ import paho.mqtt.client as mqtt
 # TODO: Take in time and length of time
 def start_publishing(client):
     start_time = round(time.time(),2)
+    print("start")
+    client.publish("start")
     while(True):
         current_time = round(time.time(), 2)
         total_time = round(current_time - start_time, 2)
@@ -21,7 +23,8 @@ def start_publishing(client):
         time.sleep(0.5)
         if (total_time > 5):
             break
-    print("End program")
+    print("stop")
+    client.publish("stop")
     sys.exit(0)
 
 def on_connect(client, userdata, flags, rc):
