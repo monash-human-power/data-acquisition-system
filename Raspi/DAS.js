@@ -94,7 +94,7 @@ function connectWithTeensy() {
 function checkAntPlusConnection() {
   if (!args['antplus'] && !antPlus.open()) {
     winston.error('Ant-plus usb stick not found!');
-    //return false;
+    return false;
   }
   // Stop looking for ant-plus dongle
   clearInterval(findAntPlusInterval);
@@ -114,6 +114,7 @@ function mqttConnected() {
 let IS_RECORDING = false;
 let INITIAL_TIME = 0;
 function main(topic, message) {
+  winston.info(`Topic fired: ${topic}`);
   switch (topic) {
     // Filename to use
     case 'filename':
@@ -126,6 +127,7 @@ function main(topic, message) {
 }
 
 winston.info('Connecting to mqtt server...');
+mqttClient.subscribe('filename');
 mqttClient.on('connect', mqttConnected);
 mqttClient.on('message', main);
 
@@ -161,6 +163,7 @@ serialPort.on('open', () => {
       IS_RECORDING = false;
       CADENCE = 0;
       POWER = 0;
+      mqttClient.publish('stop');
     }
 
     if (IS_RECORDING) {
