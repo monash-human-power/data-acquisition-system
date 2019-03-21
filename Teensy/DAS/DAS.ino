@@ -7,7 +7,7 @@
 
 /* Debug Mode */
 #define DEBUG // Comment this line out if not using debug mode
-#define WAIT 60 // delay for teensy to start serial comms
+#define WAIT 10 // delay for teensy to start serial comms
 
 /* Variables for edge trigger */
 int previous = 0;
@@ -106,7 +106,7 @@ void setup()
 
   // Set up interrupts
   pinMode(BUTTON_PIN, INPUT_PULLUP);
-  attachInterrupt(BUTTON_PIN, isrService, CHANGE); // interrrupt 1 is data ready
+  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), switchInterruptHandler, CHANGE); // interrrupt 1 is data ready
   sei();
 }
 
@@ -292,27 +292,29 @@ void led_blink(int time_delay)
   delay(time_delay);
 }
 
-void isrService()
+volatile unsigned long last_switch_time = 0; // Don't leave Teensy running for more than 49 days..
+void switchInterruptHandler()
 {
-  DEBUG_PRINTLN("ISR");
+  unsigned long total_time = millis() - last_switch_time;
+  long max_debounce_time = 50;
+  // Software debouncer
+  if (total_time < max_debounce_time) {
+    return;
+  }
+ 
+  last_switch_time = millis();
   button_state = digitalRead(BUTTON_PIN);
-  if (button_state == 0)
+  if (button_state == 1 && is_recording == 0)
   {
-    if (is_recording == 0)
-    {
-    digitalWrite(RECORD_LED,!button_state);
     is_recording = 1;
+    digitalWrite(RECORD_LED, HIGH);
+    DEBUG_PRINTLN("ON");
     writeStringToRPi("start");
-    DEBUG_PRINTLN("Start recording");
-    }
-    else
-    {
-      digitalWrite(RECORD_LED,button_state);
-      is_recording = 0;
-      writeStringToRPi("stop");
-      DEBUG_PRINTLN("Stop recording");
-    }
-    delay(1000);
+  } else if (button_state == 0 && is_recording == 1) {
+    is_recording = 0;
+    digitalWrite(RECORD_LED, LOW);
+    DEBUG_PRINTLN("OFF");
+    writeStringToRPi("stop");
   }
 }
 
