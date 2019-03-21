@@ -8,6 +8,7 @@ import paho.mqtt.client as mqtt
 parser = argparse.ArgumentParser(description='DAS MQTT python script', add_help=True)
 parser.add_argument('-t', '--time', action='store', type=int, default=1, help="length of time to send data")
 parser.add_argument('-r', '--rate', action='store', type=float, default=0.5, help="rate of data in seconds")
+parser.add_argument('--host', action='store', type=str, default="localhost", help="address of the MQTT broker")
 
 args = parser.parse_args()
 def start_publishing(client):
@@ -48,7 +49,7 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload.decode("utf-8")))
 
-broker_address = "localhost"
+broker_address = args.host
 client = mqtt.Client()
 
 client.on_connect = on_connect
