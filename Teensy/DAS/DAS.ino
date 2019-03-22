@@ -146,24 +146,26 @@ void loop()
       
       // Output GPS Data
       output_data += "gps=";
+
       if (gps.satellites > 0)
       {
         // Only disable red LED if GPS is working
         digitalWrite(ERROR_LED, LOW);
         output_data += "1";
-        output_data += "&gps_location=" + String(gps.latitude, 4) + "," + String(gps.longitude, 4) + "," + String(gps.altitude, 4);
+        output_data += "&gps_location=" + String(gps.latitude, 8) + "," + String(gps.longitude, 8) + "," + String(gps.altitude, 3);
         output_data += "&gps_course=" + String(gps.course, 4);
-        output_data += "&gps_speed=" + String(gps.speed, 4);
+        output_data += "&gps_speed=" + String(gps.speed, 6);
         output_data += "&gps_satellites=" + String(gps.satellites);
         DEBUG_PRINTLN("GPS DATA:");
-        DEBUG_PRINTLN("Latitude = " + String(gps.latitude, 4));
-        DEBUG_PRINTLN("Longitude = " + String(gps.longitude, 4));
-        DEBUG_PRINTLN("Altitude = " + String(gps.altitude, 4));
+        DEBUG_PRINTLN("Latitude = " + String(gps.latitude, 8));
+        DEBUG_PRINTLN("Longitude = " + String(gps.longitude, 8));
+        DEBUG_PRINTLN("Altitude = " + String(gps.altitude, 3));
         DEBUG_PRINTLN("Speed = " + String(gps.speed, 4));
         DEBUG_PRINTLN("Satellites = " + String(gps.satellites));
       }
       else
       {
+      
         output_data += "0";
         DEBUG_PRINTLN("GPS DATA:\nNONE");
 
