@@ -153,7 +153,7 @@ void loop()
         digitalWrite(ERROR_LED, LOW);
         output_data += "1";
         output_data += "&gps_location=" + String(gps.latitude, 8) + "," + String(gps.longitude, 8) + "," + String(gps.altitude, 3);
-        output_data += "&gps_course=" + String(gps.course, 4);
+        output_data += "&gps_course=" + String(gps.course, 2);
         output_data += "&gps_speed=" + String(gps.speed, 6);
         output_data += "&gps_satellites=" + String(gps.satellites);
         DEBUG_PRINTLN("GPS DATA:");
