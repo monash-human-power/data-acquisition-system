@@ -33,6 +33,9 @@ def start_publishing(client):
         data += "&time=" + str(total_time * 1000)
         data += "&power=" + str(random.randint(0,150))
         data += "&cadence=" + str(random.randint(0,150))
+        data += "&reed_velocity=" + str(random.randint(0,150))
+        data += "&reed_distance=" + str(random.randint(0,150))
+
         client.publish("data", data)
         print(data)
 
