@@ -134,7 +134,10 @@ void loop()
     output_data += "&thermoC=" + String(00.00, 4);
     output_data += "&thermoF=" + String(11.11, 4);
 
-    output_data += "&pot=" + 100;
+    output_data += "&pot=" + String(100);
+    
+    output_data += "&reed_velocity=" + String(23.333, 4);
+    output_data += "&reed_distance=" + String(24.444, 4);
 
     writeStringToRPi(output_data);  
   }
