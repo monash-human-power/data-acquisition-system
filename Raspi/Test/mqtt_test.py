@@ -14,6 +14,7 @@ args = parser.parse_args()
 def start_publishing(client):
     start_time = round(time.time(),2)
     print("start")
+    client.publish("power_model/start")
     client.publish("start")
     gps_speed = 0
     while(True):
@@ -44,6 +45,7 @@ def start_publishing(client):
             break
     print("stop")
     client.publish("stop")
+    client.publish("power_model/stop")
     sys.exit(0)
 
 def on_connect(client, userdata, flags, rc):
