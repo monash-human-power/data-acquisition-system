@@ -134,124 +134,101 @@ void setup()
 void loop()
 {
   // Service GPS
-  if ((ss.available() > 0) and (is_recording == 1))
+  if (is_recording == 1)
   {
-    if (tinyGPS.encode(ss.read()))
-    {
-      // Clear output string
-      String output_data = "";
-      
-      // Indicate System is Working
-      digitalWrite(STATUS_LED, HIGH);
+    // Clear output string
+    String output_data = "";
+    
+    // Indicate System is Working
+    digitalWrite(STATUS_LED, HIGH);
 
-      /* GPS */ 
-      GPS gps;
-      gps = getGPSData(tinyGPS);
-      
-      // Output GPS Data
-      output_data += "gps=";
+    /* GPS */ 
+    GPS gps;
+    gps = getGPSData(tinyGPS);
+    
+    // Output GPS Data
+    output_data += "gps=";
+    output_data += "0";
+    DEBUG_PRINTLN("GPS DATA:\nNONE");
 
-      if (gps.satellites > 0)
-      {
-        // Only disable red LED if GPS is working
-        digitalWrite(ERROR_LED, LOW);
-        output_data += "1";
-        output_data += "&gps_location=" + String(gps.latitude, 8) + "," + String(gps.longitude, 8) + "," + String(gps.altitude, 3);
-        output_data += "&gps_course=" + String(gps.course, 2);
-        output_data += "&gps_speed=" + String(gps.speed, 6);
-        output_data += "&gps_satellites=" + String(gps.satellites);
-        DEBUG_PRINTLN("GPS DATA:");
-        DEBUG_PRINTLN("Latitude = " + String(gps.latitude, 8));
-        DEBUG_PRINTLN("Longitude = " + String(gps.longitude, 8));
-        DEBUG_PRINTLN("Altitude = " + String(gps.altitude, 3));
-        DEBUG_PRINTLN("Speed = " + String(gps.speed, 4));
-        DEBUG_PRINTLN("Satellites = " + String(gps.satellites));
-      }
-      else
-      {
-      
-        output_data += "0";
-        DEBUG_PRINTLN("GPS DATA:\nNONE");
+    // Show red LED when GPS is not working
+    digitalWrite(ERROR_LED, HIGH);
 
-        // Show red LED when GPS is not working
-        digitalWrite(ERROR_LED, HIGH);
-      }
+    /* Accelerometer */
+    Accelerometer accelerometer;
+    accelerometer = getAccelerometerData(myIMU);
 
-      /* Accelerometer */
-      Accelerometer accelerometer;
-      accelerometer = getAccelerometerData(myIMU);
+    // Output accelerometer data
+    DEBUG_PRINTLN("ACCELEROMETER DATA:");
+    DEBUG_PRINT("X = ");
+    DEBUG_PRINT_DEC(accelerometer.x, 4);
+    DEBUG_PRINT("\nY = ");
+    DEBUG_PRINT_DEC(accelerometer.y, 4);
+    DEBUG_PRINT("\nZ = ");
+    DEBUG_PRINT_DEC(accelerometer.z, 4);
+    DEBUG_PRINT("\n");
 
-      // Output accelerometer data
-      DEBUG_PRINTLN("ACCELEROMETER DATA:");
-      DEBUG_PRINT("X = ");
-      DEBUG_PRINT_DEC(accelerometer.x, 4);
-      DEBUG_PRINT("\nY = ");
-      DEBUG_PRINT_DEC(accelerometer.y, 4);
-      DEBUG_PRINT("\nZ = ");
-      DEBUG_PRINT_DEC(accelerometer.z, 4);
-      DEBUG_PRINT("\n");
+    output_data += "&aX=" + String(accelerometer.x, 4);
+    output_data += "&aY=" + String(accelerometer.y, 4);
+    output_data += "&aZ=" + String(accelerometer.z, 4);
 
-      output_data += "&aX=" + String(accelerometer.x, 4);
-      output_data += "&aY=" + String(accelerometer.y, 4);
-      output_data += "&aZ=" + String(accelerometer.z, 4);
+    /* Gyroscope */
+    Gyroscope gyroscope;
+    gyroscope = getGyroscopeData(myIMU);
+    
+    // Output gyroscope data
+    DEBUG_PRINTLN("GYROSCOPE DATA:");
+    DEBUG_PRINT("X = ");
+    DEBUG_PRINT_DEC(gyroscope.x, 4);
+    DEBUG_PRINT("\nY = ");
+    DEBUG_PRINT_DEC(gyroscope.y, 4);
+    DEBUG_PRINT("\nZ = ");
+    DEBUG_PRINT_DEC(gyroscope.z, 4);
+    DEBUG_PRINT("\n");
 
-      /* Gyroscope */
-      Gyroscope gyroscope;
-      gyroscope = getGyroscopeData(myIMU);
-      
-      // Output gyroscope data
-      DEBUG_PRINTLN("GYROSCOPE DATA:");
-      DEBUG_PRINT("X = ");
-      DEBUG_PRINT_DEC(gyroscope.x, 4);
-      DEBUG_PRINT("\nY = ");
-      DEBUG_PRINT_DEC(gyroscope.y, 4);
-      DEBUG_PRINT("\nZ = ");
-      DEBUG_PRINT_DEC(gyroscope.z, 4);
-      DEBUG_PRINT("\n");
+    output_data += "&gX=" + String(gyroscope.x, 4);
+    output_data += "&gY=" + String(gyroscope.y, 4);
+    output_data += "&gZ=" + String(gyroscope.z, 4);
+    
+    /* Thermometer */
+    Temperature temperature;
+    temperature = getTemperatureData(myIMU);
+    
+    // Output thermometer data
+    DEBUG_PRINTLN("THERMOMETER DATA:");
+    DEBUG_PRINT("Celsius = ");
+    DEBUG_PRINT_DEC(temperature.celsius, 4);
+    DEBUG_PRINT(" Fahrenheit = ");
+    DEBUG_PRINT_DEC(temperature.fahrenheit, 4);
+    DEBUG_PRINT("\n");
 
-      output_data += "&gX=" + String(gyroscope.x, 4);
-      output_data += "&gY=" + String(gyroscope.y, 4);
-      output_data += "&gZ=" + String(gyroscope.z, 4);
-      
-      /* Thermometer */
-      Temperature temperature;
-      temperature = getTemperatureData(myIMU);
-      
-      // Output thermometer data
-      DEBUG_PRINTLN("THERMOMETER DATA:");
-      DEBUG_PRINT("Celsius = ");
-      DEBUG_PRINT_DEC(temperature.celsius, 4);
-      DEBUG_PRINT(" Fahrenheit = ");
-      DEBUG_PRINT_DEC(temperature.fahrenheit, 4);
-      DEBUG_PRINT("\n");
+    output_data += "&thermoC=" + String(temperature.celsius, 4);
+    output_data += "&thermoF=" + String(temperature.fahrenheit, 4);
 
-      output_data += "&thermoC=" + String(temperature.celsius, 4);
-      output_data += "&thermoF=" + String(temperature.fahrenheit, 4);
+    /* Pot */
+    String pot_data;
+    pot_data = getPotData();
 
-      /* Pot */
-      String pot_data;
-      pot_data = getPotData();
+    DEBUG_PRINTLN("POTENTIOMETER DATA:");
+    DEBUG_PRINTLN(pot_data);
+    DEBUG_PRINTLN("");
+    output_data += "&pot=" + pot_data;
 
-      DEBUG_PRINTLN("POTENTIOMETER DATA:");
-      DEBUG_PRINTLN(pot_data);
-      DEBUG_PRINTLN("");
-      output_data += "&pot=" + pot_data;
+    /* Reed Switch */
+    DEBUG_PRINTLN("REED SWITCH DATA:");
+    DEBUG_PRINTLN("Velocity:");
+    DEBUG_PRINT_DEC(VELOCITY, 4);
+    DEBUG_PRINTLN("");
+    DEBUG_PRINTLN("Distance:");
+    DEBUG_PRINT_DEC(DISTANCE, 4);
+    DEBUG_PRINTLN("");
+    output_data += "&reed_velocity=" + String(VELOCITY, 4);
+    output_data += "&reed_distance=" + String(DISTANCE, 4);
 
-      /* Reed Switch */
-      DEBUG_PRINTLN("REED SWITCH DATA:");
-      DEBUG_PRINTLN("Velocity:");
-      DEBUG_PRINT_DEC(VELOCITY, 4);
-      DEBUG_PRINTLN("");
-      DEBUG_PRINTLN("Distance:");
-      DEBUG_PRINT_DEC(DISTANCE, 4);
-      DEBUG_PRINTLN("");
-      output_data += "&reed_velocity=" + String(VELOCITY, 4);
-      output_data += "&reed_distance=" + String(DISTANCE, 4);
-
-      DEBUG_PRINTLN(output_data);
-      writeStringToRPi(output_data);
-    }     
-  }
+    DEBUG_PRINTLN(output_data);
+    writeStringToRPi(output_data);
+  }     
+ 
 }
 
 /*
@@ -346,7 +323,6 @@ void switchInterruptHandler()
     writeStringToRPi("start");
   } else if (button_state == 0 && is_recording == 1) {
     is_recording = 0;
-    REED_SWITCH_COUNTER = 0;
     digitalWrite(RECORD_LED, LOW);
     DEBUG_PRINTLN("OFF");
     writeStringToRPi("stop");
