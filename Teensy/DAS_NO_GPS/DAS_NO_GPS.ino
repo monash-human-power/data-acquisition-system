@@ -5,6 +5,9 @@
 #include "SPI.h"
 #include "SensorStructures.h"
 
+/* Useful variables */
+#define PI 3.1415926535897932384626433832795
+
 /* Debug Mode */
 #define DEBUG // Comment this line out if not using debug mode
 #define WAIT 10 // delay for teensy to start serial comms
@@ -46,6 +49,7 @@ volatile float VELOCITY = 0, DISTANCE = 0;
 
 // 700C Rims + 33mm tyre
 const float WHEEL_DIAMETER = 0.622 + (0.033 * 2);
+const float WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * PI;
 IntervalTimer reedSwitchTimer;
 
 // Set up Accelerometer
@@ -347,7 +351,7 @@ void reedSwitchInterruptHandler() {
 
   // Calculate velocity and distance
   VELOCITY = (1/(float)total_time) * PI * WHEEL_DIAMETER * 3600;
-  DISTANCE = REED_SWITCH_COUNTER * WHEEL_DIAMETER;
+  DISTANCE = REED_SWITCH_COUNTER * WHEEL_CIRCUMFERENCE;
   PREV_REED_SWITCH_TIME = current_time;
 }
 
