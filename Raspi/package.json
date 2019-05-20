@@ -4,7 +4,9 @@
   "description": "node.js script to communicate to the Teensy",
   "main": "DAS.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "eslint": "eslint --ignore-path .gitignore",
+    "eslint-fix": "eslint --fix --ignore-path .gitignore .",
+    "test": "npm run eslint ."
   },
   "author": "",
   "license": "ISC",
@@ -21,6 +23,9 @@
     "@serialport/binding-mock": "^2.0.5",
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.17.2"
+    "eslint-config-prettier": "^4.3.0",
+    "eslint-plugin-import": "^2.17.2",
+    "eslint-plugin-prettier": "^3.1.0",
+    "prettier": "^1.17.1"
   }
 }
