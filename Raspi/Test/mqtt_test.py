@@ -22,7 +22,7 @@ def start_publishing(client):
         total_time = round(current_time - start_time, 2)
 
         # Generate data message
-        data = "gps=1&gps_location=00&gps_course=00&"
+        data = "gps=1&gps_lat=00&gps_long=00&gps_alt=00&gps_course=00&"
         gps_speed = random.random() * (total_time) + gps_speed
         data += "gps_speed=" + str(gps_speed)
         data += "&gps_satellites=00"

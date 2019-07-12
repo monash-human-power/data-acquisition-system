@@ -117,7 +117,9 @@ void loop()
     String output_data = "";
     output_data += "gps=";
     output_data += "1";
-    output_data += "&gps_location=" + String(00.00, 4) + "," + String(11.11, 4) + "," + String(22.22, 4);
+    output_data += "&gps_lat=" + String(00.00, 4);
+    output_data += "&gps_long=" + String(11.11, 4);
+    output_data += "&gps_alt=" + String(22.22, 4);
     output_data += "&gps_course=" + String(00, 4);
     output_data += "&gps_speed=" + String(00, 4);
     output_data += "&gps_satellites=" + String(0);
