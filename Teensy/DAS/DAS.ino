@@ -156,7 +156,9 @@ void loop()
         // Only disable red LED if GPS is working
         digitalWrite(ERROR_LED, LOW);
         output_data += "1";
-        output_data += "&gps_location=" + String(gps.latitude, 8) + "," + String(gps.longitude, 8) + "," + String(gps.altitude, 3);
+        output_data += "&gps_lat=" + String(gps.latitude, 8);
+        output_data += "&gps_long=" + String(gps.longitude, 8);
+        output_data += "&gps_alt=" + String(gps.altitude, 3);
         output_data += "&gps_course=" + String(gps.course, 2);
         output_data += "&gps_speed=" + String(gps.speed, 6);
         output_data += "&gps_satellites=" + String(gps.satellites);
