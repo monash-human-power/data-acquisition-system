@@ -3,6 +3,7 @@ import time
 import random
 import argparse
 import csv
+import os
 import paho.mqtt.client as mqtt
 
 # Arguments
@@ -74,6 +75,7 @@ def send_csv_data(client, csv_path, jump):
             data += "&pot={}".format(line["pot"])
             data += "&power={}&cadence={}".format(line["power"], line["cadence"])
             data += "&reed_velocity={}&reed_distance={}".format(line["reed_velocity"], line["reed_distance"])
+            data += "&filename={}".format(os.path.basename(csv_path))
 
             # Mid July 2019 - field gps_location split into three separate columns
             if "gps_location" in reader.fieldnames:
