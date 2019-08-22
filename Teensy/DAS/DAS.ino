@@ -93,6 +93,7 @@ void setup()
     led_blink(1000); // This takes 1 seconds
     countdown++;
     DEBUG_PRINTLN("Booting...");
+    DEBUG_PRINTLN("  ...USING DAS SCRIPT");
   }
 
   // Nothing to do to set up POT
