@@ -29,21 +29,10 @@ npm install serialport --build-from-source
 #### Installing serialport (Raspberry Pi)
 
 ```
-sudo npm install serialport --unsafe-perm --build-from-source 
+sudo npm install serialport --unsafe-perm --build-from-source
 ```
 Running without the flags will lead to errors. See [this](https://github.com/node-serialport/node-serialport/tree/master/packages/serialport#raspberry-pi-linux) for more information about this.
 
-#### Installing ant-plus
-See [ant-plus-app](https://github.com/khanguslee/ant-plus-app) for full installation details.
+## DAS Script
+The DAS script serves as the middle-man between the Teensy and the DAS web server. It enables the Teensy to send a string of data onto the Raspberry Pi which is then sent to a MQTT broker.
 
-## DAS Scripts
-The DAS scripts (python and node.js) serves as the middle-man between the Teensy and the DAS web server. They enable the Teensy to send a string of data onto the Raspberry Pi which can then be used with these scripts and sent to the DAS web server.
-
-The basic flow of the program is as follows:
-
-1. Check if server is online every 1.5 seconds
-2. When server is online, check if ant-plus dongle is connected
-3. When ant-plus dongle is connected, open up serial port
-3. Handle incoming data from serial port
-
-There is currently a python and a node.js version. Note that the python version does not connect with the power meter.
