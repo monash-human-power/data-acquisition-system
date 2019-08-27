@@ -1,5 +1,7 @@
 # Monash Human Power Data Acquisition System
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/632fc262b19f465393f12098555f23ba)](https://app.codacy.com/app/mhp-admin/MHP_DAS?utm_source=github.com&utm_medium=referral&utm_content=Monash-Human-Power/MHP_DAS&utm_campaign=Badge_Grade_Dashboard)
+
 This repository contains all the code related to Monash Human Power's Data Acquisition System (DAS).
 
 # Getting Started
