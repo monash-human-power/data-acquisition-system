@@ -1,5 +1,5 @@
 # Monash Human Power Data Acquisition System
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors)
+[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/632fc262b19f465393f12098555f23ba)](https://app.codacy.com/app/mhp-admin/MHP_DAS?utm_source=github.com&utm_medium=referral&utm_content=Monash-Human-Power/MHP_DAS&utm_campaign=Badge_Grade_Dashboard)
 
@@ -36,6 +36,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://twitter.com/harsilspatel"><img src="https://avatars1.githubusercontent.com/u/25992839?v=4" width="100px;" alt="Harsil Patel"/><br /><sub><b>Harsil Patel</b></sub></a><br /><a href="https://github.com/monash-human-power/MHP_DAS/commits?author=harsilspatel" title="Code">💻</a></td>
     <td align="center"><a href="https://khlee.me"><img src="https://avatars3.githubusercontent.com/u/18709969?v=4" width="100px;" alt="Angus Lee"/><br /><sub><b>Angus Lee</b></sub></a><br /><a href="https://github.com/monash-human-power/MHP_DAS/commits?author=khanguslee" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/pdgra1"><img src="https://avatars3.githubusercontent.com/u/33751672?v=4" width="100px;" alt="pdgra1"/><br /><sub><b>pdgra1</b></sub></a><br /><a href="https://github.com/monash-human-power/MHP_DAS/commits?author=pdgra1" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/chamaka1"><img src="https://avatars0.githubusercontent.com/u/35440106?v=4" width="100px;" alt="chamaka wijesinghe"/><br /><sub><b>chamaka wijesinghe</b></sub></a><br /><a href="https://github.com/monash-human-power/MHP_DAS/commits?author=chamaka1" title="Code">💻</a></td>
   </tr>
 </table>
 
