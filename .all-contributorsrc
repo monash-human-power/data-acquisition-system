@@ -40,7 +40,16 @@
       "contributions": [
         "code"
       ]
-    }
+    },
+    {
+      "login": "chamaka1",
+      "name": "chamaka wijesinghe",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/35440106?v=4",
+      "profile": "https://github.com/chamaka1",
+      "contributions": [
+        "code"
+      ]
+    },
   ],
   "contributorsPerLine": 7,
   "projectName": "MHP_DAS",
