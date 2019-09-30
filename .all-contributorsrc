@@ -49,10 +49,19 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "rileyclarke",
+      "name": "Riley Clarke",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/24428011?v=4",
+      "profile": "https://github.com/rileyclarke",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
-  "projectName": "MHP_DAS",
+  "projectName": "data-acquisition-system",
   "projectOwner": "monash-human-power",
   "repoType": "github",
   "repoHost": "https://github.com"
