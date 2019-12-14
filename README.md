@@ -18,6 +18,12 @@ This repository contains all the code related to Monash Human Power's Data Acqui
 ### DAS.js
 node.js program we run to communicate to the Teensy that is connected to the Raspberry Pi via serial communication.
 
+### Test/serial_test.py
+
+Imitates the Teensy serial connection by creating a virtual serial port. Note that this will only work on Unix systems - if you're running Windows, perhaps try running the script under
+
+Usage: This script uses the same arguments as `mqtt_test.py`. For example, run the script with `python serial_test.py -f data_173.csv -j 1500`. The script will provide you with a serial port address. Run the DAS script with `node DAS.js -a -p [serial port]`. Return to the `serial_test` terminal, and press enter to begin sending data.
+
 ## Teensy
 | Script Name    | Description                                                                                                |
 | -------------- | ---------------------------------------------------------------------------------------------------------- |
