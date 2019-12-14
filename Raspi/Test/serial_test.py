@@ -29,7 +29,7 @@ def run(args):
     print("Slave serial port (for DAS.js):", os.ttyname(slave))
 
     # Allow user to start DAS.js before starting so that it recieves the 'start' topic
-    input("Run 'DAS.js -p {}' then press enter".format(os.ttyname(slave)))
+    input("Run 'node DAS.js -p {}' then press enter".format(os.ttyname(slave)))
 
     # Connect to MQTT
     broker_address = args.host
