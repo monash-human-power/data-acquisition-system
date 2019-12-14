@@ -3,11 +3,12 @@ let FILENAME = null;
 
 /* Modules */
 const path = require('path');
-
-const winston = require(path.join(__dirname, 'config/winston'));
-
-// Set up argument parsing
+const mqtt = require('mqtt');
 const { ArgumentParser } = require('argparse');
+const SerialPort = require('serialport');
+const request = require('request-promise-native');
+const Ant = require('ant-plus');
+const winston = require('./config/winston');
 
 const argumentParser = new ArgumentParser({
   version: '1.0.0',
@@ -24,14 +25,12 @@ const args = argumentParser.parseArgs();
 winston.info(`Disable antplus: ${args.antplus}`);
 
 // Set up server connection
-const request = require('request-promise-native');
 
 const DAS_SERVER_ADDR = 'http://127.0.0.1:5000';
 const IS_SERVER_CONNECTED = false;
 
 /* Serial connection */
 // Set up serial port connection
-const SerialPort = require('serialport');
 
 const serialportOptions = {
   autoOpen: false,
@@ -51,16 +50,11 @@ const { Readline } = SerialPort.parsers;
 const parser = new Readline();
 serialPort.pipe(parser);
 
-/* ANT++ */
-// Set up ant-plus dongle
-const Ant = require('ant-plus');
-
 const antPlus = new Ant.GarminStick3();
 const bicyclePowerSensor = new Ant.BicyclePowerSensor(antPlus);
 
 /* MQTT */
 // Set up mqtt
-const mqtt = require('mqtt');
 
 const mqttOptions = {
   reconnectPeriod: 1000,
