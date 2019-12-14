@@ -16,6 +16,11 @@ def on_connect(client, userdata, flags, rc):
     print("Connected to MQTT broker with result code " + str(rc))
 
 def run(args):
+    # Check that we are running on a unix system.
+    # os.openpty and os.ttyname are only available on unix (NOT windows)
+    if os.name != "posix":
+        raise Exception("Serial test only works on Unix systems. If you are on Windows, perhaps try using WSL.")
+
     # Create pseudo-terminal pair
     master, slave = os.openpty()
 
