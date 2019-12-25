@@ -60,7 +60,7 @@ void setup()
   pinMode(STATUS_LED, OUTPUT);
   pinMode(WARNING_LED, OUTPUT);
   pinMode(ERROR_LED, OUTPUT);
-  
+
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   // Open Raspberry Pi Serial communication
@@ -72,8 +72,9 @@ void setup()
     led_blink(1000); // This takes 1 seconds
     countdown++;
     DEBUG_PRINTLN("Booting...");
+    DEBUG_PRINTLN("  ...USING MOCK DAS SCRIPT");
   }
-  
+
   // Nothing to do to set up POT
 
   // Set Up IMU
@@ -117,7 +118,9 @@ void loop()
     String output_data = "";
     output_data += "gps=";
     output_data += "1";
-    output_data += "&gps_location=" + String(00.00, 4) + "," + String(11.11, 4) + "," + String(22.22, 4);
+    output_data += "&gps_lat=" + String(00.00, 4);
+    output_data += "&gps_long=" + String(11.11, 4);
+    output_data += "&gps_alt=" + String(22.22, 4);
     output_data += "&gps_course=" + String(00, 4);
     output_data += "&gps_speed=" + String(00, 4);
     output_data += "&gps_satellites=" + String(0);
@@ -135,19 +138,19 @@ void loop()
     output_data += "&thermoF=" + String(11.11, 4);
 
     output_data += "&pot=" + String(100);
-    
+
     output_data += "&reed_velocity=" + String(23.333, 4);
     output_data += "&reed_distance=" + String(24.444, 4);
 
-    writeStringToRPi(output_data);  
+    writeStringToRPi(output_data);
   }
 }
 
 /*
  * Function to write String variable type since Serial.write("input") does not allow String variable as input
  */
-void writeStringToRPi(String stringData) 
-{ 
+void writeStringToRPi(String stringData)
+{
   RPISERIAL.clear();
   for (int i = 0; i < stringData.length(); i++)
   {
@@ -159,7 +162,7 @@ void writeStringToRPi(String stringData)
 GPS getGPSData(TinyGPSPlus gps)
 {
   GPS GPS_data;
-  
+
   // Store data
   GPS_data.latitude = gps.location.lat();
   GPS_data.longitude = gps.location.lng();
@@ -174,7 +177,7 @@ GPS getGPSData(TinyGPSPlus gps)
 
 Accelerometer getAccelerometerData(LSM6DS3 input_IMU)
 {
-  Accelerometer accelerometer; 
+  Accelerometer accelerometer;
 
   accelerometer.x = myIMU.readFloatAccelX();
   accelerometer.y = myIMU.readFloatAccelY();
@@ -184,7 +187,7 @@ Accelerometer getAccelerometerData(LSM6DS3 input_IMU)
 
 Gyroscope getGyroscopeData(LSM6DS3 input_IMU)
 {
-  Gyroscope gyroscope; 
+  Gyroscope gyroscope;
 
   gyroscope.x = myIMU.readFloatGyroX();
   gyroscope.y = myIMU.readFloatGyroY();
@@ -207,7 +210,7 @@ String getPotData()
   return pot;
 }
 
-void led_blink(int time_delay) 
+void led_blink(int time_delay)
 {
   digitalWrite(STATUS_LED, HIGH);
   delay(time_delay/2);
@@ -224,7 +227,7 @@ void isrService()
   if (total_time < max_debounce_time) {
     return;
   }
- 
+
   last_switch_time = millis();
   button_state = digitalRead(BUTTON_PIN);
   if (button_state == 1 && is_recording == 0)

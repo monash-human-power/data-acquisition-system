@@ -1,0 +1,68 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "harsilspatel",
+      "name": "Harsil Patel",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/25992839?v=4",
+      "profile": "https://twitter.com/harsilspatel",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "khanguslee",
+      "name": "Angus Lee",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/18709969?v=4",
+      "profile": "https://khlee.me",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "pdgra1",
+      "name": "pdgra1",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/33751672?v=4",
+      "profile": "https://github.com/pdgra1",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "hallgchris",
+      "name": "Christopher Hall",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/17876556?v=4",
+      "profile": "https://github.com/hallgchris",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "chamaka1",
+      "name": "chamaka wijesinghe",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/35440106?v=4",
+      "profile": "https://github.com/chamaka1",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "rileyclarke",
+      "name": "Riley Clarke",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/24428011?v=4",
+      "profile": "https://github.com/rileyclarke",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "data-acquisition-system",
+  "projectOwner": "monash-human-power",
+  "repoType": "github",
+  "repoHost": "https://github.com"
+}
