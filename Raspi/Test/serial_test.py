@@ -1,5 +1,6 @@
 import argparse
 import os
+import platform
 import paho.mqtt.client as mqtt
 
 from das_data_generator import send_csv_data, send_fake_data
@@ -16,10 +17,11 @@ def on_connect(client, userdata, flags, rc):
     print("Connected to MQTT broker with result code " + str(rc))
 
 def run(args):
-    # Check that we are running on a unix system.
+    # Check that we are running on Linux.
     # os.openpty and os.ttyname are only available on unix (NOT windows)
-    if os.name != "posix":
-        raise Exception("Serial test only works on Unix systems. If you are on Windows, perhaps try using WSL.")
+    # Additionally, unexpected behaviour seems to occur on Mac (see PR #28)
+    if platform.system() != "Linux":
+        raise Exception("Serial test only works on Linux. If you are on Windows, perhaps try using WSL.")
 
     # Create pseudo-terminal pair
     master, slave = os.openpty()
