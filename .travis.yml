@@ -1,0 +1,11 @@
+language: node_js
+
+node_js:
+  - "node"
+cache: npm
+
+before_script:
+  - cd Raspi
+  - npm install
+script:
+  - npm test
