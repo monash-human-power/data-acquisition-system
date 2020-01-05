@@ -4,7 +4,9 @@
   "description": "node.js script to communicate to the Teensy",
   "main": "DAS.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "eslint": "eslint --ignore-path .gitignore",
+    "eslint-fix": "eslint --fix --ignore-path .gitignore .",
+    "test": "npm run eslint ."
   },
   "author": "",
   "license": "ISC",
@@ -19,8 +21,32 @@
   },
   "devDependencies": {
     "@serialport/binding-mock": "^2.0.5",
-    "eslint": "^5.16.0",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb": "^18.0.1",
     "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.17.2"
+    "eslint-config-prettier": "^4.3.0",
+    "eslint-plugin-import": "^2.19.1",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-react": "^7.17.0",
+    "eslint-plugin-react-hooks": "^1.7.0",
+    "husky": "^3.1.0",
+    "lint-staged": "^9.5.0",
+    "prettier": "^1.19.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "./**/*.{js,css}": [
+      "prettier --write",
+      "git add"
+    ],
+    "./**/*.js": [
+      "eslint --fix",
+      "git add"
+    ]
   }
 }
