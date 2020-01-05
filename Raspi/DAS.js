@@ -20,9 +20,14 @@ argumentParser.addArgument(['-a', '--antplus'], {
   help: 'Disable ant plus from DAS',
   action: 'storeTrue',
 });
+argumentParser.addArgument(['-p', '--serial-port'], {
+  help: 'Set the serial port to use',
+  defaultValue: '/dev/serial0',
+});
 
 const args = argumentParser.parseArgs();
 winston.info(`Disable antplus: ${args.antplus}`);
+winston.info(`Serial port: ${args.serial_port}`);
 
 // Set up server connection
 
@@ -39,12 +44,16 @@ const serialportOptions = {
   stopBits: 1,
   parity: 'none',
 };
-const serialPort = new SerialPort('/dev/serial0', serialportOptions, err => {
-  // Print out error with opening serial port
-  if (err) {
-    winston.error(err);
-  }
-});
+const serialPort = new SerialPort(
+  args['serial_port'],
+  serialportOptions,
+  err => {
+    // Print out error with opening serial port
+    if (err) {
+      winston.error(err);
+    }
+  },
+);
 // Parse incoming data;
 const { Readline } = SerialPort.parsers;
 const parser = new Readline();

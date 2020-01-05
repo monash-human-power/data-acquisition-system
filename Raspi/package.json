@@ -16,7 +16,7 @@
     "mqtt": "^2.18.8",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
-    "serialport": "^6.2.2",
+    "serialport": "^8.0.5",
     "winston": "^3.1.0"
   },
   "devDependencies": {
