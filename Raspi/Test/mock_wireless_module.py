@@ -5,16 +5,35 @@ import json
 import paho.mqtt.client as mqtt
 
 
+parser = argparse.ArgumentParser(
+    description='MQTT wireless sensor test script that sends fake data',
+    add_help=True)
 
+parser.add_argument(
+    '-t', '--time', action='store', type=int,
+    default=float('Inf'), help="""Length of time to send data in seconds
+    (duration). If nothing is selected it will continuously send out data.""")
 
-parser = argparse.ArgumentParser(description='MQTT wireless sensor test script that sends fake data', add_help=True)
-parser.add_argument('-t', '--time', action='store', type=int, default=float('Inf'), help="Length of time to send data in seconds (duration). If nothing is selected it will continuously send out data.")
-parser.add_argument('-r', '--rate', action='store', type=float, default=1,help="Rate of data in data sent per second. Default is 1 data pack sent per second.")
-parser.add_argument('--host', action='store', type=str, default="192.168.100.100", help="Address of the MQTT broker. If nothing is selected it will default to 192.168.100.100.")
-parser.add_argument('--id', action='store', type=int, default=None, help="Specify the sensor to produce fake data. eg. --id 1 specifies that sensor 1 only produces data. If nothing is given all sensors will be active." )
+parser.add_argument(
+    '-r', '--rate', action='store', type=float, default=1,
+    help="""Rate of data in data sent per second. Default is 1 data pack sent
+    per second.""")
+
+parser.add_argument(
+    '--host', action='store', type=str, default="192.168.100.100",
+    help="""Address of the MQTT broker. If nothing is selected it will
+    default to 192.168.100.100.""")
+
+parser.add_argument(
+    '--id', action='store', type=int, default=None,
+    help="""Specify the sensor to produce fake data. eg. --id 1 specifies that
+    sensor 1 only produces data. If nothing is given all sensors will be
+    active.""")
+
 
 def send_fake_data(client, duration, rate, sensorID):
-    """ Send artificial data over MQTT for each sensor chanel. Sends [rate] per second for [duration] seconds """
+    """ Send artificial data over MQTT for each sensor chanel. Sends [rate] per
+    second for [duration] seconds"""
 
     start_time = round(time.time(), 2)
 
