@@ -29,7 +29,18 @@ class MockSensor:
                 if type(sub_val) != tuple:
                     raise ValueError("""Sub values must be stored as a tuple
                                     in the form (sub_value_name, ave_val)""")
-class MockSensor:
-        ave_val:        Either a single val that sets the average value for the
-
             self.single_val = False
+
+    def get_value(self):
+        """ Generates the random data as a float for a single val and a dict
+            for mutliple sub values"""
+
+        if self.single_val:
+            sensor_val = self.ave_val
+            sensor_val += self.ave_val * random.uniform(-self.percent_range,
+                                                        self.percent_range)
+            sensor_val = round(sensor_val, self.decimals)
+            return sensor_val
+        else:
+            pass
+
