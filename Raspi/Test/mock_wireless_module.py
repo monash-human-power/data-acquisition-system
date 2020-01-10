@@ -53,8 +53,9 @@ def send_fake_data(client, duration, rate, sensor_ID):
     second for [duration] seconds"""
 
     start_time = round(time.time(), 2)
+    total_time = 0
 
-    while True:
+    while total_time < duration:
         current_time = round(time.time(), 2)
         total_time = round(current_time - start_time, 2)
         print()     # Newline for clarity
@@ -110,8 +111,6 @@ def send_fake_data(client, duration, rate, sensor_ID):
             publish(client, battery_topic, battery_data)
 
         time.sleep(1/rate)
-        if total_time >= duration:
-            break
 
 
 def publish(client, topic, data):
