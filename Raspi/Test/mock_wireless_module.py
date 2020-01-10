@@ -27,6 +27,26 @@ parser.add_argument(
     sensor 1 only produces data. If nothing is given all sensors will be
     active.""")
 
+# Generate the fake sensors with average values
+s_steering_angle = MockSensor(10)
+s_c02 = MockSensor(325)
+s_temperature = MockSensor(25)
+s_humidity = MockSensor(85)
+s_reed_velocity = MockSensor(50)
+s_battery = MockSensor(80)
+s_accelerometer = MockSensor(("x", 90),
+                             ("y", 90),
+                             ("z", 90))
+s_gyroscope = MockSensor(("x", 90),
+                         ("y", 90),
+                         ("z", 90))
+s_GPS = MockSensor(("speed", 50),
+                   ("satellites", 10),
+                   ("latitude", 25),
+                   ("longitude", 25),
+                   ("altitude", 50),
+                   ("course", 0))
+
 
 def send_fake_data(client, duration, rate, sensorID):
     """ Send artificial data over MQTT for each sensor chanel. Sends [rate] per
