@@ -1,17 +1,16 @@
-# MQTT wireless sensor test script that sends fake randomly generated data
-# To do a single test --> python3 mqtt_wireless_test.py -t 0
-
-import sys
 import time
 import random
 import argparse
 import json
 import paho.mqtt.client as mqtt
 
+
 class Sensors:
 
-    decimals = 2            # number of decimal places for the random generated val
-    percentRange = 0.05     # percent range for the rangomly generated value
+    # number of decimal places for the random generated val
+    decimals = 2
+    # percent range for the rangomly generated value
+    percent_range = 0.05
 
     def CO2(val=325):
         # value in ppm (normal background conentration 250-400ppm)
