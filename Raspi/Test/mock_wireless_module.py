@@ -103,8 +103,8 @@ def send_fake_data(client, duration, rate, sensor_ID):
                    }
             battery_data = {"percentage": s_battery.get_value()}
 
-            sensor_topic = "v3/wireless-sensor/2/data"
-            battery_topic = "v3/wireless-sensor/2/battery"
+            sensor_topic = "v3/wireless-sensor/3/data"
+            battery_topic = "v3/wireless-sensor/3/battery"
 
             publish(client, sensor_topic, sensor_data)
             publish(client, battery_topic, battery_data)
