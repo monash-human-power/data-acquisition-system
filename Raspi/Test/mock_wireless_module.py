@@ -76,10 +76,10 @@ def send_fake_data(client, duration, rate, sensorID):
         current_time = round(time.time(), 2)
         total_time = round(current_time - start_time, 2)
 
-        print() # Newline for clarity
+        print()     # Newline for clarity
 
         # Wireless Sensor 1 (Middle)
-        if sensorID == 1 or sensorID == None:
+        if sensorID == 1 or sensorID is None:
 
             # generate JSON data and publish it over MQTT
             data = {
@@ -98,7 +98,7 @@ def send_fake_data(client, duration, rate, sensorID):
             print(pub_path, "--> ", JSON_data)
 
         # Wireless Sensor 2 (client, Back)
-        if sensorID == 2 or sensorID == None:
+        if sensorID == 2 or sensorID is None:
 
             # generate JSON data and publish it over MQTT
             data = {
@@ -116,7 +116,7 @@ def send_fake_data(client, duration, rate, sensorID):
             print(pub_path, "--> ", JSON_data)
 
         # Wireless Sensor 3 (client, Front)
-        if sensorID == 3 or sensorID == None:
+        if sensorID == 3 or sensorID is None:
 
             # generate JSON data and publish it over MQTT
             data = {
