@@ -5,65 +5,11 @@ import json
 import paho.mqtt.client as mqtt
 
 
-class Sensors:
 
-    # number of decimal places for the random generated val
-    decimals = 2
-    # percent range for the rangomly generated value
-    percent_range = 0.05
-
-    def CO2(val=325):
-        # value in ppm (normal background conentration 250-400ppm)
-        return round(val + val*random.uniform(-Sensors.percentRange, Sensors.percentRange), Sensors.decimals)
-
-    def humidity(val=75):
-        # value as a percentage of humidity
-        return round(val + val*random.uniform(-Sensors.percentRange, Sensors.percentRange), Sensors.decimals)
-
-    def temperature(val=20):
-        # value in degrees celcius
-        return round(val + val*random.uniform(-Sensors.percentRange, Sensors.percentRange), Sensors.decimals)
-
-    def accelerometer(val=5):
-        # value in m/s^2 for all axis stored in a dictionary
-        return {
-        "x": round(val + val*random.uniform(-Sensors.percentRange, Sensors.percentRange), Sensors.decimals),
-        "y": round(val + val*random.uniform(-Sensors.percentRange, Sensors.percentRange), Sensors.decimals),
-        "z": round(val + val*random.uniform(-Sensors.percentRange, Sensors.percentRange), Sensors.decimals)}
-
-    def gyroscope(val=90):
-        # value in degrees for all axis stored in a dictionary
-        return {
-        "x": round(val + val*random.uniform(-Sensors.percentRange, Sensors.percentRange), Sensors.decimals),
-        "y": round(val + val*random.uniform(-Sensors.percentRange, Sensors.percentRange), Sensors.decimals),
-        "z": round(val + val*random.uniform(-Sensors.percentRange, Sensors.percentRange), Sensors.decimals)}
-
-    def battery(val=80):
-        # value as a percentage of the battery
-        return round(val + val*random.uniform(-Sensors.percentRange, Sensors.percentRange), Sensors.decimals)
-
-    def reedSwitch(val=True):
-        # value as either true or false
-        return val
-
-    def GPS(latLngVal=20, speedVal=50):
-        # returns the latatude, longatude and the GPS speed of the bike stored in a dictionary
-        return {
-        "lat": round(latLngVal + latLngVal*random.uniform(-Sensors.percentRange, Sensors.percentRange), Sensors.decimals),
-        "lng": round(latLngVal + latLngVal*random.uniform(-Sensors.percentRange, Sensors.percentRange), Sensors.decimals),
-        "speed": round(speedVal + speedVal*random.uniform(-Sensors.percentRange, Sensors.percentRange), Sensors.decimals)}
-
-    def steering(val=0):
-        # value in degrees for the position of the steering stem
-        return round(val + random.uniform(-90, 90), Sensors.decimals)\
-
-    def time():
-        # return the current time for the sensor as Unix Epoch time
-        return time.time()
 
 parser = argparse.ArgumentParser(description='MQTT wireless sensor test script that sends fake data', add_help=True)
 parser.add_argument('-t', '--time', action='store', type=int, default=float('Inf'), help="Length of time to send data in seconds (duration). If nothing is selected it will continuously send out data.")
-parser.add_argument('-r', '--rate', action='store', type=float, default=1, help="Rate of data in data sent per second. Default is 1 data pack sent per second.")
+parser.add_argument('-r', '--rate', action='store', type=float, default=1,help="Rate of data in data sent per second. Default is 1 data pack sent per second.")
 parser.add_argument('--host', action='store', type=str, default="192.168.100.100", help="Address of the MQTT broker. If nothing is selected it will default to 192.168.100.100.")
 parser.add_argument('--id', action='store', type=int, default=None, help="Specify the sensor to produce fake data. eg. --id 1 specifies that sensor 1 only produces data. If nothing is given all sensors will be active." )
 
