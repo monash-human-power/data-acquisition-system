@@ -37,7 +37,7 @@ class MockSensor:
             for mutliple sub values"""
 
         if self.single_val:
-            return self.gen_single_value(self.ave_val)
+            return self.gen_single_value(self.ave_val[0])
 
         else:
             sensor_dict = {}
