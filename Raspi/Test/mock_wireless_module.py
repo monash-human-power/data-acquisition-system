@@ -156,7 +156,7 @@ def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload.decode("utf-8")))
 
 
-def run():
+if __name__ == "__main__":
     args = parser.parse_args()
     broker_address = args.host
     client = mqtt.Client()
@@ -168,6 +168,3 @@ def run():
     client.loop_start()
     start_publishing(client, args)
     client.loop_stop()
-
-
-run()
