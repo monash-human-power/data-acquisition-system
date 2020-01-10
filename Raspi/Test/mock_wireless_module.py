@@ -132,10 +132,10 @@ def send_fake_data(client, duration, rate, sensorID):
             client.publish(pub_path, JSON_data)
             print(pub_path, "--> ", JSON_data)
 
-
         time.sleep(1/rate)
         if total_time >= duration:
             break
+
 
 def start_publishing(client, args):
     print("publishing started...")
@@ -144,14 +144,17 @@ def start_publishing(client, args):
 
     print("publishing finished")
 
+
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected Sucessfully! Result code: " + str(rc))
     else:
         print("Something went wrong! Result code: " + str(rc))
 
+
 def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload.decode("utf-8")))
+
 
 def run():
     args = parser.parse_args()
@@ -165,5 +168,6 @@ def run():
     client.loop_start()
     start_publishing(client, args)
     client.loop_stop()
+
 
 run()
