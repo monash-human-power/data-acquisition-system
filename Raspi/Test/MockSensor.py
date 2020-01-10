@@ -37,11 +37,21 @@ class MockSensor:
             for mutliple sub values"""
 
         if self.single_val:
-            sensor_val = self.ave_val
-            sensor_val += self.ave_val * random.uniform(-self.percent_range,
-                                                        self.percent_range)
-            sensor_val = round(sensor_val, self.decimals)
-            return sensor_val
-        else:
-            pass
+            return self.gen_single_value(self.ave_val)
 
+        else:
+            sensor_dict = {}
+            for sub_val in self.ave_val:
+                sub_val_name = sub_val[0]
+                sub_ave_val = sub_val[1]
+                sensor_dict[sub_val_name] = self.gen_single_value(sub_ave_val)
+
+            return sensor_dict
+
+    def gen_single_value(self, ave_val):
+        """ Generates a single value given an average value"""
+        sensor_val = ave_val
+        sensor_val += ave_val * random.uniform(-self.percent_range,
+                                               self.percent_range)
+        sensor_val = round(sensor_val, self.decimals)
+        return sensor_val
