@@ -3,6 +3,8 @@ import argparse
 import json
 import paho.mqtt.client as mqtt
 
+# my library
+from MockSensor import MockSensor
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless sensor test script that sends fake data',
