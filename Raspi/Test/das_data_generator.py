@@ -12,6 +12,10 @@ def send_fake_data(send_data_func, duration, rate, immitate_teensy=False):
     # MHP Workshop location
     gps_lat = -37.908756
     gps_long = 145.13404
+    # Degrees to a metre at this lattitude
+    # http://www.csgnetwork.com/degreelenllavcalc.html
+    metre_lat = 1 / 110994.73
+    metre_long = 1 / 87941.14
     while True:
         current_time = round(time.time(), 2)
         total_time = round(current_time - start_time, 2)
@@ -20,8 +24,9 @@ def send_fake_data(send_data_func, duration, rate, immitate_teensy=False):
         data = "gps=1"
         data += "&gps_lat=" + str(gps_lat)
         data += "&gps_long=" + str(gps_long)
-        gps_lat += random.randint(0, 20) * 0.00001
-        gps_long += random.randint(0, 20) * 0.00001
+        # Move up to 5 metres per second in both directions
+        gps_lat += random.randint(0, 50) * 0.1 * meter_lat * rate
+        gps_long += random.randint(0, 50) * 0.1 * meter_long * rate
         data += "&gps_alt=00&gps_course=00"
         gps_speed = random.random() * (total_time) + gps_speed
         data += "&gps_speed=" + str(gps_speed)
