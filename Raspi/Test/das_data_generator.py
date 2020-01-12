@@ -75,7 +75,7 @@ def send_csv_data(send_data_func, csv_path, jump, immitate_teensy=False, speedup
                 continue
 
             # Pause for the time elapsed according to the csv
-            time.sleep((row_time - prev_time) / 1000)
+            time.sleep((row_time - prev_time) / 1000 / speedup)
             prev_time = row_time
 
             # Create data to send via MQTT
