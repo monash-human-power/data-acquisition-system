@@ -2,6 +2,7 @@ import csv
 import os
 import random
 import time
+import math
 
 def send_fake_data(send_data_func, duration, rate, immitate_teensy=False):
     """ Send artificial data over MQTT if no file is specified. Sends [rate] per second for [duration] seconds
@@ -50,7 +51,7 @@ def send_fake_data(send_data_func, duration, rate, immitate_teensy=False):
         if total_time >= duration:
             break
 
-def send_csv_data(send_data_func, csv_path, jump, immitate_teensy=False):
+def send_csv_data(send_data_func, csv_path, jump, immitate_teensy=False, speedup=1):
     """ Replays a ride recorded to a csv located at csv_path. Starts from [jump] seconds
         Some fields are filled in by DAS.js, so if data will go through DAS.js (i.e. serial_test.py)
         we don't want to send that data """
@@ -58,8 +59,13 @@ def send_csv_data(send_data_func, csv_path, jump, immitate_teensy=False):
         reader = csv.DictReader(csv_data)
 
         prev_time = 0
+        line_count = 0
 
         for line in reader:
+            line_count += 1
+            # When speeding up, reduce rows processed to keep the amount of messages roughly the same
+            if math.floor(line_count % speedup) != 0:
+                continue
             # This datapoint is used a lot so let's store it
             row_time = int(line["time"])
 
@@ -69,7 +75,7 @@ def send_csv_data(send_data_func, csv_path, jump, immitate_teensy=False):
                 continue
 
             # Pause for the time elapsed according to the csv
-            time.sleep((row_time - prev_time) / 1000)
+            time.sleep((row_time - prev_time) / 1000 / speedup)
             prev_time = row_time
 
             # Create data to send via MQTT
