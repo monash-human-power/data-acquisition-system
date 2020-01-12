@@ -9,6 +9,7 @@ def send_fake_data(send_data_func, duration, rate, immitate_teensy=False):
         we don't want to send that data """
     start_time = round(time.time(), 2)
     gps_speed = 0
+    # MHP Workshop location
     gps_lat = -37.908756
     gps_long = 145.13404
     while True:
