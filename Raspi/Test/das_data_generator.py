@@ -9,14 +9,21 @@ def send_fake_data(send_data_func, duration, rate, immitate_teensy=False):
         we don't want to send that data """
     start_time = round(time.time(), 2)
     gps_speed = 0
+    gps_lat = -37.908756
+    gps_long = 145.13404
     while True:
         current_time = round(time.time(), 2)
         total_time = round(current_time - start_time, 2)
 
         # Generate data message
-        data = "gps=1&gps_lat=00&gps_long=00&gps_alt=00&gps_course=00&"
+        data = "gps=1"
+        data += "&gps_lat=" + str(gps_lat)
+        data += "&gps_long=" + str(gps_long)
+        gps_lat += random.randint(0, 20) * 0.00001
+        gps_long += random.randint(0, 20) * 0.00001
+        data += "&gps_alt=00&gps_course=00"
         gps_speed = random.random() * (total_time) + gps_speed
-        data += "gps_speed=" + str(gps_speed)
+        data += "&gps_speed=" + str(gps_speed)
         data += "&gps_satellites=00"
         data += "&aX=00.0000&aY=00.0000&aZ=00.0000&gX=00.0000&"
         data += "gY=00.0000&gZ=00.0000"
