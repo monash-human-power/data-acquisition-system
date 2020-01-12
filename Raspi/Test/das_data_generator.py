@@ -25,8 +25,8 @@ def send_fake_data(send_data_func, duration, rate, immitate_teensy=False):
         data += "&gps_lat=" + str(gps_lat)
         data += "&gps_long=" + str(gps_long)
         # Move up to 5 metres per second in both directions
-        gps_lat += random.randint(0, 50) * 0.1 * meter_lat * rate
-        gps_long += random.randint(0, 50) * 0.1 * meter_long * rate
+        gps_lat += random.randint(0, 50) * 0.1 * metre_lat * rate
+        gps_long += random.randint(0, 50) * 0.1 * metre_long * rate
         data += "&gps_alt=00&gps_course=00"
         gps_speed = random.random() * (total_time) + gps_speed
         data += "&gps_speed=" + str(gps_speed)
