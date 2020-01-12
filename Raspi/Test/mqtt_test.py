@@ -10,6 +10,7 @@ parser.add_argument('-t', '--time', action='store', type=int, default=1, help="l
 parser.add_argument('-r', '--rate', action='store', type=float, default=0.5, help="rate of data in seconds")
 parser.add_argument('--host', action='store', type=str, default="localhost", help="address of the MQTT broker")
 parser.add_argument('-f', '--file', action='store', type=str, help="The csv file to replay. If not specified, makes up data.")
+parser.add_argument('-s', '--speed', action='store', type=float, default=1, help="Replay speed multiplier")
 parser.add_argument('-j', '--jump', action='store', type=int, default=0, help="Starts replaying from a specified time (in seconds)")
 
 
@@ -23,7 +24,7 @@ def start_publishing(client, args):
     if args.file is None:
         send_fake_data(send_data_func, args.time, args.rate)
     else:
-        send_csv_data(send_data_func, args.file, args.jump)
+        send_csv_data(send_data_func, args.file, args.jump, speedup=args.speed)
 
     print("stop")
     client.publish("stop")
