@@ -12,3 +12,28 @@ import paho.mqtt.client as mqtt
 # NOTE: The battery will be implemented later. Just do the key data first.
 
 """
+
+
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected Sucessfully! Result code: " + str(rc))
+    else:
+        print("Something went wrong! Result code: " + str(rc))
+
+
+def on_message(client, userdata, msg):
+    print(msg.topic+" "+str(msg.payload.decode("utf-8")))
+
+
+if __name__ == "__main__":
+    # Subscribe to all of data topics
+    broker_address = 'localhost'
+    client = mqtt.Client()
+
+    client.on_connect = on_connect
+    client.on_message = on_message
+
+    client.connect(broker_address)
+    client.loop_start()
+
+    client.loop_stop()
