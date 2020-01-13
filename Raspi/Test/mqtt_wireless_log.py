@@ -42,7 +42,7 @@ def on_message(client, userdata, msg):
 
     # Check to see if the topic ends in "data", selecting only the msg's that
     # have wireless_module_data
-    if msg.topic[-4:] == "data":
+    if msg.topic[:19] == "/v3/wireless-module" and msg.topic[-4:] == "data":
         parse_wireless_module_data(msg.payload)
 
 
