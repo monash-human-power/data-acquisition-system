@@ -26,7 +26,7 @@ class MockSensor:
                                  float""")
             self.single_val = True
 
-        if len(ave_val) != 1:
+        else:
             for sub_val in ave_val:
                 if not isinstance(sub_val, tuple):
                     raise ValueError("""Sub values must be stored as a tuple
