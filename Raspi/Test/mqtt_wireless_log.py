@@ -34,7 +34,21 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, msg):
-    print(msg.topic)
+    # Capture the data and decode the JSON
+
+    # IMPLEMENT A FUNCTION FOR THIS
+    # /v3/wireless-module/<id>/start
+    # /v3/wireless-module/<id>/stop
+
+    # Check to see if the topic ends in "data", selecting only the msg's that
+    # have wireless_module_data
+    if msg.topic[-4:] == "data":
+        parse_wireless_module_data(msg.payload)
+
+
+def parse_wireless_module_data(msg_payload):
+    module_data = msg_payload.decode("utf-8")
+    module_data = json.loads(module_data)
 
 
 if __name__ == "__main__":
