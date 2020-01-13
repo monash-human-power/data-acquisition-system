@@ -58,6 +58,10 @@ def send_fake_data(client, duration, rate, sensor_ID):
         total_time = round(current_time - start_time, 2)
         print()     # Newline for clarity
 
+        # TODO: create function that outputs the wireless data output so that
+        # it can be compaired with the the data read by the wireless logging
+        # script
+
         # Wireless Sensor 1 (Middle)
         if sensor_ID == 1 or sensor_ID is None:
             sensor_data = {
