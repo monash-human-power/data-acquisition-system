@@ -22,14 +22,14 @@ class MockSensor:
         if len(ave_val) == 1:
             if (not isinstance(ave_val[0], int)
                and not isinstance(ave_val[0], float)):
-                raise ValueError("""Single values must be either and int or a
+                raise TypeError("""Single values must be either and int or a
                                  float""")
             self.single_val = True
 
         else:
             for sub_val in ave_val:
                 if not isinstance(sub_val, tuple):
-                    raise ValueError("""Sub values must be stored as a tuple
+                    raise TypeError("""Sub values must be stored as a tuple
                                     in the form (sub_value_name, ave_val)""")
             self.single_val = False
 
