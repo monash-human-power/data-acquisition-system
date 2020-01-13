@@ -79,9 +79,7 @@ def send_csv_data(send_data_func, csv_path, jump, immitate_teensy=False, speedup
             prev_time = row_time
 
             # Create data to send via MQTT
-            data = "&gps={}&gps_course={}&gps_speed={}&gps_satellites={}" \
-                    .format(line["gps"], line["gps_course"], line["gps_speed"], line["gps_satellites"])
-            data += "&aX={}&aY={}&aZ={}".format(line["aX"], line["aY"], line["aZ"])
+            data = "aX={}&aY={}&aZ={}".format(line["aX"], line["aY"], line["aZ"])
             data += "&gX={}&gY={}&gZ={}".format(line["gX"], line["gY"], line["gZ"])
             data += "&thermoC={}&thermoF={}".format(line["thermoC"], line["thermoF"])
             data += "&pot={}".format(line["pot"])
@@ -89,15 +87,19 @@ def send_csv_data(send_data_func, csv_path, jump, immitate_teensy=False, speedup
 
             if not immitate_teensy:
                 data += "&filename={}".format(os.path.basename(csv_path))
-                data += "time={}".format(row_time)
+                data += "&time={}".format(row_time)
                 data += "&power={}&cadence={}".format(line["power"], line["cadence"])
 
-            # Mid July 2019 - field gps_location split into three separate columns
-            if "gps_location" in reader.fieldnames:
-                [gps_lat, gps_long, gps_alt] = line["gps_location"].split(",")
-            else:
-                gps_lat, gps_long, gps_alt = line["gps_lat"], line["gps_long"], line["gps_alt"]
-            data += "&gps_lat={}&gps_long={}&gps_alt={}".format(gps_lat, gps_long, gps_alt)
+            if line["gps"] != "0":
+                data += "&gps={}&gps_course={}&gps_speed={}&gps_satellites={}" \
+                    .format(line["gps"], line["gps_course"], line["gps_speed"], line["gps_satellites"])
+                
+                # Mid July 2019 - field gps_location split into three separate columns
+                if "gps_location" in reader.fieldnames:
+                    [gps_lat, gps_long, gps_alt] = line["gps_location"].split(",")
+                else:
+                    gps_lat, gps_long, gps_alt = line["gps_lat"], line["gps_long"], line["gps_alt"]
+                data += "&gps_lat={}&gps_long={}&gps_alt={}".format(gps_lat, gps_long, gps_alt)
 
             send_data_func(data)
             print(data)
