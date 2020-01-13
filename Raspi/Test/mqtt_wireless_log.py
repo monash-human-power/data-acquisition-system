@@ -26,14 +26,23 @@ def on_message(client, userdata, msg):
 
 
 if __name__ == "__main__":
-    # Subscribe to all of data topics
     broker_address = 'localhost'
     client = mqtt.Client()
 
     client.on_connect = on_connect
     client.on_message = on_message
 
+    # Subscribe to all of the data topics
+    client.subscribe("/v3/wireless-module/1/data")
+    client.subscribe("/v3/wireless-module/2/data")
+    client.subscribe("/v3/wireless-module/3/data")
+
+    # Subscribe to all of the battery topics
+    client.subscribe("/v3/wireless-module/battery/low")
+    client.subscribe("/v3/wireless-module/1/battery")
+    client.subscribe("/v3/wireless-module/2/battery")
+    client.subscribe("/v3/wireless-module/3/battery")
+
     client.connect(broker_address)
     client.loop_start()
-
     client.loop_stop()
