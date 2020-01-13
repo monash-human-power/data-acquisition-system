@@ -7,7 +7,7 @@ class MockSensor:
     def __init__(self, *ave_val, percent_range=0.05, decimals=2):
         """
         ave_val:        Either a single val that sets the average value for the
-                        sensor or and array of subvals formatted as
+                        sensor or an array of subvals formatted as
                         (sub_value_name, ave_val). Where sub_value_name is the
                         name that will be used in the outputed dictionary and
                         the ave_val is similar to a single val.
