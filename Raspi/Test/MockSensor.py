@@ -9,7 +9,7 @@ class MockSensor:
         ave_val:        Either a single val that sets the average value for the
                         sensor or an array of subvals formatted as
                         (sub_value_name, ave_val). Where sub_value_name is the
-                        name that will be used in the outputed dictionary and
+                        name that will be used in the outputted dictionary and
                         the ave_val is similar to a single val.
         percent_range:  Percent range for the randomly generated value
         decimals:       Number of decimal places for the random generated val
