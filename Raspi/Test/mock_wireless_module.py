@@ -46,7 +46,7 @@ s_GPS = MockSensor(("speed", 50),
                    ("course", 0))
 
 
-def send_fake_data(client, duration, rate, sensor_ID):
+def send_fake_data(client, duration, rate, sensor_id):
     """ Send artificial data over MQTT for each sensor chanel. Sends [rate] per
     second for [duration] seconds"""
 
@@ -63,7 +63,7 @@ def send_fake_data(client, duration, rate, sensor_ID):
         # script
 
         # Wireless Sensor 1 (Middle)
-        if sensor_ID == 1 or sensor_ID is None:
+        if sensor_id == 1 or sensor_id is None:
             sensor_data = {
                             "filename":         "test-file.csv",
                             "temperature":      s_temperature.get_value(),
@@ -79,7 +79,7 @@ def send_fake_data(client, duration, rate, sensor_ID):
             publish(client, battery_topic, battery_data)
 
         # Wireless Sensor 2 (Back)
-        if sensor_ID == 2 or sensor_ID is None:
+        if sensor_id == 2 or sensor_id is None:
             sensor_data = {
                     "filename":         "test-file.csv",
                     "co2":              s_c02.get_value(),
@@ -97,7 +97,7 @@ def send_fake_data(client, duration, rate, sensor_ID):
             publish(client, battery_topic, battery_data)
 
         # Wireless Sensor 3 (Front)
-        if sensor_ID == 3 or sensor_ID is None:
+        if sensor_id == 3 or sensor_id is None:
             sensor_data = {
                     "filename":         "test-file.csv",
                     "co2":              s_c02.get_value(),
