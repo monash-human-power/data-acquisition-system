@@ -43,12 +43,19 @@ def on_message(client, userdata, msg):
     # Check to see if the topic ends in "data", selecting only the msg's that
     # have wireless_module_data
     if msg.topic[:19] == "/v3/wireless-module" and msg.topic[-4:] == "data":
-        parse_wireless_module_data(msg.payload)
+        parse_wireless_module_data(msg)
 
 
-def parse_wireless_module_data(msg_payload):
-    module_data = msg_payload.decode("utf-8")
+def parse_wireless_module_data(msg):
+    module_data = msg.payload.decode("utf-8")
     module_data = json.loads(module_data)
+    sensor_data = module_data["sensors"]
+    for sensor in sensor_data:
+        sensor_type = sensor["type"]
+        sensor_value = sensor["value"]
+
+    # print(sensor_data)
+    # print(module_data)
 
 
 if __name__ == "__main__":
@@ -57,7 +64,6 @@ if __name__ == "__main__":
 
     client.on_connect = on_connect
     client.on_message = on_message
-
 
     client.connect(broker_address)
 
