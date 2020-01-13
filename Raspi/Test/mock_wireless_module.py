@@ -62,6 +62,8 @@ def send_fake_data(client, duration, rate, sensor_id):
         # it can be compaired with the the data read by the wireless logging
         # script
 
+        # TODO: Update sensor data with proper structure
+
         # Wireless Sensor 1 (Middle)
         if sensor_id == 1 or sensor_id is None:
             sensor_data = {
