@@ -2,8 +2,6 @@ import time
 import argparse
 import json
 import paho.mqtt.client as mqtt
-
-# my library
 from MockSensor import MockSensor
 
 parser = argparse.ArgumentParser(
