@@ -123,11 +123,11 @@ def publish(client, topic, data):
     data:   python dict containin the data to be published on the topic
     """
     # generate JSON from the python dict
-    JSON_data = json.dumps(data)
+    json_data = json.dumps(data)
 
     # publish the data over MQTT
-    client.publish(topic, JSON_data)
-    print(topic, "--> ", JSON_data)
+    client.publish(topic, json_data)
+    print(topic, "--> ", json_data)
 
 
 def start_publishing(client, args):
