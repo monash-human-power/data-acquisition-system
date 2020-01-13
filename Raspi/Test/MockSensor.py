@@ -6,12 +6,12 @@ class MockSensor:
 
     def __init__(self, *average_value, percent_range=0.05, decimals=2):
         """
-        average_value:  Either a single val that sets the average value for the
-                        sensor or an array of subvals formatted as
-                        (sub_value_name, average_value). Where sub_value_name
-                        is the name that will be used in the outputted
-                        dictionary and the average_value is similar to a single
-                        val.
+        average_value:  Either a single value that sets the average value for
+                        the sensor or an array of subvals formatted as
+                        (sub_valueue_name, average_value). Where
+                        sub_valueue_name is the name that will be used in the
+                        outputted dictionary and the average_value is similar
+                        to a single value.
         percent_range:  Percent range for the randomly generated value
         decimals:       Number of decimal places for the random generated val
         """
@@ -28,11 +28,11 @@ class MockSensor:
             self.single_val = True
 
         else:
-            for sub_val in average_value:
-                if not isinstance(sub_val, tuple):
+            for sub_value in average_value:
+                if not isinstance(sub_value, tuple):
                     raise TypeError("""Sub values must be stored as a tuple
-                                    in the form (sub_value_name, average_value)
-                                    """)
+                                    in the form (sub_valueue_name,
+                                    average_value)""")
             self.single_val = False
 
     def get_value(self):
@@ -44,10 +44,10 @@ class MockSensor:
 
         else:
             sensor_dict = {}
-            for sub_val in self.average_value:
-                sub_val_name = sub_val[0]
-                sub_average_value = sub_val[1]
-                sensor_dict[sub_val_name] = self.gen_single_value(sub_average_value)
+            for sub_value in self.average_value:
+                sub_value_name = sub_value[0]
+                sub_average_value = sub_value[1]
+                sensor_dict[sub_value_name] = self.gen_single_value(sub_average_value)
 
             return sensor_dict
 
