@@ -57,19 +57,6 @@ def parse_wireless_module_data(msg):
         sensor_type = sensor["type"]
         sensor_value = sensor["value"]
 
-        # with open(filename, mode='a') as csv_file:
-        #
-        #     fieldnames = ['co2', 'temperature', 'humidity', 'accelerometer', 'gyroscope']
-        #     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-        #
-        #     writer.writeheader()
-        #     writer.writerow({sensor_type: sensor_value})
-        #     # writer.writerow({'dept': 'IT', 'birth_month': 'March', 'emp_name': 'Erica Meyers'})
-
-
-    # print(sensor_data)
-    # print(module_data)
-
 
 def temp_csv(data_name, data_dict):
     # make sure that the temp file is
