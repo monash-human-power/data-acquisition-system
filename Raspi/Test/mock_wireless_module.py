@@ -16,9 +16,9 @@ parser.add_argument(
     help="""Rate of data in data sent per second. Default is 1 data pack sent
     per second.""")
 parser.add_argument(
-    '--host', action='store', type=str, default="192.168.100.100",
+    '--host', action='store', type=str, default="localhost",
     help="""Address of the MQTT broker. If nothing is selected it will
-    default to 192.168.100.100.""")
+    default to localhost.""")
 parser.add_argument(
     '-i', '--id', action='store', type=int, default=None,
     help="""Specify the sensor to produce fake data. eg. --id 1 specifies that
