@@ -3,7 +3,6 @@ import json
 import argparse
 import paho.mqtt.client as mqtt
 import os
-import pandas as pd
 
 """
 # USE 3 TEMP CSV and then merge at the end
@@ -95,24 +94,12 @@ def temp_csv(data_name, data_dict):
         # csv_writer.writerow(['Erica Meyers', 'IT', 'March'])
 
 
-
-
 if __name__ == "__main__":
 
     temp_csv("sensor1", {'data_dict': 3, 'yoyoy': 'helloworld'})
 
     # # GO WITH 3 CSVs
     # # TODO: REMOVE THIS FOR CLI VERSION
-    # dir = os.path.dirname(__file__)
-    # filename = os.path.join(dir, 'mqtt_wireless_log.csv')
-    # print(filename)
-    #
-    # df = pd.read_csv(filename)
-    # print(df.iloc[-1]['temperature'])
-    # df.iloc[-1]['temperature'] = 1
-    # print(df.iloc[-1]['temperature'])
-    #
-    # # print(df.loc(0, 'temperature'))
     #
     # broker_address = 'localhost'
     # client = mqtt.Client()
