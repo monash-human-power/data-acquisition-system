@@ -27,7 +27,7 @@ parser.add_argument(
 
 # Generate the fake sensors with average values
 s_steering_angle = MockSensor(10)
-s_c02 = MockSensor(325)
+s_co2 = MockSensor(325)
 s_temperature = MockSensor(25)
 s_humidity = MockSensor(85)
 s_reed_velocity = MockSensor(50)
@@ -38,7 +38,7 @@ s_accelerometer = MockSensor(("x", 90),
 s_gyroscope = MockSensor(("x", 90),
                          ("y", 90),
                          ("z", 90))
-s_GPS = MockSensor(("speed", 50),
+s_gps = MockSensor(("speed", 50),
                    ("satellites", 10),
                    ("latitude", 25),
                    ("longitude", 25),
@@ -62,15 +62,23 @@ def send_fake_data(client, duration, rate, sensor_id):
         # it can be compaired with the the data read by the wireless logging
         # script
 
-        # TODO: Update sensor data with proper structure
-
         # Wireless Sensor 1 (Middle)
         if sensor_id == 1 or sensor_id is None:
             sensor_data = {
-                            "filename":         "test-file.csv",
-                            "temperature":      s_temperature.get_value(),
-                            "humidity":         s_humidity.get_value(),
-                            "steeringAngle":    s_steering_angle.get_value()
+                            "sensors": [
+                                {
+                                    "type": "temperature",
+                                    "value": s_temperature.get_value()
+                                },
+                                {
+                                    "type": "humidity",
+                                    "value": s_humidity.get_value()
+                                },
+                                {
+                                    "type": "steeringAngle",
+                                    "value": s_steering_angle.get_value()
+                                }
+                             ]
                           }
             battery_data = {"percentage": s_battery.get_value()}
 
@@ -83,13 +91,29 @@ def send_fake_data(client, duration, rate, sensor_id):
         # Wireless Sensor 2 (Back)
         if sensor_id == 2 or sensor_id is None:
             sensor_data = {
-                    "filename":         "test-file.csv",
-                    "co2":              s_c02.get_value(),
-                    "temperature":      s_temperature.get_value(),
-                    "humidity":         s_humidity.get_value(),
-                    "accelerometer":    s_accelerometer.get_value(),
-                    "gyroscope":        s_gyroscope.get_value()
-                   }
+                            "sensors": [
+                                {
+                                    "type": "co2",
+                                    "value": s_co2.get_value()
+                                },
+                                {
+                                    "type": "temperature",
+                                    "value": s_temperature.get_value()
+                                },
+                                {
+                                    "type": "humidity",
+                                    "value": s_humidity.get_value()
+                                },
+                                {
+                                    "type": "accelerometer",
+                                    "value": s_accelerometer.get_value()
+                                },
+                                {
+                                    "type": "gyroscope",
+                                    "value": s_gyroscope.get_value()
+                                }
+                             ]
+                          }
             battery_data = {"percentage": s_battery.get_value()}
 
             sensor_topic = "v3/wireless-sensor/2/data"
@@ -101,11 +125,21 @@ def send_fake_data(client, duration, rate, sensor_id):
         # Wireless Sensor 3 (Front)
         if sensor_id == 3 or sensor_id is None:
             sensor_data = {
-                    "filename":         "test-file.csv",
-                    "co2":              s_c02.get_value(),
-                    "reedVelocity":     s_reed_velocity.get_value(),
-                    "gps":              s_GPS.get_value(),
-                   }
+                            "sensors": [
+                                {
+                                    "type": "co2",
+                                    "value": s_co2.get_value()
+                                },
+                                {
+                                    "type": "reedVelocity",
+                                    "value": s_reed_velocity.get_value()
+                                },
+                                {
+                                    "type": "gps",
+                                    "value": s_gps.get_value()
+                                }
+                             ]
+                          }
             battery_data = {"percentage": s_battery.get_value()}
 
             sensor_topic = "v3/wireless-sensor/3/data"
