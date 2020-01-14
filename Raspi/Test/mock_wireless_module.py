@@ -20,7 +20,7 @@ parser.add_argument(
     help="""Address of the MQTT broker. If nothing is selected it will
     default to 192.168.100.100.""")
 parser.add_argument(
-    '--id', action='store', type=int, default=None,
+    '-i', '--id', action='store', type=int, default=None,
     help="""Specify the sensor to produce fake data. eg. --id 1 specifies that
     sensor 1 only produces data. If nothing is given all sensors will be
     active.""")
