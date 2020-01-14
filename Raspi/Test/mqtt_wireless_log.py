@@ -2,6 +2,8 @@ import csv
 import json
 import argparse
 import paho.mqtt.client as mqtt
+import os
+import pandas as pd
 
 """
 1. Subscribe to the chanels
@@ -54,11 +56,37 @@ def parse_wireless_module_data(msg):
         sensor_type = sensor["type"]
         sensor_value = sensor["value"]
 
+
+
+        # with open(filename, mode='a') as csv_file:
+        #
+        #     fieldnames = ['co2', 'temperature', 'humidity', 'accelerometer', 'gyroscope']
+        #     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        #
+        #     writer.writeheader()
+        #     writer.writerow({sensor_type: sensor_value})
+        #     # writer.writerow({'dept': 'IT', 'birth_month': 'March', 'emp_name': 'Erica Meyers'})
+
+
+
     # print(sensor_data)
     # print(module_data)
 
 
 if __name__ == "__main__":
+    # GO WITH 3 CSVs
+    # TODO: REMOVE THIS FOR CLI VERSION
+    dir = os.path.dirname(__file__)
+    filename = os.path.join(dir, 'mqtt_wireless_log.csv')
+    print(filename)
+
+    df = pd.read_csv(filename)
+    print(df.iloc[-1]['temperature'])
+    df.iloc[-1]['temperature'] = 1
+    print(df.iloc[-1]['temperature'])
+
+    # print(df.loc(0, 'temperature'))
+
     broker_address = 'localhost'
     client = mqtt.Client()
 
