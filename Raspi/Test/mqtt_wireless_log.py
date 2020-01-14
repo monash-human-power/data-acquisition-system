@@ -3,6 +3,7 @@ import json
 import argparse
 import paho.mqtt.client as mqtt
 import os
+from datetime import datetime
 
 """
 # USE 3 TEMP CSV and then merge at the end
@@ -46,16 +47,29 @@ def on_message(client, userdata, msg):
     # Check to see if the topic ends in "data", selecting only the msg's that
     # have wireless_module_data
     if msg.topic[:19] == "/v3/wireless-module" and msg.topic[-4:] == "data":
-        parse_wireless_module_data(msg)
+        data = parse_wireless_module_data(msg)
+        temp_csv('sensor1', data)
 
 
 def parse_wireless_module_data(msg):
     module_data = msg.payload.decode("utf-8")
     module_data = json.loads(module_data)
     sensor_data = module_data["sensors"]
+    # data_dict will be used to store the data before being entered into the csv
+    data_dict = {}
+
     for sensor in sensor_data:
         sensor_type = sensor["type"]
         sensor_value = sensor["value"]
+        if isinstance(sensor_value, dict):
+            print(sensor_value)
+        else:
+            data_dict[sensor_type] = sensor_value
+
+    # Add in the time and date that the data came in
+    data_dict["datetime"] = str(datetime.now())
+
+    return data_dict
 
 
 def temp_csv(data_name, data_dict):
@@ -82,18 +96,15 @@ def temp_csv(data_name, data_dict):
 
 
 if __name__ == "__main__":
+    # GO WITH 3 CSVs
+    # TODO: REMOVE THIS FOR CLI VERSION
 
-    temp_csv("sensor1", {'data_dict': 3, 'yoyoy': 'helloworld'})
+    broker_address = 'localhost'
+    client = mqtt.Client()
 
-    # # GO WITH 3 CSVs
-    # # TODO: REMOVE THIS FOR CLI VERSION
-    #
-    # broker_address = 'localhost'
-    # client = mqtt.Client()
-    #
-    # client.on_connect = on_connect
-    # client.on_message = on_message
-    #
-    # client.connect(broker_address)
-    #
-    # client.loop_forever()
+    client.on_connect = on_connect
+    client.on_message = on_message
+
+    client.connect(broker_address)
+
+    client.loop_forever()
