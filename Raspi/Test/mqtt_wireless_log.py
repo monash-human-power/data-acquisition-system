@@ -6,6 +6,8 @@ import os
 import pandas as pd
 
 """
+# USE 3 TEMP CSV and then merge at the end
+
 1. Subscribe to the chanels
 2. Capture and decode the JSON
 3. Convert the json to csv
@@ -56,8 +58,6 @@ def parse_wireless_module_data(msg):
         sensor_type = sensor["type"]
         sensor_value = sensor["value"]
 
-
-
         # with open(filename, mode='a') as csv_file:
         #
         #     fieldnames = ['co2', 'temperature', 'humidity', 'accelerometer', 'gyroscope']
@@ -68,31 +68,58 @@ def parse_wireless_module_data(msg):
         #     # writer.writerow({'dept': 'IT', 'birth_month': 'March', 'emp_name': 'Erica Meyers'})
 
 
-
     # print(sensor_data)
     # print(module_data)
 
 
+def temp_csv(data_name, data_dict):
+    # make sure that the temp file is
+    current_dir = os.path.dirname(__file__)
+    temp_file_path = os.path.join(current_dir, str('.~temp_' + data_name + '.csv'))
+
+    print(type(data_dict.keys()))
+    fieldnames = []
+    for key in data_dict.keys():
+        fieldnames.append(key)
+    print(temp_file_path)
+
+    if not os.path.exists(temp_file_path):
+        # If the temp file does not exist write the headers for the CSV
+        with open(temp_file_path, mode='a') as temp_file:
+            csv_writer = csv.DictWriter(temp_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+
+    with open(temp_file_path, mode='a') as temp_file:
+        csv_writer = csv.DictWriter(temp_file, fieldnames=fieldnames)
+        csv_writer.writerow(data_dict)
+        # csv_writer.writerow(['Erica Meyers', 'IT', 'March'])
+
+
+
+
 if __name__ == "__main__":
-    # GO WITH 3 CSVs
-    # TODO: REMOVE THIS FOR CLI VERSION
-    dir = os.path.dirname(__file__)
-    filename = os.path.join(dir, 'mqtt_wireless_log.csv')
-    print(filename)
 
-    df = pd.read_csv(filename)
-    print(df.iloc[-1]['temperature'])
-    df.iloc[-1]['temperature'] = 1
-    print(df.iloc[-1]['temperature'])
+    temp_csv("sensor1", {'data_dict': 3, 'yoyoy': 'helloworld'})
 
-    # print(df.loc(0, 'temperature'))
-
-    broker_address = 'localhost'
-    client = mqtt.Client()
-
-    client.on_connect = on_connect
-    client.on_message = on_message
-
-    client.connect(broker_address)
-
-    client.loop_forever()
+    # # GO WITH 3 CSVs
+    # # TODO: REMOVE THIS FOR CLI VERSION
+    # dir = os.path.dirname(__file__)
+    # filename = os.path.join(dir, 'mqtt_wireless_log.csv')
+    # print(filename)
+    #
+    # df = pd.read_csv(filename)
+    # print(df.iloc[-1]['temperature'])
+    # df.iloc[-1]['temperature'] = 1
+    # print(df.iloc[-1]['temperature'])
+    #
+    # # print(df.loc(0, 'temperature'))
+    #
+    # broker_address = 'localhost'
+    # client = mqtt.Client()
+    #
+    # client.on_connect = on_connect
+    # client.on_message = on_message
+    #
+    # client.connect(broker_address)
+    #
+    # client.loop_forever()
