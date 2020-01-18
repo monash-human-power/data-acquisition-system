@@ -7,6 +7,8 @@ from datetime import datetime
 import pandas as pd
 
 """
+FIX THE "wireless-sensor" --> "wireless-module"
+
 # USE 3 TEMP CSV and then merge at the end
 
 1. Subscribe to the chanels
@@ -30,19 +32,23 @@ def on_connect(client, userdata, flags, rc):
 
 
 def subscribe_to_all(client):
+    # TODO: FIX THE TOPICS TO SPEC
+
     # Subscribe to all of the data topics
-    client.subscribe("/v3/wireless-module/1/data")
-    client.subscribe("/v3/wireless-module/2/data")
-    client.subscribe("/v3/wireless-module/3/data")
+    client.subscribe("v3/wireless-sensor/1/data")
+    client.subscribe("v3/wireless-sensor/2/data")
+    client.subscribe("v3/wireless-sensor/3/data")
 
     # Subscribe to all of the battery topics
-    client.subscribe("/v3/wireless-module/battery/low")
-    client.subscribe("/v3/wireless-module/1/battery")
-    client.subscribe("/v3/wireless-module/2/battery")
-    client.subscribe("/v3/wireless-module/3/battery")
+    client.subscribe("v3/wireless-sensor/battery/low")
+    client.subscribe("v3/wireless-sensor/1/battery")
+    client.subscribe("v3/wireless-sensor/2/battery")
+    client.subscribe("v3/wireless-sensor/3/battery")
 
 
 def on_message(client, userdata, msg):
+    # TODO: FIX THE TOPICS TO SPEC
+
     # Capture the data and decode the JSON
 
     # IMPLEMENT A FUNCTION FOR THIS
@@ -51,10 +57,9 @@ def on_message(client, userdata, msg):
 
     # Check to see if the topic ends in "data", selecting only the msg's that
     # have wireless_module_data
-    if msg.topic[:19] == "/v3/wireless-module" and msg.topic[-4:] == "data":
-        sensor_id = str(msg.topic[20])
+    if msg.topic[:18] == "v3/wireless-sensor" and msg.topic[-4:] == "data":
         data_dict = parse_wireless_module_data(msg)
-        temp_csv('S'+sensor_id, data_dict)
+        temp_csv(msg.topic[19], data_dict)
 
 
 def merge_temps(output_filename):
@@ -89,25 +94,25 @@ def merge_temps_pandas(output_filename, temp_filenames):
 
 
 def parse_wireless_module_data(msg):
-    module_data = msg.payload.decode("utf-8")
-    module_data = json.loads(module_data)
-    sensor_data = module_data["sensors"]
+    module_data = msg.payload.decode("utf-8")   # Decode the data as utf-8
+    module_data = json.loads(module_data)       # Load from json to dict
+    sensor_data = module_data["sensors"]        # Retrieve sensor data
+    module_id = str("M" + msg.topic[19])        # Find module ID
 
-    # data_dict will be used to store the data before being entered into the csv
+    # Used to store the data before being entered into the csv
     data_dict = {}
 
     for sensor in sensor_data:
-        sensor_type = sensor["type"]
+        sensor_type = module_id + "_" + sensor["type"]
         sensor_value = sensor["value"]
+
         if isinstance(sensor_value, dict):
-            # print(sensor_value)
             pass
         else:
             data_dict[sensor_type] = sensor_value
 
     # Add in the time and date that the data came in
-    data_dict["datetime"] = str(datetime.now())
-
+    data_dict[module_id + "_time"] = str(datetime.now().time())
     return data_dict
 
 
@@ -120,6 +125,7 @@ def temp_csv(data_name, data_dict):
     for key in data_dict.keys():
         fieldnames.append(key)
 
+    # print(temp_file_path)
     if not os.path.exists(temp_file_path):
         # If the temp file does not exist write the headers for the CSV
         with open(temp_file_path, mode='a') as temp_file:
@@ -132,12 +138,12 @@ def temp_csv(data_name, data_dict):
 
 
 if __name__ == "__main__":
-    # broker_address = 'localhost'
-    # client = mqtt.Client()
-    #
-    # client.on_connect = on_connect
-    # client.on_message = on_message
-    #
-    # client.connect(broker_address)
-    #
-    # client.loop_forever()
+    broker_address = 'localhost'
+    client = mqtt.Client()
+
+    client.on_connect = on_connect
+    client.on_message = on_message
+
+    client.connect(broker_address)
+
+    client.loop_forever()
