@@ -4,6 +4,7 @@ import argparse
 import paho.mqtt.client as mqtt
 import os
 from datetime import datetime
+import pandas as pd
 
 """
 # USE 3 TEMP CSV and then merge at the end
@@ -25,6 +26,10 @@ def on_connect(client, userdata, flags, rc):
     else:
         print("Something went wrong! Result code: " + str(rc))
 
+    subscribe_to_all(client)
+
+
+def subscribe_to_all(client):
     # Subscribe to all of the data topics
     client.subscribe("/v3/wireless-module/1/data")
     client.subscribe("/v3/wireless-module/2/data")
@@ -53,8 +58,8 @@ def on_message(client, userdata, msg):
 
 
 def merge_temps(output_filename):
-    """Searches throught the current directory and finds all the temp files and merges them
-    it finds a """
+    """Searches throught the current directory and finds all the temp files and
+    merges them it finds a """
     current_dir = os.path.dirname(__file__)
     filenames = os.listdir(current_dir)
 
@@ -62,55 +67,27 @@ def merge_temps(output_filename):
 
     for filename in filenames:
         # Find the temp files and store in the array
-        if filename[-4:]==".csv" and filename[:6]==".~temp":
+        if filename[-4:] == ".csv" and filename[:6] == ".~temp":
             temp_filenames.append(current_dir + '/' + filename)
 
-    merge_temps_continued(output_filename, temp_filenames)
-
-def merge_temps_continued(output_filename, temp_filenames):
-    end_of_csv = False
-    current_line_num = 0
-    while not end_of_csv:
-
-        merged_csv_fieldnames = []
-        current_merged_dict = {}
-        current_dir = os.path.dirname(__file__)
-        merged_csv_path = os.path.join(current_dir, str(output_filename + '.csv'))
-
-        for filename in temp_filenames:
-            csv_file = open(filename, mode='r')
-            csv_reader = csv.reader(csv_file, delimiter=',')
-
-            line_count = 0
-            for row in csv_reader:
-                if line_count == 0:
-
-                    print(row)
-                else:
-                    print('0')
-
-                line_count += 1
-                # for_row_num
-                #
-                # current_row_num
-                # # First line
-                # if line_num == 0:
-                #
-                #
-                #     print('HEADERS -->', )
-                # else:
-                #     for i in range(line_num):
-                #         if i == line_num:
-                #             print()
-
-        end_of_csv = True
+    merge_temps_pandas(output_filename, temp_filenames)
 
 
-        #write to merged csv
-        with open(merged_csv_path, mode='a') as csv_file:
-            csv_writer = csv.DictWriter(csv_file, fieldnames=merged_csv_fieldnames)
-            csv_writer.writeheader()
-            csv_writer.writerow(current_merged_dict)
+def merge_temps_pandas(output_filename, temp_filenames):
+    df_array = []
+    df_columns = []
+    dataframe = pd.DataFrame()
+    print(dataframe)
+    for temp_filename in temp_filenames:
+
+        temp = pd.read_csv(temp_filename)
+        for column in temp.columns:
+            print('-->',str(column))
+            dataframe[str(column)] = temp[column]
+
+
+    print(dataframe)
+    dataframe.to_csv("aaaa.csv")
 
 
 def parse_wireless_module_data(msg):
@@ -159,6 +136,21 @@ def temp_csv(data_name, data_dict):
 
 if __name__ == "__main__":
     merge_temps('merged_output')
+    # mydictionary = {'names': ['Somu', 'Kiku', 'Amol', 'Lini'],
+	# 'physics': [68, 74, 77, 78],
+	# 'chemistry': [84, 56, 73, 69],
+	# 'algebra': [78, 88, 82, 87]}
+    #
+    # #create dataframe
+    # df_marks = pd.DataFrame(mydictionary)
+    # print('Original DataFrame\n--------------')
+    # print(df_marks)
+    #
+    # #add column
+    # df_marks['geometry'] = [81, 92, 67, 76]
+    # print('\n\nDataFrame after adding "geometry" column\n--------------')
+    # print(df_marks)
+
     # broker_address = 'localhost'
     # client = mqtt.Client()
     #
@@ -167,4 +159,4 @@ if __name__ == "__main__":
     #
     # client.connect(broker_address)
     #
-    # client.loop_forever()
+    # client.loop_forever()\\
