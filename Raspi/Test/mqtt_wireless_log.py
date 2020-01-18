@@ -62,6 +62,7 @@ def merge_temps(output_filename):
     merges them it finds a """
     current_dir = os.path.dirname(__file__)
     filenames = os.listdir(current_dir)
+    output_filename = current_dir + '/' + output_filename
 
     temp_filenames = []
 
@@ -77,7 +78,6 @@ def merge_temps_pandas(output_filename, temp_filenames):
     df_array = []
     df_columns = []
     dataframe = pd.DataFrame()
-    print(dataframe)
     for temp_filename in temp_filenames:
 
         temp = pd.read_csv(temp_filename)
@@ -85,15 +85,14 @@ def merge_temps_pandas(output_filename, temp_filenames):
             print('-->',str(column))
             dataframe[str(column)] = temp[column]
 
-
-    print(dataframe)
-    dataframe.to_csv("aaaa.csv")
+    dataframe.to_csv(output_filename)
 
 
 def parse_wireless_module_data(msg):
     module_data = msg.payload.decode("utf-8")
     module_data = json.loads(module_data)
     sensor_data = module_data["sensors"]
+
     # data_dict will be used to store the data before being entered into the csv
     data_dict = {}
 
@@ -120,7 +119,6 @@ def temp_csv(data_name, data_dict):
     fieldnames = []
     for key in data_dict.keys():
         fieldnames.append(key)
-    # print(temp_file_path)
 
     if not os.path.exists(temp_file_path):
         # If the temp file does not exist write the headers for the CSV
@@ -131,26 +129,9 @@ def temp_csv(data_name, data_dict):
     with open(temp_file_path, mode='a') as temp_file:
         csv_writer = csv.DictWriter(temp_file, fieldnames=fieldnames)
         csv_writer.writerow(data_dict)
-        # csv_writer.writerow(['Erica Meyers', 'IT', 'March'])
 
 
 if __name__ == "__main__":
-    merge_temps('merged_output')
-    # mydictionary = {'names': ['Somu', 'Kiku', 'Amol', 'Lini'],
-	# 'physics': [68, 74, 77, 78],
-	# 'chemistry': [84, 56, 73, 69],
-	# 'algebra': [78, 88, 82, 87]}
-    #
-    # #create dataframe
-    # df_marks = pd.DataFrame(mydictionary)
-    # print('Original DataFrame\n--------------')
-    # print(df_marks)
-    #
-    # #add column
-    # df_marks['geometry'] = [81, 92, 67, 76]
-    # print('\n\nDataFrame after adding "geometry" column\n--------------')
-    # print(df_marks)
-
     # broker_address = 'localhost'
     # client = mqtt.Client()
     #
@@ -159,4 +140,4 @@ if __name__ == "__main__":
     #
     # client.connect(broker_address)
     #
-    # client.loop_forever()\\
+    # client.loop_forever()
