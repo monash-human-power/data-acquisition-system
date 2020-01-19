@@ -8,8 +8,9 @@ class DataToTempCSV:
         self.msg = msg
         self.data_dict = {}
 
-        # if msg.topic[:18] == "v3/wireless-sensor" and msg.topic[-4:] == "data":
-        self.parse_wireless_module_data()
+        if msg.topic[:18] == "v3/wireless-sensor" and msg.topic[-4:] == "data":
+            self.parse_wireless_module_data()
+
         self.make_temp_csv()
 
 
