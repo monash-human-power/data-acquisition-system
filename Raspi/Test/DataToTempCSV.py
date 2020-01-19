@@ -25,10 +25,15 @@ class DataToTempCSV:
             sensor_value = sensor["value"]
 
             if isinstance(sensor_value, dict):
-                pass
+                for sub_sensor in sensor_value.keys():
+                    sub_sensor_type = sensor_type + '_' + sub_sensor
+                    sub_sensor_value = sensor_value[sub_sensor]
+                    self.data_dict[sub_sensor_type] = sub_sensor_value
+
             else:
                 self.data_dict[sensor_type] = sensor_value
 
+        print(self.data_dict)
         # Add in the time and date that the data came in
         self.data_dict[module_id + "_time"] = str(datetime.now().time())
 
