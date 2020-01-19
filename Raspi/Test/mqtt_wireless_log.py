@@ -5,6 +5,7 @@ import paho.mqtt.client as mqtt
 import os
 from datetime import datetime
 import pandas as pd
+from DataToTempCSV import DataToTempCSV
 
 """
 FIX THE "wireless-sensor" --> "wireless-module"
@@ -57,10 +58,12 @@ def on_message(client, userdata, msg):
 
     # Check to see if the topic ends in "data", selecting only the msg's that
     # have wireless_module_data
-    if msg.topic[:18] == "v3/wireless-sensor" and msg.topic[-4:] == "data":
-        data_dict = parse_wireless_module_data(msg)
-        temp_csv(msg.topic[19], data_dict)
+    # if msg.topic[:18] == "v3/wireless-sensor" and msg.topic[-4:] == "data":
+    #     data_dict = parse_wireless_module_data(msg)
+    #     temp_csv(msg, data_dict)
+    #     print(msg.payload.decode("utf-8"))
 
+    DataToTempCSV(msg)
 
 def merge_temps(output_filename):
     """Searches throught the current directory and finds all the temp files and
@@ -116,10 +119,11 @@ def parse_wireless_module_data(msg):
     return data_dict
 
 
-def temp_csv(data_name, data_dict):
+def temp_csv(msg, data_dict):
     # make sure that the temp file is
     current_dir = os.path.dirname(__file__)
-    temp_file_path = os.path.join(current_dir, str('.~temp_' + data_name + '.csv'))
+    temp_filename = msg.topic.replace('/', '-')
+    temp_file_path = os.path.join(current_dir, str('.~temp_' + temp_filename + '.csv'))
 
     fieldnames = []
     for key in data_dict.keys():
