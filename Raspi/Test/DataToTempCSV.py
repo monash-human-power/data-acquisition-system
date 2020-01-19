@@ -31,7 +31,8 @@ class DataToTempCSV:
             self.parse_low_battery()
 
         # Add in the time and date that the data came in
-        self.data_dict[self.module_id + "_" + self.type + "_time"] = str(datetime.now().time())
+        current_time = str(datetime.now().time())
+        self.data_dict[self.module_id+"_"+self.type+"_time"] = current_time
 
         # Add or create the temp CSV to store the data
         self.make_temp_csv()
@@ -58,23 +59,24 @@ class DataToTempCSV:
 
     def parse_low_battery(self):
         self.data_dict["lowBattery"] = 1
-        print("recorded -->", self.data_dict)
 
     def make_temp_csv(self):
         # Ensures that the temp file is in the same folder as the script
         current_dir = os.path.dirname(__file__)
-        temp_filename = str('.~temp_' + self.module_id + '_' + self.type + '.csv')
+        temp_filename = str('.~temp_' + self.module_id+'_'+self.type + '.csv')
         temp_file_path = os.path.join(current_dir, temp_filename)
 
         column_names = []
         for key in self.data_dict.keys():
             column_names.append(key)
 
+        # If the temp file does not exist write the headers for the CSV
+        new_file = os.path.exists(temp_file_path)
+
         with open(temp_file_path, mode='a') as temp_file:
             csv_writer = csv.DictWriter(temp_file, fieldnames=column_names)
 
-            # If the temp file does not exist write the headers for the CSV
-            if not os.path.exists(temp_file_path):
+            if not new_file:
                 csv_writer.writeheader()
 
             # Append the data onto the temporary file

@@ -79,7 +79,7 @@ def on_message(client, userdata, msg):
         is_recording[module_id] = False
         print(module_id, "STOPPED")
 
-        # Save the temporary data into CSV with the name denoted by the filename
+        # Save the temporary data into CSV
         save_temp_csv(module_id)
         print(module_id, "SAVED")
 
@@ -91,41 +91,51 @@ def on_message(client, userdata, msg):
 
 
 def save_temp_csv(module_id):
-    filename = is_recording[module_id + "_filename"]
-    x = find_temp_csvs(module_id)
-
-    print(filename)
-    print(x)
-
-
+    print(module_id)
+    output_filename = is_recording[module_id + "_filename"]
+    print(output_filename)
+    temp_filenames = find_temp_csvs(module_id)
+    print(temp_filenames)
+    merge_temps(output_filename, temp_filenames)
+    remove_temps(temp_filenames)
+    # print(filename)
+    # print(temp_filenames)
 
 
 def find_temp_csvs(module_id=""):
     """Searches throught the current directory and finds all the temp files and
     merges them it finds a """
     current_dir = os.path.dirname(__file__)
-    filenames = os.listdir(current_dir)
+
+    if current_dir == '':
+        filenames = os.listdir()
+    else:
+        filenames = os.listdir(current_dir)
 
     temp_filenames = []
-
     for filename in filenames:
-        # Find the temp files and store in the array
+        # Find the temp filepaths and store in the array
         if filename.startswith(".~temp_" + module_id) and filename.endswith(".csv"):
-            temp_filenames.append(current_dir + '/' + filename)
+            if current_dir == '':
+                temp_filenames.append(filename)
+            else:
+                temp_filenames.append(current_dir + '/' + filename)
 
     return temp_filenames
-    # merge_temps_pandas(output_filename, temp_filenames)
 
 
-def merge_temps_pandas(output_filename, temp_filenames):
-    df_array = []
-    df_columns = []
+def remove_temps(filenames):
+    for file in filenames:
+        os.remove(file)
+
+
+def merge_temps(output_filename, temp_filenames):
+    return
     dataframe = pd.DataFrame()
     for temp_filename in temp_filenames:
 
         temp = pd.read_csv(temp_filename)
         for column in temp.columns:
-            print('-->',str(column))
             dataframe[str(column)] = temp[column]
 
     dataframe.to_csv(output_filename)
