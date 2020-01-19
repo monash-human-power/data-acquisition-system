@@ -60,7 +60,7 @@ def on_message(client, userdata, msg):
     # TODO: FIX THE TOPICS TO SPEC
     # TODO: ADD THE CORRECT '/'
     module_id = str("M" + msg.topic[19])
-    if msg.topic[:18] == "v3/wireless-module" and msg.topic[-5:] == "start":
+    if msg.topic.endswith("start"):
         # Decode the data as utf-8 and load into python dict
         start_data = msg.payload.decode("utf-8")
         start_data = json.loads(start_data)
@@ -74,7 +74,7 @@ def on_message(client, userdata, msg):
         # mosquitto_pub -h localhost -t v3/wireless-module/1/stop -m ''
         # mosquitto_pub -h localhost -t v3/wireless-sensor/battery/low -m '{"module-id": 1}'
 
-    elif msg.topic[:18] == "v3/wireless-module" and msg.topic[-4:] == "stop":
+    elif msg.topic.endswith("stop"):
         # Update is_recording to stop the recording of the wireless module
         is_recording[module_id] = False
         print(module_id, "STOPPED")
@@ -86,7 +86,7 @@ def on_message(client, userdata, msg):
     else:
         if msg.topic == "v3/wireless-sensor/battery/low":
             DataToTempCSV(msg)
-        elif (is_recording[module_id] is True) or True:
+        elif is_recording[module_id] is True:
             DataToTempCSV(msg, module_id)
 
 

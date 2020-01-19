@@ -18,15 +18,15 @@ class DataToTempCSV:
         self.module_data = json.loads(self.module_data)
 
         # Determine which data to parse
-        if msg.topic[:18] == "v3/wireless-sensor" and msg.topic[-4:] == "data":
+        if msg.topic.endswith("data"):
             self.type = "DATA"
             self.parse_module_data()
 
-        if msg.topic[:18] == "v3/wireless-sensor" and msg.topic[-7:] == "battery":
+        elif msg.topic.endswith("battery"):
             self.type = "BATTERY"
             self.parse_module_battery()
 
-        if msg.topic == "v3/wireless-sensor/battery/low":
+        elif msg.topic == "v3/wireless-sensor/battery/low":
             self.type = "BATTERY_LOW"
             self.parse_low_battery()
 
