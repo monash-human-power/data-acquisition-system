@@ -16,7 +16,7 @@ class DataToTempCSV:
             self.parse_module_battery()
 
         if msg.topic == "v3/wireless-sensor/battery/low":
-            self.parse_low_batery()
+            self.parse_low_battery()
 
         self.make_temp_csv()
 
@@ -49,15 +49,21 @@ class DataToTempCSV:
         # Decode the data as utf-8 and load into python dict
         module_data = self.msg.payload.decode("utf-8")
         module_data = json.loads(module_data)
-        # Retrieve sensor data from python dict
-        module_id = module_data["module-id"]
-        module_percentage = module_data["percentage"]
+        # Retrieve module data from python dict
+        module_id = "M" + module_data["module-id"]
 
+        self.data_dict[module_id + "_percentage"] = module_data["percentage"]
+        self.data_dict[module_id + "_time"] = str(datetime.now().time())
 
-    def parse_low_batery(self):
+    def parse_low_battery(self):
         # Decode the data as utf-8 and load into python dict
         module_data = self.msg.payload.decode("utf-8")
         module_data = json.loads(module_data)
+        # Retrieve module data from python dict
+        module_id = "M" + module_data["module-id"]
+
+        self.data_dict[module_id + "_lowBattery"] = True
+        self.data_dict[module_id + "_time"] = str(datetime.now().time())
 
     def make_temp_csv(self):
         # make sure that the temp file is
