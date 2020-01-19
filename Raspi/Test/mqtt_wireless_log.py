@@ -31,6 +31,7 @@ def on_connect(client, userdata, flags, rc):
 
 def subscribe_to_all(client):
     # TODO: FIX THE TOPICS TO SPEC
+    # TODO: ADD THE CORRECT '/'
 
     # Subscribe to all of the data topics
     client.subscribe("v3/wireless-sensor/1/data")
@@ -43,13 +44,30 @@ def subscribe_to_all(client):
     client.subscribe("v3/wireless-sensor/2/battery")
     client.subscribe("v3/wireless-sensor/3/battery")
 
+    # Subscribe to all of the start topics
+    client.subscribe("v3/wireless-module/1/start")
+    client.subscribe("v3/wireless-module/2/start")
+    client.subscribe("v3/wireless-module/3/start")
+
+    # Subscribe to all of the stop topics
+    client.subscribe("v3/wireless-module/1/stop")
+    client.subscribe("v3/wireless-module/2/stop")
+    client.subscribe("v3/wireless-module/3/stop")
+
 
 def on_message(client, userdata, msg):
     # TODO: FIX THE TOPICS TO SPEC
-    # IMPLEMENT A FUNCTION FOR THIS
-    # /v3/wireless-module/<id>/start
-    # /v3/wireless-module/<id>/stop
-    DataToTempCSV(msg)
+    # TODO: ADD THE CORRECT '/'
+    module_id = str("M" + msg.topic[19])
+    if msg.topic[:18] == "v3/wireless-module" and msg.topic[-5:] == "start":
+        is_recording[module_id] = True
+
+    elif msg.topic[:18] == "v3/wireless-module" and msg.topic[-4:] == "stop":
+        is_recording[module_id] = False
+
+    else:
+        if is_recording[module_id] is True:
+            DataToTempCSV(msg, module_id)
 
 
 def merge_temps(output_filename):
@@ -84,6 +102,12 @@ def merge_temps_pandas(output_filename, temp_filenames):
 
 
 if __name__ == "__main__":
+    is_recording = {
+        "M1": False,
+        "M2": False,
+        "M3": False,
+    }
+
     broker_address = 'localhost'
     client = mqtt.Client()
 

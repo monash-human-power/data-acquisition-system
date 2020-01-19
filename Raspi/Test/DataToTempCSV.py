@@ -5,9 +5,13 @@ import csv
 
 
 class DataToTempCSV:
-    def __init__(self, msg):
+    def __init__(self, msg, module_id):
+        # TODO: FIX THE TOPICS TO SPEC
+        # TODO: ADD THE CORRECT '/'
+
         self.msg = msg
         self.data_dict = {}
+        self.module_id = module_id
 
         if msg.topic[:18] == "v3/wireless-sensor" and msg.topic[-4:] == "data":
             self.parse_module_data()
