@@ -3,6 +3,7 @@ import paho.mqtt.client as mqtt
 import os
 import pandas as pd
 from DataToTempCSV import DataToTempCSV
+import json
 
 """
 FIX THE "wireless-sensor" --> "wireless-module"
@@ -60,10 +61,27 @@ def on_message(client, userdata, msg):
     # TODO: ADD THE CORRECT '/'
     module_id = str("M" + msg.topic[19])
     if msg.topic[:18] == "v3/wireless-module" and msg.topic[-5:] == "start":
+        # Decode the data as utf-8 and load into python dict
+        start_data = msg.payload.decode("utf-8")
+        start_data = json.loads(start_data)
+
+        # Update is_recording dict with correct filename and status
         is_recording[module_id] = True
+        is_recording[module_id + "_filename"] = start_data["filename"]
+        print(module_id, "STARTED")
+
+        # mosquitto_pub -h localhost -t v3/wireless-module/1/start -m '{"filename": "blk1.csv"}'
+        # mosquitto_pub -h localhost -t v3/wireless-module/1/stop -m ''
 
     elif msg.topic[:18] == "v3/wireless-module" and msg.topic[-4:] == "stop":
+        # Update is_recording to stop the recording of the wireless module
         is_recording[module_id] = False
+        print(module_id, "STOPPED")
+
+        # Save the temporary data into CSV with the name denoted by the filename
+        # save_temp_csv()
+        print(module_id, "SAVED")
+
 
     else:
         if is_recording[module_id] is True:
@@ -106,6 +124,9 @@ if __name__ == "__main__":
         "M1": False,
         "M2": False,
         "M3": False,
+        "M1_filename": None,
+        "M2_filename": None,
+        "M2_filename": None,
     }
 
     broker_address = 'localhost'
