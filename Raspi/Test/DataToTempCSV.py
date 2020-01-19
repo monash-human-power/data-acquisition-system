@@ -5,7 +5,7 @@ import csv
 
 
 class DataToTempCSV:
-    def __init__(self, msg, module_id):
+    def __init__(self, msg, module_id="ALL"):
         # TODO: FIX THE TOPICS TO SPEC
         # TODO: ADD THE CORRECT '/'
 
@@ -17,21 +17,23 @@ class DataToTempCSV:
         self.module_data = self.msg.payload.decode("utf-8")
         self.module_data = json.loads(self.module_data)
 
+        # Determine which data to parse
         if msg.topic[:18] == "v3/wireless-sensor" and msg.topic[-4:] == "data":
+            self.type = "DATA"
             self.parse_module_data()
 
         if msg.topic[:18] == "v3/wireless-sensor" and msg.topic[-7:] == "battery":
-            self.module_id = "M" + self.module_data["module-id"]
+            self.type = "BATTERY"
             self.parse_module_battery()
 
         if msg.topic == "v3/wireless-sensor/battery/low":
-            self.module_id = "M" + self.module_data["module-id"]
+            self.type = "BATTERY_LOW"
             self.parse_low_battery()
 
         # Add in the time and date that the data came in
-        self.data_dict[self.module_id + "_time"] = str(datetime.now().time())
+        self.data_dict[self.module_id + "_" + self.type + "_time"] = str(datetime.now().time())
 
-        # Produce the temp CSV
+        # Add or create the temp CSV to store the data
         self.make_temp_csv()
         print("recorded -->", self.data_dict)
 
@@ -48,34 +50,32 @@ class DataToTempCSV:
                     sub_sensor_type = sensor_type + '_' + sub_sensor
                     sub_sensor_value = sensor_value[sub_sensor]
                     self.data_dict[sub_sensor_type] = sub_sensor_value
-
             else:
                 self.data_dict[sensor_type] = sensor_value
-
 
     def parse_module_battery(self):
         self.data_dict[self.module_id + "_percentage"] = self.module_data["percentage"]
 
     def parse_low_battery(self):
-        self.data_dict[self.module_id + "_lowBattery"] = True
+        self.data_dict["lowBattery"] = 1
+        print("recorded -->", self.data_dict)
 
     def make_temp_csv(self):
-        # make sure that the temp file is
+        # Ensures that the temp file is in the same folder as the script
         current_dir = os.path.dirname(__file__)
-        temp_filename = self.msg.topic.replace('/', '-')
-        temp_file_path = os.path.join(current_dir,
-                                      str('.~temp_' + temp_filename + '.csv'))
+        temp_filename = str('.~temp_' + self.module_id + '_' + self.type + '.csv')
+        temp_file_path = os.path.join(current_dir, temp_filename)
 
-        fieldnames = []
+        column_names = []
         for key in self.data_dict.keys():
-            fieldnames.append(key)
-
-        if not os.path.exists(temp_file_path):
-            # If the temp file does not exist write the headers for the CSV
-            with open(temp_file_path, mode='a') as temp_file:
-                csv_writer = csv.DictWriter(temp_file, fieldnames=fieldnames)
-                csv_writer.writeheader()
+            column_names.append(key)
 
         with open(temp_file_path, mode='a') as temp_file:
-            csv_writer = csv.DictWriter(temp_file, fieldnames=fieldnames)
+            csv_writer = csv.DictWriter(temp_file, fieldnames=column_names)
+
+            # If the temp file does not exist write the headers for the CSV
+            if not os.path.exists(temp_file_path):
+                csv_writer.writeheader()
+
+            # Append the data onto the temporary file
             csv_writer.writerow(self.data_dict)

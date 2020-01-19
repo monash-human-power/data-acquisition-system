@@ -72,6 +72,7 @@ def on_message(client, userdata, msg):
 
         # mosquitto_pub -h localhost -t v3/wireless-module/1/start -m '{"filename": "blk1.csv"}'
         # mosquitto_pub -h localhost -t v3/wireless-module/1/stop -m ''
+        # mosquitto_pub -h localhost -t v3/wireless-sensor/battery/low -m '{"module-id": 1}'
 
     elif msg.topic[:18] == "v3/wireless-module" and msg.topic[-4:] == "stop":
         # Update is_recording to stop the recording of the wireless module
@@ -79,30 +80,41 @@ def on_message(client, userdata, msg):
         print(module_id, "STOPPED")
 
         # Save the temporary data into CSV with the name denoted by the filename
-        # save_temp_csv()
+        save_temp_csv(module_id)
         print(module_id, "SAVED")
 
-
     else:
-        if is_recording[module_id] is True:
+        if msg.topic == "v3/wireless-sensor/battery/low":
+            DataToTempCSV(msg)
+        elif (is_recording[module_id] is True) or True:
             DataToTempCSV(msg, module_id)
 
 
-def merge_temps(output_filename):
+def save_temp_csv(module_id):
+    filename = is_recording[module_id + "_filename"]
+    x = find_temp_csvs(module_id)
+
+    print(filename)
+    print(x)
+
+
+
+
+def find_temp_csvs(module_id=""):
     """Searches throught the current directory and finds all the temp files and
     merges them it finds a """
     current_dir = os.path.dirname(__file__)
     filenames = os.listdir(current_dir)
-    output_filename = current_dir + '/' + output_filename
 
     temp_filenames = []
 
     for filename in filenames:
         # Find the temp files and store in the array
-        if filename[-4:] == ".csv" and filename[:6] == ".~temp":
+        if filename.startswith(".~temp_" + module_id) and filename.endswith(".csv"):
             temp_filenames.append(current_dir + '/' + filename)
 
-    merge_temps_pandas(output_filename, temp_filenames)
+    return temp_filenames
+    # merge_temps_pandas(output_filename, temp_filenames)
 
 
 def merge_temps_pandas(output_filename, temp_filenames):
