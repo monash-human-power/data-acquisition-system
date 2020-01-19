@@ -3,22 +3,31 @@ from datetime import datetime
 import os
 import csv
 
+
 class DataToTempCSV:
     def __init__(self, msg):
         self.msg = msg
         self.data_dict = {}
 
         if msg.topic[:18] == "v3/wireless-sensor" and msg.topic[-4:] == "data":
-            self.parse_wireless_module_data()
+            self.parse_module_data()
+
+        if msg.topic[:18] == "v3/wireless-sensor" and msg.topic[-7:] == "battery":
+            self.parse_module_battery()
+
+        if msg.topic == "v3/wireless-sensor/battery/low":
+            self.parse_low_batery()
 
         self.make_temp_csv()
 
-
-    def parse_wireless_module_data(self):
-        module_data = self.msg.payload.decode("utf-8")    # Decode the data as utf-8
-        module_data = json.loads(module_data)           # Load from json to dict
-        sensor_data = module_data["sensors"]        # Retrieve sensor data
-        module_id = str("M" + self.msg.topic[19])        # Find module ID
+    def parse_module_data(self):
+        # Decode the data as utf-8 and load into python dict
+        module_data = self.msg.payload.decode("utf-8")
+        module_data = json.loads(module_data)
+        # Retrieve sensor data from python dict
+        sensor_data = module_data["sensors"]
+        # Find module ID
+        module_id = str("M" + self.msg.topic[19])
 
         for sensor in sensor_data:
             sensor_type = module_id + "_" + sensor["type"]
@@ -33,16 +42,29 @@ class DataToTempCSV:
             else:
                 self.data_dict[sensor_type] = sensor_value
 
-        print(self.data_dict)
         # Add in the time and date that the data came in
         self.data_dict[module_id + "_time"] = str(datetime.now().time())
 
+    def parse_module_battery(self):
+        # Decode the data as utf-8 and load into python dict
+        module_data = self.msg.payload.decode("utf-8")
+        module_data = json.loads(module_data)
+        # Retrieve sensor data from python dict
+        module_id = module_data["module-id"]
+        module_percentage = module_data["percentage"]
+
+
+    def parse_low_batery(self):
+        # Decode the data as utf-8 and load into python dict
+        module_data = self.msg.payload.decode("utf-8")
+        module_data = json.loads(module_data)
 
     def make_temp_csv(self):
         # make sure that the temp file is
         current_dir = os.path.dirname(__file__)
         temp_filename = self.msg.topic.replace('/', '-')
-        temp_file_path = os.path.join(current_dir, str('.~temp_' + temp_filename + '.csv'))
+        temp_file_path = os.path.join(current_dir,
+                                      str('.~temp_' + temp_filename + '.csv'))
 
         fieldnames = []
         for key in self.data_dict.keys():
