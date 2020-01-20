@@ -181,14 +181,18 @@ def start_publishing(client, args):
     # Initiate the correct modules
     if args.id is None:
         print('started module 1\nstarted module 2\nstarted module 3')
-        for i in range(1,4):
+        for i in range(1, 4):
             publish(client, "/v3/wireless-module/" + str(i) + "/start", {
-                "filename": "M" + str(i) + "_" + str(round(time.time())) + ".csv"
+                "filename": "M" + str(i)
+                + "_" + str(round(time.time()))
+                + ".csv"
             })
     else:
         print('started module ' + str(args.id))
         publish(client, "/v3/wireless-module/" + str(i) + "/start", {
-            "filename": "M" + str(args.id) + "_" + str(round(time.time())) + ".csv"
+            "filename": "M" + str(args.id)
+            + "_" + str(round(time.time()))
+            + ".csv"
         })
 
     send_fake_data(client, args.time, args.rate, args.id)
