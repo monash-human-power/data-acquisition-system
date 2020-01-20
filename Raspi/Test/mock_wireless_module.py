@@ -52,8 +52,8 @@ def send_fake_data(client, duration, rate, module_id):
 
     start_time = round(time.time(), 2)
     total_time = 0
-    battery_duration = 5 * 60  # To be run every 5min
-    battery_counter = 0
+    battery_duration = 5 * 60   # Battery info to be published every 5min
+    battery_counter = 0         # Battery counter to determine when to publish
 
     while total_time < duration:
         current_time = round(time.time(), 2)
@@ -64,6 +64,9 @@ def send_fake_data(client, duration, rate, module_id):
         # TODO: create function that outputs the wireless data output so that
         # it can be compaired with the the data read by the wireless logging
         # script
+
+        if publish_battery:
+            battery_counter += 1
 
         # Wireless module 1 (Middle)
         if module_id == 1 or module_id is None:
@@ -89,10 +92,8 @@ def send_fake_data(client, duration, rate, module_id):
             battery_topic = "/v3/wireless-module/1/battery"
 
             publish(client, module_topic, module_data)
-
             if publish_battery:
                 publish(client, battery_topic, battery_data)
-                battery_counter += 1
 
         # Wireless module 2 (Back)
         if module_id == 2 or module_id is None:
@@ -126,10 +127,8 @@ def send_fake_data(client, duration, rate, module_id):
             battery_topic = "/v3/wireless-module/2/battery"
 
             publish(client, module_topic, module_data)
-
             if publish_battery:
                 publish(client, battery_topic, battery_data)
-                battery_counter += 1
 
         # Wireless module 3 (Front)
         if module_id == 3 or module_id is None:
@@ -155,10 +154,8 @@ def send_fake_data(client, duration, rate, module_id):
             battery_topic = "/v3/wireless-module/3/battery"
 
             publish(client, module_topic, module_data)
-
             if publish_battery:
                 publish(client, battery_topic, battery_data)
-                battery_counter += 1
 
         time.sleep(1/rate)
 
@@ -180,7 +177,22 @@ def publish(client, topic, data):
 
 def start_publishing(client, args):
     print("publishing started...")
+
+    # Initiate the correct modules
+    if args.id is None:
+        print('started module 1\nstarted module 2\nstarted module 3')
+        for i in range(1,4):
+            publish(client, "/v3/wireless-module/" + str(i) + "/start", {
+                "filename": "M" + str(i) + "_" + str(round(time.time())) + ".csv"
+            })
+    else:
+        print('started module ' + str(args.id))
+        publish(client, "/v3/wireless-module/" + str(i) + "/start", {
+            "filename": "M" + str(args.id) + "_" + str(round(time.time())) + ".csv"
+        })
+
     send_fake_data(client, args.time, args.rate, args.id)
+
     print("publishing finished")
 
 
