@@ -52,11 +52,14 @@ def send_fake_data(client, duration, rate, module_id):
 
     start_time = round(time.time(), 2)
     total_time = 0
+    battery_duration = 5 * 60  # To be run every 5min
+    battery_counter = 0
 
     while total_time < duration:
         current_time = round(time.time(), 2)
         total_time = round(current_time - start_time, 2)
-        print()     # Newline for clarity
+        publish_battery = (battery_counter * battery_duration) <= total_time
+        print()  # Newline for clarity
 
         # TODO: create function that outputs the wireless data output so that
         # it can be compaired with the the data read by the wireless logging
@@ -86,7 +89,10 @@ def send_fake_data(client, duration, rate, module_id):
             battery_topic = "/v3/wireless-module/1/battery"
 
             publish(client, module_topic, module_data)
-            publish(client, battery_topic, battery_data)
+
+            if publish_battery:
+                publish(client, battery_topic, battery_data)
+                battery_counter += 1
 
         # Wireless module 2 (Back)
         if module_id == 2 or module_id is None:
@@ -120,7 +126,10 @@ def send_fake_data(client, duration, rate, module_id):
             battery_topic = "/v3/wireless-module/2/battery"
 
             publish(client, module_topic, module_data)
-            publish(client, battery_topic, battery_data)
+
+            if publish_battery:
+                publish(client, battery_topic, battery_data)
+                battery_counter += 1
 
         # Wireless module 3 (Front)
         if module_id == 3 or module_id is None:
@@ -146,7 +155,10 @@ def send_fake_data(client, duration, rate, module_id):
             battery_topic = "/v3/wireless-module/3/battery"
 
             publish(client, module_topic, module_data)
-            publish(client, battery_topic, battery_data)
+
+            if publish_battery:
+                publish(client, battery_topic, battery_data)
+                battery_counter += 1
 
         time.sleep(1/rate)
 
