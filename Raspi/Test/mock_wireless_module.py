@@ -59,11 +59,23 @@ def send_fake_data(client, duration, rate, module_id):
         current_time = round(time.time(), 2)
         total_time = round(current_time - start_time, 2)
         publish_battery = (battery_counter * battery_duration) <= total_time
-        print()  # Newline for clarity
 
         # TODO: create function that outputs the wireless data output so that
         # it can be compaired with the the data read by the wireless logging
         # script
+
+        def publish_data_and_battery(module_num):
+            battery_data = {
+                "module-id": module_num,
+                "percentage": s_battery.get_value()
+            }
+
+            module_topic = "/v3/wireless-module/"+str(module_num)+"/data"
+            battery_topic = "/v3/wireless-module/"+str(module_num)+"/battery"
+
+            publish(client, module_topic, module_data)
+            if publish_battery:
+                publish(client, battery_topic, battery_data)
 
         if publish_battery:
             battery_counter += 1
@@ -87,20 +99,11 @@ def send_fake_data(client, duration, rate, module_id):
                                 }
                              ]
                           }
-            battery_data = {
-                "module-id": module_num,
-                "percentage": s_battery.get_value()
-            }
-
-            module_topic = "/v3/wireless-module/1/data"
-            battery_topic = "/v3/wireless-module/1/battery"
-
-            publish(client, module_topic, module_data)
-            if publish_battery:
-                publish(client, battery_topic, battery_data)
+            publish_data_and_battery(module_num)
 
         # Wireless module 2 (Back)
         if module_id == 2 or module_id is None:
+            module_num = 2
             module_data = {
                             "sensors": [
                                 {
@@ -125,20 +128,11 @@ def send_fake_data(client, duration, rate, module_id):
                                 }
                              ]
                           }
-            battery_data = {
-                "module-id": module_num,
-                "percentage": s_battery.get_value()
-            }
-
-            module_topic = "/v3/wireless-module/2/data"
-            battery_topic = "/v3/wireless-module/2/battery"
-
-            publish(client, module_topic, module_data)
-            if publish_battery:
-                publish(client, battery_topic, battery_data)
+            publish_data_and_battery(module_num)
 
         # Wireless module 3 (Front)
         if module_id == 3 or module_id is None:
+            module_num = 3
             module_data = {
                             "sensors": [
                                 {
@@ -155,18 +149,9 @@ def send_fake_data(client, duration, rate, module_id):
                                 }
                              ]
                           }
-            battery_data = {
-                "module-id": module_num,
-                "percentage": s_battery.get_value()
-            }
+            publish_data_and_battery(module_num)
 
-            module_topic = "/v3/wireless-module/3/data"
-            battery_topic = "/v3/wireless-module/3/battery"
-
-            publish(client, module_topic, module_data)
-            if publish_battery:
-                publish(client, battery_topic, battery_data)
-
+        print()  # Newline for clarity
         time.sleep(1/rate)
 
 
@@ -194,7 +179,7 @@ def start_modules(args):
                 + "_" + str(round(time.time()))
                 + ".csv"
             })
-        print('\nstarted module 1\nstarted module 2\nstarted module 3')
+        print('\nstarted module 1\nstarted module 2\nstarted module 3\n')
 
     else:
         publish(client, "/v3/wireless-module/" + str(args.id) + "/start", {
@@ -202,10 +187,11 @@ def start_modules(args):
             + "_" + str(round(time.time()))
             + ".csv"
         })
-        print('started module ' + str(args.id))
+        print('started module ' + str(args.id) + '\n')
 
 
 def stop_modules(args):
+    print()  # Newline for clarity
     for i in range(1, 4):
         publish(client, "/v3/wireless-module/" + str(i) + "/stop", {})
     print('\nstopped module 1\nstopped module 2\nstopped module 3')
