@@ -175,9 +175,7 @@ def publish(client, topic, data):
     print(topic, "--> ", json_data)
 
 
-def start_publishing(client, args):
-    print("publishing started...")
-
+def start_modules(args):
     # Initiate the correct modules when starting
     if args.id is None:
         for i in range(1, 4):
@@ -186,7 +184,7 @@ def start_publishing(client, args):
                 + "_" + str(round(time.time()))
                 + ".csv"
             })
-        print('started module 1\nstarted module 2\nstarted module 3')
+        print('\nstarted module 1\nstarted module 2\nstarted module 3')
 
     else:
         publish(client, "/v3/wireless-module/" + str(args.id) + "/start", {
@@ -197,12 +195,18 @@ def start_publishing(client, args):
         print('started module ' + str(args.id))
 
 
-    send_fake_data(client, args.time, args.rate, args.id)
-
+def stop_modules(args):
     for i in range(1, 4):
         publish(client, "/v3/wireless-module/" + str(i) + "/stop", {})
-    print('stopped module 1\nstopped module 2\nstopped module 3')
+    print('\nstopped module 1\nstopped module 2\nstopped module 3')
 
+
+def start_publishing(client, args):
+
+    print("\npublishing started...")
+    start_modules(args)
+    send_fake_data(client, args.time, args.rate, args.id)
+    stop_modules(args)
     print("\npublishing finished")
 
 
