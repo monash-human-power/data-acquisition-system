@@ -8,7 +8,7 @@ import json
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
-        print("Connected Sucessfully! Result code: " + str(rc))
+        print("Connected Successfully! Result code: " + str(rc))
 
     else:
         print("Something went wrong! Result code: " + str(rc))
@@ -85,9 +85,6 @@ def save_temp_csv(module_id):
     merge_temps(output_filename, temp_filepaths)
     # remove_temps(temp_filepaths)
 
-    # print(filename)
-    # print(temp_filepaths)
-
 
 def find_temp_csvs(module_id=""):
     """Searches throught the current directory and finds all the temp files and
@@ -95,12 +92,12 @@ def find_temp_csvs(module_id=""):
     current_dir = os.path.dirname(__file__)
 
     if current_dir == '':
-        filenames = os.listdir()
+        filepaths = os.listdir()
     else:
-        filenames = os.listdir(current_dir)
+        filepaths = os.listdir(current_dir)
 
     temp_filepaths = []
-    for filename in filenames:
+    for filename in filepaths:
         # Find the temp filepaths and store in the array
         if filename.startswith(".~temp_" + module_id) and filename.endswith(".csv"):
             if current_dir == '':
@@ -129,21 +126,22 @@ def merge_temps(output_filename, temp_filepaths):
 
 
 if __name__ == "__main__":
-    is_recording = {
-        "M1": False,
-        "M2": False,
-        "M3": False,
-        "M1_filename": None,
-        "M2_filename": None,
-        "M2_filename": None,
-    }
-
-    broker_address = 'localhost'
-    client = mqtt.Client()
-
-    client.on_connect = on_connect
-    client.on_message = on_message
-
-    client.connect(broker_address)
-
-    client.loop_forever()
+    save_temp_csv("M1")
+    # is_recording = {
+    #     "M1": False,
+    #     "M2": False,
+    #     "M3": False,
+    #     "M1_filename": None,
+    #     "M2_filename": None,
+    #     "M2_filename": None,
+    # }
+    #
+    # broker_address = 'localhost'
+    # client = mqtt.Client()
+    #
+    # client.on_connect = on_connect
+    # client.on_message = on_message
+    #
+    # client.connect(broker_address)
+    #
+    # client.loop_forever()
