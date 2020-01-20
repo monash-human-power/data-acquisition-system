@@ -70,6 +70,7 @@ def send_fake_data(client, duration, rate, module_id):
 
         # Wireless module 1 (Middle)
         if module_id == 1 or module_id is None:
+            module_num = 1
             module_data = {
                             "sensors": [
                                 {
@@ -86,7 +87,10 @@ def send_fake_data(client, duration, rate, module_id):
                                 }
                              ]
                           }
-            battery_data = {"percentage": s_battery.get_value()}
+            battery_data = {
+                "module-id": module_num,
+                "percentage": s_battery.get_value()
+            }
 
             module_topic = "/v3/wireless-module/1/data"
             battery_topic = "/v3/wireless-module/1/battery"
@@ -121,7 +125,10 @@ def send_fake_data(client, duration, rate, module_id):
                                 }
                              ]
                           }
-            battery_data = {"percentage": s_battery.get_value()}
+            battery_data = {
+                "module-id": module_num,
+                "percentage": s_battery.get_value()
+            }
 
             module_topic = "/v3/wireless-module/2/data"
             battery_topic = "/v3/wireless-module/2/battery"
@@ -148,7 +155,10 @@ def send_fake_data(client, duration, rate, module_id):
                                 }
                              ]
                           }
-            battery_data = {"percentage": s_battery.get_value()}
+            battery_data = {
+                "module-id": module_num,
+                "percentage": s_battery.get_value()
+            }
 
             module_topic = "/v3/wireless-module/3/data"
             battery_topic = "/v3/wireless-module/3/battery"
