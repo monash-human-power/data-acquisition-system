@@ -178,7 +178,7 @@ def publish(client, topic, data):
 def start_publishing(client, args):
     print("publishing started...")
 
-    # Initiate the correct modules
+    # Initiate the correct modules when starting
     if args.id is None:
         print('started module 1\nstarted module 2\nstarted module 3')
         for i in range(1, 4):
@@ -189,7 +189,7 @@ def start_publishing(client, args):
             })
     else:
         print('started module ' + str(args.id))
-        publish(client, "/v3/wireless-module/" + str(i) + "/start", {
+        publish(client, "/v3/wireless-module/" + str(args.id) + "/start", {
             "filename": "M" + str(args.id)
             + "_" + str(round(time.time()))
             + ".csv"
