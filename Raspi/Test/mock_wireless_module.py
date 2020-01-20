@@ -5,7 +5,7 @@ import paho.mqtt.client as mqtt
 from MockSensor import MockSensor
 
 parser = argparse.ArgumentParser(
-    description='MQTT wireless sensor test script that sends fake data',
+    description='MQTT wireless module test script that sends fake data',
     add_help=True)
 parser.add_argument(
     '-t', '--time', action='store', type=int,
@@ -21,8 +21,8 @@ parser.add_argument(
     default to localhost.""")
 parser.add_argument(
     '-i', '--id', action='store', type=int, default=None,
-    help="""Specify the sensor to produce fake data. eg. --id 1 specifies that
-    sensor 1 only produces data. If nothing is given all sensors will be
+    help="""Specify the module to produce fake data. eg. --id 1 specifies that
+    module 1 only produces data. If nothing is given all modules will be
     active.""")
 
 # Generate the fake sensors with average values
@@ -46,8 +46,8 @@ s_gps = MockSensor(("speed", 50),
                    ("course", 0))
 
 
-def send_fake_data(client, duration, rate, sensor_id):
-    """ Send artificial data over MQTT for each sensor chanel. Sends [rate] per
+def send_fake_data(client, duration, rate, module_id):
+    """ Send artificial data over MQTT for each module chanel. Sends [rate] per
     second for [duration] seconds"""
 
     start_time = round(time.time(), 2)
@@ -62,9 +62,9 @@ def send_fake_data(client, duration, rate, sensor_id):
         # it can be compaired with the the data read by the wireless logging
         # script
 
-        # Wireless Sensor 1 (Middle)
-        if sensor_id == 1 or sensor_id is None:
-            sensor_data = {
+        # Wireless module 1 (Middle)
+        if module_id == 1 or module_id is None:
+            module_data = {
                             "sensors": [
                                 {
                                     "type": "temperature",
@@ -82,15 +82,15 @@ def send_fake_data(client, duration, rate, sensor_id):
                           }
             battery_data = {"percentage": s_battery.get_value()}
 
-            sensor_topic = "v3/wireless-sensor/1/data"
-            battery_topic = "v3/wireless-sensor/1/battery"
+            module_topic = "v3/wireless-module/1/data"
+            battery_topic = "v3/wireless-module/1/battery"
 
-            publish(client, sensor_topic, sensor_data)
+            publish(client, module_topic, module_data)
             publish(client, battery_topic, battery_data)
 
-        # Wireless Sensor 2 (Back)
-        if sensor_id == 2 or sensor_id is None:
-            sensor_data = {
+        # Wireless module 2 (Back)
+        if module_id == 2 or module_id is None:
+            module_data = {
                             "sensors": [
                                 {
                                     "type": "co2",
@@ -116,15 +116,15 @@ def send_fake_data(client, duration, rate, sensor_id):
                           }
             battery_data = {"percentage": s_battery.get_value()}
 
-            sensor_topic = "v3/wireless-sensor/2/data"
-            battery_topic = "v3/wireless-sensor/2/battery"
+            module_topic = "v3/wireless-module/2/data"
+            battery_topic = "v3/wireless-module/2/battery"
 
-            publish(client, sensor_topic, sensor_data)
+            publish(client, module_topic, module_data)
             publish(client, battery_topic, battery_data)
 
-        # Wireless Sensor 3 (Front)
-        if sensor_id == 3 or sensor_id is None:
-            sensor_data = {
+        # Wireless module 3 (Front)
+        if module_id == 3 or module_id is None:
+            module_data = {
                             "sensors": [
                                 {
                                     "type": "co2",
@@ -142,10 +142,10 @@ def send_fake_data(client, duration, rate, sensor_id):
                           }
             battery_data = {"percentage": s_battery.get_value()}
 
-            sensor_topic = "v3/wireless-sensor/3/data"
-            battery_topic = "v3/wireless-sensor/3/battery"
+            module_topic = "v3/wireless-module/3/data"
+            battery_topic = "v3/wireless-module/3/battery"
 
-            publish(client, sensor_topic, sensor_data)
+            publish(client, module_topic, module_data)
             publish(client, battery_topic, battery_data)
 
         time.sleep(1/rate)
