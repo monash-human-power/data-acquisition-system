@@ -5,20 +5,6 @@ import pandas as pd
 from DataToTempCSV import DataToTempCSV
 import json
 
-"""
-FIX THE "wireless-sensor" --> "wireless-module"
-
-# USE 3 TEMP CSV and then merge at the end
-
-1. Subscribe to the chanels
-2. Capture and decode the JSON
-3. Convert the json to csv
-4. append the data to the csv file
-
-# NOTE: The battery will be implemented later. Just do the key data first.
-
-"""
-
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -94,12 +80,13 @@ def save_temp_csv(module_id):
     print(module_id)
     output_filename = is_recording[module_id + "_filename"]
     print(output_filename)
-    temp_filenames = find_temp_csvs(module_id)
-    print(temp_filenames)
-    merge_temps(output_filename, temp_filenames)
-    remove_temps(temp_filenames)
+    temp_filepaths = find_temp_csvs(module_id)
+    print(temp_filepaths)
+    merge_temps(output_filename, temp_filepaths)
+    # remove_temps(temp_filepaths)
+
     # print(filename)
-    # print(temp_filenames)
+    # print(temp_filepaths)
 
 
 def find_temp_csvs(module_id=""):
@@ -112,27 +99,27 @@ def find_temp_csvs(module_id=""):
     else:
         filenames = os.listdir(current_dir)
 
-    temp_filenames = []
+    temp_filepaths = []
     for filename in filenames:
         # Find the temp filepaths and store in the array
         if filename.startswith(".~temp_" + module_id) and filename.endswith(".csv"):
             if current_dir == '':
-                temp_filenames.append(filename)
+                temp_filepaths.append(filename)
             else:
-                temp_filenames.append(current_dir + '/' + filename)
+                temp_filepaths.append(current_dir + '/' + filename)
 
-    return temp_filenames
+    return temp_filepaths
 
 
-def remove_temps(filenames):
-    for file in filenames:
+def remove_temps(filepaths):
+    """ Removes the files in the list of filepaths """
+    for file in filepaths:
         os.remove(file)
 
 
-def merge_temps(output_filename, temp_filenames):
-    return
+def merge_temps(output_filename, temp_filepaths):
     dataframe = pd.DataFrame()
-    for temp_filename in temp_filenames:
+    for temp_filename in temp_filepaths:
 
         temp = pd.read_csv(temp_filename)
         for column in temp.columns:
