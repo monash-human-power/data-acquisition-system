@@ -82,8 +82,8 @@ def send_fake_data(client, duration, rate, module_id):
                           }
             battery_data = {"percentage": s_battery.get_value()}
 
-            module_topic = "v3/wireless-module/1/data"
-            battery_topic = "v3/wireless-module/1/battery"
+            module_topic = "/v3/wireless-module/1/data"
+            battery_topic = "/v3/wireless-module/1/battery"
 
             publish(client, module_topic, module_data)
             publish(client, battery_topic, battery_data)
@@ -116,8 +116,8 @@ def send_fake_data(client, duration, rate, module_id):
                           }
             battery_data = {"percentage": s_battery.get_value()}
 
-            module_topic = "v3/wireless-module/2/data"
-            battery_topic = "v3/wireless-module/2/battery"
+            module_topic = "/v3/wireless-module/2/data"
+            battery_topic = "/v3/wireless-module/2/battery"
 
             publish(client, module_topic, module_data)
             publish(client, battery_topic, battery_data)
@@ -142,8 +142,8 @@ def send_fake_data(client, duration, rate, module_id):
                           }
             battery_data = {"percentage": s_battery.get_value()}
 
-            module_topic = "v3/wireless-module/3/data"
-            battery_topic = "v3/wireless-module/3/battery"
+            module_topic = "/v3/wireless-module/3/data"
+            battery_topic = "/v3/wireless-module/3/battery"
 
             publish(client, module_topic, module_data)
             publish(client, battery_topic, battery_data)
