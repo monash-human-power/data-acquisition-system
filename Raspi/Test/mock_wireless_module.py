@@ -12,8 +12,8 @@ parser.add_argument(
     default=float('Inf'), help="""Length of time to send data in seconds
     (duration). If nothing is selected it will continuously send out data.""")
 parser.add_argument(
-    '-r', '--rate', action='store', type=float, default=1,
-    help="""Rate of data in data sent per second. Default is 1 data pack sent
+    '-r', '--rate', action='store', type=float, default=5,
+    help="""Rate of data in data sent per second. Default is 5 data pack sent
     per second.""")
 parser.add_argument(
     '--host', action='store', type=str, default="localhost",
