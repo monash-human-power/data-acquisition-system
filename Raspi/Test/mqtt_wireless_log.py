@@ -17,35 +17,30 @@ def on_connect(client, userdata, flags, rc):
 
 
 def subscribe_to_all(client):
-    # TODO: FIX THE TOPICS TO SPEC
-    # TODO: ADD THE CORRECT '/'
-
     # Subscribe to all of the data topics
-    client.subscribe("v3/wireless-sensor/1/data")
-    client.subscribe("v3/wireless-sensor/2/data")
-    client.subscribe("v3/wireless-sensor/3/data")
+    client.subscribe("/v3/wireless-module/1/data")
+    client.subscribe("/v3/wireless-module/2/data")
+    client.subscribe("/v3/wireless-module/3/data")
 
     # Subscribe to all of the battery topics
-    client.subscribe("v3/wireless-sensor/battery/low")
-    client.subscribe("v3/wireless-sensor/1/battery")
-    client.subscribe("v3/wireless-sensor/2/battery")
-    client.subscribe("v3/wireless-sensor/3/battery")
+    client.subscribe("/v3/wireless-module/battery/low")
+    client.subscribe("/v3/wireless-module/1/battery")
+    client.subscribe("/v3/wireless-module/2/battery")
+    client.subscribe("/v3/wireless-module/3/battery")
 
     # Subscribe to all of the start topics
-    client.subscribe("v3/wireless-module/1/start")
-    client.subscribe("v3/wireless-module/2/start")
-    client.subscribe("v3/wireless-module/3/start")
+    client.subscribe("/v3/wireless-module/1/start")
+    client.subscribe("/v3/wireless-module/2/start")
+    client.subscribe("/v3/wireless-module/3/start")
 
     # Subscribe to all of the stop topics
-    client.subscribe("v3/wireless-module/1/stop")
-    client.subscribe("v3/wireless-module/2/stop")
-    client.subscribe("v3/wireless-module/3/stop")
+    client.subscribe("/v3/wireless-module/1/stop")
+    client.subscribe("/v3/wireless-module/2/stop")
+    client.subscribe("/v3/wireless-module/3/stop")
 
 
 def on_message(client, userdata, msg):
-    # TODO: FIX THE TOPICS TO SPEC
-    # TODO: ADD THE CORRECT '/'
-    module_id = str("M" + msg.topic[19])
+    module_id = str("M" + msg.topic[20])
     if msg.topic.endswith("start"):
         # Decode the data as utf-8 and load into python dict
         start_data = msg.payload.decode("utf-8")
@@ -56,10 +51,6 @@ def on_message(client, userdata, msg):
         is_recording[module_id + "_filename"] = start_data["filename"]
         print(module_id, "STARTED")
 
-        # mosquitto_pub -h localhost -t v3/wireless-module/1/start -m '{"filename": "blk1.csv"}'
-        # mosquitto_pub -h localhost -t v3/wireless-module/1/stop -m ''
-        # mosquitto_pub -h localhost -t v3/wireless-sensor/battery/low -m '{"module-id": 1}'
-
     elif msg.topic.endswith("stop"):
         # Update is_recording to stop the recording of the wireless module
         is_recording[module_id] = False
@@ -67,23 +58,18 @@ def on_message(client, userdata, msg):
 
         # Save the temporary data into CSV
         save_temp_csv(module_id)
-        print(module_id, "SAVED")
 
     else:
-        if msg.topic == "v3/wireless-sensor/battery/low":
+        if msg.topic == "/v3/wireless-module/battery/low":
             DataToTempCSV(msg)
         elif is_recording[module_id] is True:
             DataToTempCSV(msg, module_id)
 
 
 def save_temp_csv(module_id):
-    print(module_id)
     output_filename = is_recording[module_id + "_filename"]
-    print(output_filename)
     temp_filepaths = find_temp_csvs(module_id)
-    print(temp_filepaths)
     merge_temps(output_filename, temp_filepaths)
-    # remove_temps(temp_filepaths)
 
 
 def find_temp_csvs(module_id=""):
@@ -126,22 +112,21 @@ def merge_temps(output_filename, temp_filepaths):
 
 
 if __name__ == "__main__":
-    save_temp_csv("M1")
-    # is_recording = {
-    #     "M1": False,
-    #     "M2": False,
-    #     "M3": False,
-    #     "M1_filename": None,
-    #     "M2_filename": None,
-    #     "M2_filename": None,
-    # }
-    #
-    # broker_address = 'localhost'
-    # client = mqtt.Client()
-    #
-    # client.on_connect = on_connect
-    # client.on_message = on_message
-    #
-    # client.connect(broker_address)
-    #
-    # client.loop_forever()
+    is_recording = {
+        "M1": False,
+        "M2": False,
+        "M3": False,
+        "M1_filename": None,
+        "M2_filename": None,
+        "M2_filename": None,
+    }
+
+    broker_address = 'localhost'
+    client = mqtt.Client()
+
+    client.on_connect = on_connect
+    client.on_message = on_message
+
+    client.connect(broker_address)
+
+    client.loop_forever()
