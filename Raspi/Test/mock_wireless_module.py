@@ -171,7 +171,9 @@ def publish(client, topic, data):
 
 
 def start_modules(args):
-    # Initiate the correct modules when starting
+    """ Send the a fake filename on the start channel to start the appropriate
+    module"""
+
     if args.id is None:
         for i in range(1, 4):
             publish(client, "/v3/wireless-module/" + str(i) + "/start", {
@@ -191,6 +193,9 @@ def start_modules(args):
 
 
 def stop_modules(args):
+    """ Sends a null message on the stop channel for all of the modules to
+    stop"""
+
     print()  # Newline for clarity
     for i in range(1, 4):
         publish(client, "/v3/wireless-module/" + str(i) + "/stop", {})
@@ -198,7 +203,6 @@ def stop_modules(args):
 
 
 def start_publishing(client, args):
-
     print("\npublishing started...")
     start_modules(args)
     send_fake_data(client, args.time, args.rate, args.id)
