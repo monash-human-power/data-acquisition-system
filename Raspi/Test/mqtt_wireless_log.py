@@ -35,29 +35,29 @@ def on_message(client, userdata, msg):
         start_data = msg.payload.decode("utf-8")
         start_data = json.loads(start_data)
 
-        # Set the module to recording in the 'is_recording' dict
+        # Save the state of recording and the output filename to global dicts
         is_recording[module_id] = True
-        # ######Set the module to recording in the 'is_recording' dict
         output_filename[module_id] = start_data["filename"]
 
         print(module_id, "STARTED")
 
     # Stop the recording of <module_id>
     elif msg.topic.endswith("stop"):
-        # Update is_recording to stop the recording of the wireless module
+        # Change the state of recording to false in global dict
         is_recording[module_id] = False
+
         print(module_id, "STOPPED")
 
-        # Save the temporary data into a perminent CSV
+        # Save the temp CSV data into a proper CSV
         save_temp_csv(module_id)
 
-    else:
-        # low battery
-        if msg.topic == "/v3/wireless-module/battery/low":
-            DataToTempCSV(msg)
-        # low battery just record normal data
-        elif is_recording[module_id] is True:
-            DataToTempCSV(msg, module_id)
+    # Record low battery data
+    elif msg.topic == "/v3/wireless-module/battery/low":
+        DataToTempCSV(msg)
+
+    # Record other data
+    elif is_recording[module_id] is True:
+        DataToTempCSV(msg, module_id)
 
 
 def save_temp_csv(module_id):
