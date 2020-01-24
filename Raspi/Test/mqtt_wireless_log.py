@@ -125,9 +125,13 @@ def merge_temps(output_filename, temp_filepaths):
 
 
 if __name__ == "__main__":
+    # Clear the old temporary files in the folder, just in case the script
+    # exited early and they were not cleared properly
     remove_files(find_temp_csvs())
 
-    # M1, M1_filename
+    # Global dicts to store whether the module is currently
+    # recording data (boolean) and the output filename for the module (string).
+    # Dict structure is {<module_id> : <data>}
     is_recording = {}
     output_filename = {}
 
