@@ -5,7 +5,7 @@ import csv
 
 
 class DataToTempCSV:
-    def __init__(self, msg, module_id="ALL"):
+    def __init__(self, msg, module_id="LOW_BAT"):
         self.msg = msg
         self.data_dict = {}
         self.module_id = module_id
@@ -51,7 +51,8 @@ class DataToTempCSV:
                 self.data_dict[sensor_type] = sensor_value
 
     def parse_module_battery(self):
-        self.data_dict[self.module_id + "_percentage"] = self.module_data["percentage"]
+        self.data_dict[self.module_id + "_percentage"] = \
+            self.module_data["percentage"]
 
     def parse_low_battery(self):
         self.data_dict["lowBattery"] = 1

@@ -1,4 +1,3 @@
-import argparse
 import paho.mqtt.client as mqtt
 import os
 import pandas as pd
@@ -61,24 +60,36 @@ def on_message(client, userdata, msg):
 
 
 def save_temp_csv(module_id):
+    """ Saves the temp csvs into real csvs where the battery data and the
+    module data is combined into a single CSV"""
+
+    # Find the temp files in the current folder for the current module
     temp_filepaths = find_temp_csvs(module_id)
+
+    # Merge the battery and sensor data into a single CSV
     merge_temps(output_filename[module_id], temp_filepaths)
+
+    # Remove the temp files for the specific module that where generated
     remove_files(temp_filepaths)
 
 
 def find_temp_csvs(module_id=""):
-    """Searches throught the current directory and finds all the temp files and
-    merges them it finds a """
+    """ Searches throught the current directory and finds all the temp files
+    for a specific module_id and returns the filepaths in a list. If no
+    module_id is given then all temporary files will be found and returned
+    in a list."""
+
     current_dir = os.path.dirname(__file__)
 
+    # Depends on where the python script is called from
     if current_dir == '':
         filepaths = os.listdir()
     else:
         filepaths = os.listdir(current_dir)
 
+    # Find temp filepaths and store in the temp_filepaths list
     temp_filepaths = []
     for filename in filepaths:
-        # Find the temp filepaths and store in the array
         if filename.startswith(".~temp_" + module_id) and filename.endswith(".csv"):
             if current_dir == '':
                 temp_filepaths.append(filename)
@@ -89,7 +100,9 @@ def find_temp_csvs(module_id=""):
 
 
 def remove_files(filepaths):
-    """ Removes the files in the list of filepaths """
+    """ Removes the files in a list of filepaths
+    filepaths: Example list of filepaths is [filepath1, filepath2, filepath3]
+    """
     for file in filepaths:
         os.remove(file)
 
@@ -108,15 +121,8 @@ def merge_temps(output_filename, temp_filepaths):
 if __name__ == "__main__":
     remove_files(find_temp_csvs())
 
-    is_recording = {
-        # "M1": False,
-        # "M2": False,
-        # "M3": False,
-        # "M1_filename": None,
-        # "M2_filename": None,
-        # "M3_filename": None,
-    }
-
+    # M1, M1_filename
+    is_recording = {}
     output_filename = {}
 
     broker_address = 'localhost'
