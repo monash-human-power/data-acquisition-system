@@ -6,43 +6,25 @@ from DataToTempCSV import DataToTempCSV
 import json
 
 
-def on_connect(client, userdata, flags, rc):]
-    # Remove old temp files
-    remove_temps(find_temp_csvs())
+def on_connect(client, userdata, flags, rc):
+    """ When the MQTT client connects to the broker it prints out if it
+    connects successfully and then subscribes to all of the wireless-module
+    topics"""
 
     if rc == 0:
         print("Connected Successfully! Result code: " + str(rc))
     else:
         print("Something went wrong! Result code: " + str(rc))
 
-    subscribe_to_all(client)
-
-
-def subscribe_to_all(client):
-    # Subscribe to all of the data topics
-    client.subscribe("/v3/wireless-module/1/data")
-    client.subscribe("/v3/wireless-module/2/data")
-    client.subscribe("/v3/wireless-module/3/data")
-
-    # Subscribe to all of the battery topics
-    client.subscribe("/v3/wireless-module/battery/low")
-    client.subscribe("/v3/wireless-module/1/battery")
-    client.subscribe("/v3/wireless-module/2/battery")
-    client.subscribe("/v3/wireless-module/3/battery")
-
-    # Subscribe to all of the start topics
-    client.subscribe("/v3/wireless-module/1/start")
-    client.subscribe("/v3/wireless-module/2/start")
-    client.subscribe("/v3/wireless-module/3/start")
-
-    # Subscribe to all of the stop topics
-    client.subscribe("/v3/wireless-module/1/stop")
-    client.subscribe("/v3/wireless-module/2/stop")
-    client.subscribe("/v3/wireless-module/3/stop")
+    # Subscribe to all of the wireless module topics
+    client.subscribe("/v3/wireless-module/#")
 
 
 def on_message(client, userdata, msg):
-    module_id = str("M" + msg.topic[20])
+
+    # Module ID will be a number with a capital M infrom of it.
+    # eg M1, M2, M3...
+    module_id = "M" + str(msg.topic[20])
     if msg.topic.endswith("start"):
         # Decode the data as utf-8 and load into python dict
         start_data = msg.payload.decode("utf-8")
@@ -74,7 +56,7 @@ def save_temp_csv(module_id):
     output_filename = is_recording[module_id + "_filename"]
     temp_filepaths = find_temp_csvs(module_id)
     merge_temps(output_filename, temp_filepaths)
-    remove_temps(temp_filepaths)
+    remove_files(temp_filepaths)
 
 
 def find_temp_csvs(module_id=""):
@@ -99,7 +81,7 @@ def find_temp_csvs(module_id=""):
     return temp_filepaths
 
 
-def remove_temps(filepaths):
+def remove_files(filepaths):
     """ Removes the files in the list of filepaths """
     for file in filepaths:
         os.remove(file)
@@ -117,6 +99,8 @@ def merge_temps(output_filename, temp_filepaths):
 
 
 if __name__ == "__main__":
+    remove_files(find_temp_csvs())
+
     is_recording = {
         "M1": False,
         "M2": False,
