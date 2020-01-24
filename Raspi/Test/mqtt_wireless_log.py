@@ -6,12 +6,12 @@ from DataToTempCSV import DataToTempCSV
 import json
 
 
-def on_connect(client, userdata, flags, rc):
-    remove_temps(find_temp_csvs())  # Remove old temp files
+def on_connect(client, userdata, flags, rc):]
+    # Remove old temp files
+    remove_temps(find_temp_csvs())
 
     if rc == 0:
         print("Connected Successfully! Result code: " + str(rc))
-
     else:
         print("Something went wrong! Result code: " + str(rc))
 
