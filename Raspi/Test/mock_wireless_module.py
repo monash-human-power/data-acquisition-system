@@ -174,6 +174,10 @@ def start_modules(args):
     """ Send the a fake filename on the start channel to start the appropriate
     module"""
 
+    # TODO: Add posibility to make modules by importing a file or generating
+    # random modules. There should be a posibility to have many different
+    # modules.
+
     if args.id is None:
         for i in range(1, 4):
             publish(client, "/v3/wireless-module/" + str(i) + "/start", {
