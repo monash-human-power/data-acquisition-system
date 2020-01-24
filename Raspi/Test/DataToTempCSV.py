@@ -6,9 +6,6 @@ import csv
 
 class DataToTempCSV:
     def __init__(self, msg, module_id="ALL"):
-        # TODO: FIX THE TOPICS TO SPEC
-        # TODO: ADD THE CORRECT '/'
-
         self.msg = msg
         self.data_dict = {}
         self.module_id = module_id
@@ -36,7 +33,6 @@ class DataToTempCSV:
 
         # Add or create the temp CSV to store the data
         self.make_temp_csv()
-        print("recorded -->", self.data_dict)
 
     def parse_module_data(self):
         # Retrieve sensor data from python dict

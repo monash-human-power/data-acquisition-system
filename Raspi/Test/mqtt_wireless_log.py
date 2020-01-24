@@ -7,6 +7,8 @@ import json
 
 
 def on_connect(client, userdata, flags, rc):
+    remove_temps(find_temp_csvs())  # Remove old temp files
+
     if rc == 0:
         print("Connected Successfully! Result code: " + str(rc))
 
@@ -56,12 +58,14 @@ def on_message(client, userdata, msg):
         is_recording[module_id] = False
         print(module_id, "STOPPED")
 
-        # Save the temporary data into CSV
+        # Save the temporary data into a perminent CSV
         save_temp_csv(module_id)
 
     else:
+        # low battery
         if msg.topic == "/v3/wireless-module/battery/low":
             DataToTempCSV(msg)
+        # low battery just record normal data
         elif is_recording[module_id] is True:
             DataToTempCSV(msg, module_id)
 
@@ -70,6 +74,7 @@ def save_temp_csv(module_id):
     output_filename = is_recording[module_id + "_filename"]
     temp_filepaths = find_temp_csvs(module_id)
     merge_temps(output_filename, temp_filepaths)
+    remove_temps(temp_filepaths)
 
 
 def find_temp_csvs(module_id=""):
@@ -101,14 +106,14 @@ def remove_temps(filepaths):
 
 
 def merge_temps(output_filename, temp_filepaths):
-    dataframe = pd.DataFrame()
+    temps_dataframes = []
     for temp_filename in temp_filepaths:
+        temp_df = pd.read_csv(temp_filename)
+        temps_dataframes.append(temp_df)
 
-        temp = pd.read_csv(temp_filename)
-        for column in temp.columns:
-            dataframe[str(column)] = temp[column]
+    merged_dataframe = pd.concat(temps_dataframes, axis=1)
 
-    dataframe.to_csv(output_filename)
+    merged_dataframe.to_csv(output_filename)
 
 
 if __name__ == "__main__":
@@ -118,7 +123,7 @@ if __name__ == "__main__":
         "M3": False,
         "M1_filename": None,
         "M2_filename": None,
-        "M2_filename": None,
+        "M3_filename": None,
     }
 
     broker_address = 'localhost'
