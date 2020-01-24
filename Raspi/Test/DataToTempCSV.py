@@ -2,19 +2,23 @@ import json
 from datetime import datetime
 import os
 import csv
-
+# mosquitto_pub -t "/v3/wireless-module/battery/low" -m '{"module-id": 2}'
 
 class DataToTempCSV:
-    def __init__(self, msg, module_id="LOW_BAT"):
-        self.msg = msg
-        self.data_dict = {}
-        self.module_id = module_id
+    """ Single use object to parse the MQTT data and convert it to a temporary
+    CSV file stored in the current derectory"""
+
+    def __init__(self, msg, module_start_time, module_id):
+        self.msg = msg                  # Raw MQTT data
+        self.data_dict = {}             # Data to be output to a temp CSV
+        self.module_id = module_id      # Module_id eg. M1, M2 or M3
+        self.module_start_time = module_start_time  # Start time of the module
 
         # Decode the data as utf-8 and load into python dict
         self.module_data = self.msg.payload.decode("utf-8")
         self.module_data = json.loads(self.module_data)
 
-        # Determine which data to parse
+        # Determine which type of data to parse
         if msg.topic.endswith("data"):
             self.type = "DATA"
             self.parse_module_data()
@@ -25,16 +29,20 @@ class DataToTempCSV:
 
         elif msg.topic == "/v3/wireless-module/battery/low":
             self.type = "BATTERY_LOW"
-            self.parse_low_battery()
+            # Nothing to parse
 
-        # Add in the time and date that the data came in
-        current_time = str(datetime.now().time())
-        self.data_dict[self.module_id+"_"+self.type+"_time"] = current_time
+        # Find the difference in seconds to when the recording was started and
+        # when the data was recieved.
+        self.time_delta = datetime.now() - self.module_start_time
+        self.time_delta = self.time_delta.total_seconds()
+        self.data_dict[self.module_id+"_"+self.type+"_TIME"] = self.time_delta
 
         # Add or create the temp CSV to store the data
         self.make_temp_csv()
 
     def parse_module_data(self):
+        """ Parses the module data if it is from the sensors """
+
         # Retrieve sensor data from python dict
         sensor_data = self.module_data["sensors"]
 
@@ -51,11 +59,10 @@ class DataToTempCSV:
                 self.data_dict[sensor_type] = sensor_value
 
     def parse_module_battery(self):
+        """ Parses the module data if it is from the battery """
+
         self.data_dict[self.module_id + "_percentage"] = \
             self.module_data["percentage"]
-
-    def parse_low_battery(self):
-        self.data_dict["lowBattery"] = 1
 
     def make_temp_csv(self):
         # Ensures that the temp file is in the same folder as the script

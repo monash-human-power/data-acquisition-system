@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from DataToTempCSV import DataToTempCSV
 import json
+from datetime import datetime
 
 
 def on_connect(client, userdata, flags, rc):
@@ -31,11 +32,16 @@ def on_message(client, userdata, msg):
 
     # Start the recording of <module_id>
     if msg.topic.endswith("start"):
+        # Clear the old temporary files in the folder, just in case the script
+        # exited early and they were not cleared properly
+        remove_files(find_temp_csvs(module_id))
+
         start_data = msg.payload.decode("utf-8")
         start_data = json.loads(start_data)
 
         # Save the state of recording and the output filename to global dicts
         is_recording[module_id] = True
+        module_start_time[module_id] = datetime.now()
         output_filename[module_id] = start_data["filename"]
 
         print(module_id, "STARTED")
@@ -52,11 +58,15 @@ def on_message(client, userdata, msg):
 
     # Record low battery data
     elif msg.topic == "/v3/wireless-module/battery/low":
-        DataToTempCSV(msg)
+        module_data = msg.payload.decode("utf-8")
+        module_data = json.loads(module_data)
+        module_id = "M" + str(module_data["module-id"])
+
+        DataToTempCSV(msg, module_start_time[module_id], module_id)
 
     # Record other data
     elif is_recording[module_id] is True:
-        DataToTempCSV(msg, module_id)
+        DataToTempCSV(msg, module_start_time[module_id], module_id)
 
 
 def save_temp_csv(module_id):
@@ -125,15 +135,11 @@ def merge_temps(output_filename, temp_filepaths):
 
 
 if __name__ == "__main__":
-    # Clear the old temporary files in the folder, just in case the script
-    # exited early and they were not cleared properly
-    remove_files(find_temp_csvs())
-
-    # Global dicts to store whether the module is currently
-    # recording data (boolean) and the output filename for the module (string).
+    # Global dicts to store state
     # Dict structure is {<module_id> : <data>}
-    is_recording = {}
-    output_filename = {}
+    is_recording = {}       # If the data is being recorded
+    module_start_time = {}  # When the data started being recorded
+    output_filename = {}    # Output filename
 
     broker_address = 'localhost'
     client = mqtt.Client()
