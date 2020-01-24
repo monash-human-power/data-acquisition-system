@@ -23,7 +23,7 @@ class DataToTempCSV:
             self.type = "BATTERY"
             self.parse_module_battery()
 
-        elif msg.topic == "v3/wireless-sensor/battery/low":
+        elif msg.topic == "/v3/wireless-module/battery/low":
             self.type = "BATTERY_LOW"
             self.parse_low_battery()
 
