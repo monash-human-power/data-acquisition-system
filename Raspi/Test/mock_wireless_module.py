@@ -175,8 +175,7 @@ def start_modules(args):
     module"""
 
     # TODO: Add posibility to make modules by importing a file or generating
-    # random modules. There should be a posibility to have many different
-    # modules.
+    # random modules. The modules should not be hard coded to this script.
 
     if args.id is None:
         for i in range(1, 4):
