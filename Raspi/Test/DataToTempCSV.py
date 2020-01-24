@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 import os
 import csv
-# mosquitto_pub -t "/v3/wireless-module/battery/low" -m '{"module-id": 2}'
+
 
 class DataToTempCSV:
     """ Single use object to parse the MQTT data and convert it to a temporary
@@ -66,11 +66,15 @@ class DataToTempCSV:
             self.module_data["percentage"]
 
     def make_temp_csv(self):
+        """ Makes a temporary CSV file that is hidden and is in the form of
+        .~temp_<filename>.csv in the current directory"""
+
         # Ensures that the temp file is in the same folder as the script
         current_dir = os.path.dirname(__file__)
         temp_filename = str('.~temp_' + self.module_id+'_'+self.type + '.csv')
         temp_file_path = os.path.join(current_dir, temp_filename)
 
+        # Find the names for the CSV columns
         column_names = []
         for key in self.data_dict.keys():
             column_names.append(key)
