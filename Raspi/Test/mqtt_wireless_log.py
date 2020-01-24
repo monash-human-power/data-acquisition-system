@@ -108,13 +108,19 @@ def remove_files(filepaths):
 
 
 def merge_temps(output_filename, temp_filepaths):
-    temps_dataframes = []
+    """ This function merges multiple temporary module CSVs into a final one
+    and names the file correctly.
+    output_filename:    The name of the csv that is generated (String)
+    temp_filepaths:     Example list of filepaths is [filepath1, filepath2]"""
+
+    # Place all of the pandas dataframes into a list
+    temp_dataframes = []
     for temp_filename in temp_filepaths:
-        temp_df = pd.read_csv(temp_filename)
-        temps_dataframes.append(temp_df)
+        df = pd.read_csv(temp_filename)
+        temp_dataframes.append(df)
 
-    merged_dataframe = pd.concat(temps_dataframes, axis=1)
-
+    # Merge the dataframes and output the final csv
+    merged_dataframe = pd.concat(temp_dataframes, axis=1)
     merged_dataframe.to_csv(output_filename)
 
 
