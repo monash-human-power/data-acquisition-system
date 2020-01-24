@@ -21,20 +21,28 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, msg):
+    """ MQTT callback for when data is sent on the subscribed
+    '/v3/wireless-module/#' topics. The module_id is found by squashing M
+    infront of the module number. eg M1, M2, M3... etc. The module_id is used
+    for identifying what data came from where and is also used for naming the
+    temp files.
+    """
 
-    # Module ID will be a number with a capital M infrom of it.
-    # eg M1, M2, M3...
     module_id = "M" + str(msg.topic[20])
+
+    # Start the recording of <module_id>
     if msg.topic.endswith("start"):
-        # Decode the data as utf-8 and load into python dict
         start_data = msg.payload.decode("utf-8")
         start_data = json.loads(start_data)
 
-        # Update is_recording dict with correct filename and status
+        # Set the module to recording in the 'is_recording' dict
         is_recording[module_id] = True
-        is_recording[module_id + "_filename"] = start_data["filename"]
+        # ######Set the module to recording in the 'is_recording' dict
+        output_filename[module_id] = start_data["filename"]
+
         print(module_id, "STARTED")
 
+    # Stop the recording of <module_id>
     elif msg.topic.endswith("stop"):
         # Update is_recording to stop the recording of the wireless module
         is_recording[module_id] = False
@@ -53,9 +61,8 @@ def on_message(client, userdata, msg):
 
 
 def save_temp_csv(module_id):
-    output_filename = is_recording[module_id + "_filename"]
     temp_filepaths = find_temp_csvs(module_id)
-    merge_temps(output_filename, temp_filepaths)
+    merge_temps(output_filename[module_id], temp_filepaths)
     remove_files(temp_filepaths)
 
 
@@ -102,13 +109,15 @@ if __name__ == "__main__":
     remove_files(find_temp_csvs())
 
     is_recording = {
-        "M1": False,
-        "M2": False,
-        "M3": False,
-        "M1_filename": None,
-        "M2_filename": None,
-        "M3_filename": None,
+        # "M1": False,
+        # "M2": False,
+        # "M3": False,
+        # "M1_filename": None,
+        # "M2_filename": None,
+        # "M3_filename": None,
     }
+
+    output_filename = {}
 
     broker_address = 'localhost'
     client = mqtt.Client()
