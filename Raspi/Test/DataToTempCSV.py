@@ -47,16 +47,17 @@ class DataToTempCSV:
         sensor_data = self.module_data["sensors"]
 
         for sensor in sensor_data:
-            sensor_type = self.module_id + "_" + sensor["type"]
+            sensor_name = self.module_id + "_" + sensor["type"]
             sensor_value = sensor["value"]
 
             if isinstance(sensor_value, dict):
+                # For nested sensor values
                 for sub_sensor in sensor_value.keys():
-                    sub_sensor_type = sensor_type + '_' + sub_sensor
+                    sub_sensor_name = sensor_name + '_' + sub_sensor
                     sub_sensor_value = sensor_value[sub_sensor]
-                    self.data_dict[sub_sensor_type] = sub_sensor_value
+                    self.data_dict[sub_sensor_name] = sub_sensor_value
             else:
-                self.data_dict[sensor_type] = sensor_value
+                self.data_dict[sensor_name] = sensor_value
 
     def parse_module_battery(self):
         """ Parses the module data if it is from the battery """
