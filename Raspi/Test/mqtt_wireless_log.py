@@ -4,7 +4,7 @@ import pandas as pd
 from DataToTempCSV import DataToTempCSV
 import json
 from datetime import datetime
-
+import argparse
 
 # Global dicts to store state
 # Dict structure is {<module_id> : <data>}
@@ -12,7 +12,14 @@ is_recording = {}       # If the data is being recorded
 module_start_time = {}  # When the data started being recorded
 output_filename = {}    # Output filename
 
-broker_address = 'localhost'
+
+parser = argparse.ArgumentParser(
+    description='MQTT wireless logger',
+    add_help=True)
+parser.add_argument(
+    '--host', action='store', type=str, default="localhost",
+    help="""Address of the MQTT broker. If nothing is selected it will
+    default to localhost.""")
 
 
 def on_connect(client, userdata, flags, rc):
@@ -154,6 +161,8 @@ def merge_temps(output_filename, temp_filepaths):
 
 
 if __name__ == "__main__":
+    args = parser.parse_args()
+    broker_address = args.host
     client = mqtt.Client()
 
     client.on_connect = on_connect
