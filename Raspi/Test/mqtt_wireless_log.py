@@ -6,6 +6,15 @@ import json
 from datetime import datetime
 
 
+# Global dicts to store state
+# Dict structure is {<module_id> : <data>}
+is_recording = {}       # If the data is being recorded
+module_start_time = {}  # When the data started being recorded
+output_filename = {}    # Output filename
+
+broker_address = 'localhost'
+
+
 def on_connect(client, userdata, flags, rc):
     """ When the MQTT client connects to the broker it prints out if it
     connects successfully and then subscribes to all of the wireless-module
@@ -60,7 +69,7 @@ def on_message(client, userdata, msg):
     elif msg.topic == "/v3/wireless-module/battery/low":
         module_data = msg.payload.decode("utf-8")
         module_data = json.loads(module_data)
-        module_id = "M" + str(module_data["module-id"])
+        module_id = "M" + module_data["module-id"]
 
         DataToTempCSV(msg, module_start_time[module_id], module_id)
 
@@ -135,13 +144,6 @@ def merge_temps(output_filename, temp_filepaths):
 
 
 if __name__ == "__main__":
-    # Global dicts to store state
-    # Dict structure is {<module_id> : <data>}
-    is_recording = {}       # If the data is being recorded
-    module_start_time = {}  # When the data started being recorded
-    output_filename = {}    # Output filename
-
-    broker_address = 'localhost'
     client = mqtt.Client()
 
     client.on_connect = on_connect
