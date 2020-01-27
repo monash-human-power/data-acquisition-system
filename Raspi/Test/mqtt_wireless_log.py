@@ -54,7 +54,7 @@ def on_message(client, userdata, msg):
         record_low_battery(msg)
 
     # Record other data (battery and sensor data)
-    elif is_recording[module_id] is True:
+    elif is_recording[module_id]:
         DataToTempCSV(msg, module_start_time[module_id], module_id)
 
 
