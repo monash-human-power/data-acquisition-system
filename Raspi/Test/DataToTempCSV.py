@@ -74,16 +74,13 @@ class DataToTempCSV:
         temp_filename = str('.~temp_' + self.module_id+'_'+self.type + '.csv')
         temp_file_path = os.path.join(current_dir, temp_filename)
 
-        # Find the names for the CSV columns
-        column_names = []
-        for key in self.data_dict.keys():
-            column_names.append(key)
-
         # If the temp file does not exist write the headers for the CSV
         new_file = os.path.exists(temp_file_path)
 
         with open(temp_file_path, mode='a') as temp_file:
-            csv_writer = csv.DictWriter(temp_file, fieldnames=column_names)
+            csv_writer = csv.DictWriter(
+                temp_file,
+                fieldnames=self.data_dict.keys())
 
             if not new_file:
                 csv_writer.writeheader()
