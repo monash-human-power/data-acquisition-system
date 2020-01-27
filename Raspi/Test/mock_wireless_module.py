@@ -5,7 +5,7 @@ import paho.mqtt.client as mqtt
 from MockSensor import MockSensor
 
 parser = argparse.ArgumentParser(
-    description='MQTT wireless sensor test script that sends fake data',
+    description='MQTT wireless module test script that sends fake data',
     add_help=True)
 parser.add_argument(
     '-t', '--time', action='store', type=int,
@@ -21,8 +21,8 @@ parser.add_argument(
     default to localhost.""")
 parser.add_argument(
     '-i', '--id', action='store', type=int, default=None,
-    help="""Specify the sensor to produce fake data. eg. --id 1 specifies that
-    sensor 1 only produces data. If nothing is given all sensors will be
+    help="""Specify the module to produce fake data. eg. --id 1 specifies that
+    module 1 only produces data. If nothing is given all modules will be
     active.""")
 
 # Generate the fake sensors with average values
@@ -46,25 +46,44 @@ s_gps = MockSensor(("speed", 50),
                    ("course", 0))
 
 
-def send_fake_data(client, duration, rate, sensor_id):
-    """ Send artificial data over MQTT for each sensor chanel. Sends [rate] per
+def send_fake_data(client, duration, rate, module_id):
+    """ Send artificial data over MQTT for each module chanel. Sends [rate] per
     second for [duration] seconds"""
 
     start_time = round(time.time(), 2)
     total_time = 0
+    battery_duration = 5 * 60   # Battery info to be published every 5min
+    battery_counter = 0         # Battery counter to determine when to publish
 
     while total_time < duration:
         current_time = round(time.time(), 2)
         total_time = round(current_time - start_time, 2)
-        print()     # Newline for clarity
+        publish_battery = (battery_counter * battery_duration) <= total_time
 
         # TODO: create function that outputs the wireless data output so that
         # it can be compaired with the the data read by the wireless logging
         # script
 
-        # Wireless Sensor 1 (Middle)
-        if sensor_id == 1 or sensor_id is None:
-            sensor_data = {
+        def publish_data_and_battery(module_num):
+            battery_data = {
+                "module-id": module_num,
+                "percentage": s_battery.get_value()
+            }
+
+            module_topic = "/v3/wireless-module/"+str(module_num)+"/data"
+            battery_topic = "/v3/wireless-module/"+str(module_num)+"/battery"
+
+            publish(client, module_topic, module_data)
+            if publish_battery:
+                publish(client, battery_topic, battery_data)
+
+        if publish_battery:
+            battery_counter += 1
+
+        # Wireless module 1 (Middle)
+        if module_id == 1 or module_id is None:
+            module_num = 1
+            module_data = {
                             "sensors": [
                                 {
                                     "type": "temperature",
@@ -80,17 +99,12 @@ def send_fake_data(client, duration, rate, sensor_id):
                                 }
                              ]
                           }
-            battery_data = {"percentage": s_battery.get_value()}
+            publish_data_and_battery(module_num)
 
-            sensor_topic = "v3/wireless-sensor/1/data"
-            battery_topic = "v3/wireless-sensor/1/battery"
-
-            publish(client, sensor_topic, sensor_data)
-            publish(client, battery_topic, battery_data)
-
-        # Wireless Sensor 2 (Back)
-        if sensor_id == 2 or sensor_id is None:
-            sensor_data = {
+        # Wireless module 2 (Back)
+        if module_id == 2 or module_id is None:
+            module_num = 2
+            module_data = {
                             "sensors": [
                                 {
                                     "type": "co2",
@@ -114,17 +128,12 @@ def send_fake_data(client, duration, rate, sensor_id):
                                 }
                              ]
                           }
-            battery_data = {"percentage": s_battery.get_value()}
+            publish_data_and_battery(module_num)
 
-            sensor_topic = "v3/wireless-sensor/2/data"
-            battery_topic = "v3/wireless-sensor/2/battery"
-
-            publish(client, sensor_topic, sensor_data)
-            publish(client, battery_topic, battery_data)
-
-        # Wireless Sensor 3 (Front)
-        if sensor_id == 3 or sensor_id is None:
-            sensor_data = {
+        # Wireless module 3 (Front)
+        if module_id == 3 or module_id is None:
+            module_num = 3
+            module_data = {
                             "sensors": [
                                 {
                                     "type": "co2",
@@ -140,14 +149,9 @@ def send_fake_data(client, duration, rate, sensor_id):
                                 }
                              ]
                           }
-            battery_data = {"percentage": s_battery.get_value()}
+            publish_data_and_battery(module_num)
 
-            sensor_topic = "v3/wireless-sensor/3/data"
-            battery_topic = "v3/wireless-sensor/3/battery"
-
-            publish(client, sensor_topic, sensor_data)
-            publish(client, battery_topic, battery_data)
-
+        print()  # Newline for clarity
         time.sleep(1/rate)
 
 
@@ -166,10 +170,47 @@ def publish(client, topic, data):
     print(topic, "--> ", json_data)
 
 
+def start_modules(args):
+    """ Send the a fake filename on the start channel to start the appropriate
+    module"""
+
+    # TODO: Add posibility to make modules by importing a file or generating
+    # random modules. The modules should not be hard coded to this script.
+
+    if args.id is None:
+        for i in range(1, 4):
+            publish(client, "/v3/wireless-module/" + str(i) + "/start", {
+                "filename": "M" + str(i)
+                + "_" + str(round(time.time()))
+                + ".csv"
+            })
+        print('\nstarted module 1\nstarted module 2\nstarted module 3\n')
+
+    else:
+        publish(client, "/v3/wireless-module/" + str(args.id) + "/start", {
+            "filename": "M" + str(args.id)
+            + "_" + str(round(time.time()))
+            + ".csv"
+        })
+        print('started module ' + str(args.id) + '\n')
+
+
+def stop_modules(args):
+    """ Sends a null message on the stop channel for all of the modules to
+    stop"""
+
+    print()  # Newline for clarity
+    for i in range(1, 4):
+        publish(client, "/v3/wireless-module/" + str(i) + "/stop", {})
+    print('\nstopped module 1\nstopped module 2\nstopped module 3')
+
+
 def start_publishing(client, args):
-    print("publishing started...")
+    print("\npublishing started...")
+    start_modules(args)
     send_fake_data(client, args.time, args.rate, args.id)
-    print("publishing finished")
+    stop_modules(args)
+    print("\npublishing finished")
 
 
 def on_connect(client, userdata, flags, rc):
