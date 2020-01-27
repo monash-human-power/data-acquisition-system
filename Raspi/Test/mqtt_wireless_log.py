@@ -28,7 +28,7 @@ def on_message(client, userdata, msg):
     temp files.
     """
 
-    module_id = "M" + str(msg.topic[20])
+    module_id = "M" + msg.topic.split("/")[3]
 
     # Start the recording of <module_id>
     if msg.topic.endswith("start"):
