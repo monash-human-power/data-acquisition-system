@@ -71,7 +71,7 @@ class DataToTempCSV:
 
         # Ensures that the temp file is in the same folder as the script
         current_dir = os.path.dirname(__file__)
-        temp_filename = str('.~temp_' + self.module_id+'_'+self.type + '.csv')
+        temp_filename = '.~temp_' + self.module_id + '_' + self.type + '.csv'
         temp_file_path = os.path.join(current_dir, temp_filename)
 
         # If the temp file does not exist write the headers for the CSV
