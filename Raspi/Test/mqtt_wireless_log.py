@@ -41,41 +41,51 @@ def on_message(client, userdata, msg):
 
     # Start the recording of <module_id>
     if msg.topic.endswith("start"):
-        # Clear the old temporary files in the folder, just in case the script
-        # exited early and they were not cleared properly
-        remove_files(find_temp_csvs(module_id))
-
-        start_data = msg.payload.decode("utf-8")
-        start_data = json.loads(start_data)
-
-        # Save the state of recording and the output filename to global dicts
-        is_recording[module_id] = True
-        module_start_time[module_id] = datetime.now()
-        output_filename[module_id] = start_data["filename"]
-
+        start_recording(msg, module_id)
         print(module_id, "STARTED")
 
     # Stop the recording of <module_id>
     elif msg.topic.endswith("stop"):
-        # Change the state of recording to false in global dict
-        is_recording[module_id] = False
-
+        stop_recording(module_id)
         print(module_id, "STOPPED")
-
-        # Save the temp CSV data into a proper CSV
-        save_temp_csv(module_id)
 
     # Record low battery data
     elif msg.topic == "/v3/wireless-module/battery/low":
-        module_data = msg.payload.decode("utf-8")
-        module_data = json.loads(module_data)
-        module_id = "M" + module_data["module-id"]
-
-        DataToTempCSV(msg, module_start_time[module_id], module_id)
+        record_low_battery(msg)
 
     # Record other data (battery and sensor data)
     elif is_recording[module_id] is True:
         DataToTempCSV(msg, module_start_time[module_id], module_id)
+
+
+def start_recording(msg, module_id):
+    # Clear the old temporary files in the folder, just in case the script
+    # exited early and they were not cleared properly
+    remove_files(find_temp_csvs(module_id))
+
+    start_data = msg.payload.decode("utf-8")
+    start_data = json.loads(start_data)
+
+    # Save the state of recording and the output filename to global dicts
+    is_recording[module_id] = True
+    module_start_time[module_id] = datetime.now()
+    output_filename[module_id] = start_data["filename"]
+
+
+def stop_recording(module_id):
+    # Change the state of recording to false in global dict
+    is_recording[module_id] = False
+
+    # Save the temp CSV data into a proper CSV
+    save_temp_csv(module_id)
+
+
+def record_low_battery(msg):
+    module_data = msg.payload.decode("utf-8")
+    module_data = json.loads(module_data)
+    module_id = "M" + module_data["module-id"]
+
+    DataToTempCSV(msg, module_start_time[module_id], module_id)
 
 
 def save_temp_csv(module_id):
