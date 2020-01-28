@@ -66,6 +66,7 @@ def on_message(client, userdata, msg):
 
 
 def start_recording(msg, module_id):
+    """ Start recording for a specific module """
     # Clear the old temporary files in the folder, just in case the script
     # exited early and they were not cleared properly
     remove_files(find_temp_csvs(module_id))
@@ -80,6 +81,7 @@ def start_recording(msg, module_id):
 
 
 def stop_recording(module_id):
+    """ Stop recording for a specific module """
     # Change the state of recording to false in global dict
     is_recording[module_id] = False
 
@@ -88,6 +90,7 @@ def stop_recording(module_id):
 
 
 def record_low_battery(msg):
+    """ Record the low battery data for on message """
     module_data = msg.payload.decode("utf-8")
     module_data = json.loads(module_data)
     module_id = "M" + module_data["module-id"]
