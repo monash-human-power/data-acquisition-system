@@ -35,7 +35,8 @@ class DataToTempCSV:
         # when the data was recieved.
         self.time_delta = datetime.now() - self.module_start_time
         self.time_delta = self.time_delta.total_seconds()
-        self.data_dict[self.module_id+"_"+self.type+"_TIME"] = self.time_delta
+        time_dict_key = f"{self.module_id}_{self.type}_TIME"
+        self.data_dict[time_dict_key] = self.time_delta
 
         # Add or create the temp CSV to store the data
         self.make_temp_csv()
@@ -52,9 +53,8 @@ class DataToTempCSV:
 
             if isinstance(sensor_value, dict):
                 # For nested sensor values
-                for sub_sensor in sensor_value.keys():
+                for (sub_sensor, sub_sensor_value) in sensor_value.items():
                     sub_sensor_name = sensor_name + '_' + sub_sensor
-                    sub_sensor_value = sensor_value[sub_sensor]
                     self.data_dict[sub_sensor_name] = sub_sensor_value
             else:
                 self.data_dict[sensor_name] = sensor_value
