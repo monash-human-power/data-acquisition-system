@@ -4,42 +4,42 @@ import os
 import csv
 
 
-class DataToTempCSV:
-    """ Single use object to parse the MQTT data and convert it to a temporary
-    CSV file stored in the current derectory"""
+def DataToTempCSV(msg, module_start_time, module_id):
+    """ Function to parse the MQTT data and convert it to a temporary
+    CSV file stored in the current derectory
+    msg:                        Raw MQTT data
+    module_id:                  Module_id eg. M1, M2 or M3
+    module_start_time:          Start time of the module (datetime obj)
+    """
 
-    def __init__(self, msg, module_start_time, module_id):
-        self.msg = msg                  # Raw MQTT data
-        self.data_dict = {}             # Data to be output to a temp CSV
-        self.module_id = module_id      # Module_id eg. M1, M2 or M3
-        self.module_start_time = module_start_time  # Start time of the module
+    data_dict = {}             # Data to be output to a temp CSV
 
-        # Decode the data as utf-8 and load into python dict
-        self.module_data = self.msg.payload.decode("utf-8")
-        self.module_data = json.loads(self.module_data)
+    # Decode the data as utf-8 and load into python dict
+    module_data = msg.payload.decode("utf-8")
+    module_data = json.loads(module_data)
 
-        # Determine which type of data to parse
-        if msg.topic.endswith("data"):
-            self.type = "DATA"
-            self.parse_module_data()
+    # Determine which type of data to parse
+    if msg.topic.endswith("data"):
+        type = "DATA"
+        parse_module_data()
 
-        elif msg.topic.endswith("battery"):
-            self.type = "BATTERY"
-            self.parse_module_battery()
+    elif msg.topic.endswith("battery"):
+        type = "BATTERY"
+        parse_module_battery()
 
-        elif msg.topic == "/v3/wireless-module/battery/low":
-            self.type = "BATTERY_LOW"
-            # Nothing to parse
+    elif msg.topic == "/v3/wireless-module/battery/low":
+        type = "BATTERY_LOW"
+        # Nothing to parse
 
-        # Find the difference in seconds to when the recording was started and
-        # when the data was recieved.
-        self.time_delta = datetime.now() - self.module_start_time
-        self.time_delta = self.time_delta.total_seconds()
-        time_dict_key = f"{self.module_id}_{self.type}_TIME"
-        self.data_dict[time_dict_key] = self.time_delta
+    # Find the difference in seconds to when the recording was started and
+    # when the data was recieved.
+    time_delta = datetime.now() - module_start_time
+    time_delta = time_delta.total_seconds()
+    time_dict_key = f"{module_id}_{type}_TIME"
+    data_dict[time_dict_key] = time_delta
 
-        # Add or create the temp CSV to store the data
-        self.make_temp_csv()
+    # Add or create the temp CSV to store the data
+    self.make_temp_csv()
 
     def parse_module_data(self):
         """ Parses the module data if it is from the sensors """
