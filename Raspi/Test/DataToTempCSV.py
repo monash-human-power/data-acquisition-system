@@ -12,35 +12,6 @@ def DataToTempCSV(msg, module_start_time, module_id):
     module_start_time:          Start time of the module (datetime obj)
     """
 
-    data_dict = {}             # Data to be output to a temp CSV
-
-    # Decode the data as utf-8 and load into python dict
-    module_data = msg.payload.decode("utf-8")
-    module_data = json.loads(module_data)
-
-    # Determine which type of data to parse
-    if msg.topic.endswith("data"):
-        type = "DATA"
-        parse_module_data()
-
-    elif msg.topic.endswith("battery"):
-        type = "BATTERY"
-        parse_module_battery()
-
-    elif msg.topic == "/v3/wireless-module/battery/low":
-        type = "BATTERY_LOW"
-        # Nothing to parse
-
-    # Find the difference in seconds to when the recording was started and
-    # when the data was recieved.
-    time_delta = datetime.now() - module_start_time
-    time_delta = time_delta.total_seconds()
-    time_dict_key = f"{module_id}_{type}_TIME"
-    data_dict[time_dict_key] = time_delta
-
-    # Add or create the temp CSV to store the data
-    self.make_temp_csv()
-
     def parse_module_data(self):
         """ Parses the module data if it is from the sensors """
 
@@ -87,3 +58,32 @@ def DataToTempCSV(msg, module_start_time, module_id):
 
             # Append the data onto the temporary file
             csv_writer.writerow(self.data_dict)
+
+    data_dict = {}  # Data to be output to a temp CSV
+
+    # Decode the data as utf-8 and load into python dict
+    module_data = msg.payload.decode("utf-8")
+    module_data = json.loads(module_data)
+
+    # Determine which type of data to parse
+    if msg.topic.endswith("data"):
+        type = "DATA"
+        parse_module_data()
+
+    elif msg.topic.endswith("battery"):
+        type = "BATTERY"
+        parse_module_battery()
+
+    elif msg.topic == "/v3/wireless-module/battery/low":
+        type = "BATTERY_LOW"
+        # Nothing to parse
+
+    # Find the difference in seconds to when the recording was started and
+    # when the data was recieved.
+    time_delta = datetime.now() - module_start_time
+    time_delta = time_delta.total_seconds()
+    time_dict_key = f"{module_id}_{type}_TIME"
+    data_dict[time_dict_key] = time_delta
+
+    # Add or create the temp CSV to store the data
+    self.make_temp_csv(module_data)
