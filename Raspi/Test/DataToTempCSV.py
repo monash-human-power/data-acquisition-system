@@ -12,29 +12,29 @@ def DataToTempCSV(msg, module_start_time, module_id):
     module_start_time:          Start time of the module (datetime obj)
     """
 
-    def parse_module_data(self):
+    def parse_module_data():
         """ Parses the module data if it is from the sensors """
 
         # Retrieve sensor data from python dict
-        sensor_data = self.module_data["sensors"]
+        sensor_data = module_data["sensors"]
 
         for sensor in sensor_data:
-            sensor_name = self.module_id + "_" + sensor["type"]
+            sensor_name = module_id + "_" + sensor["type"]
             sensor_value = sensor["value"]
 
             if isinstance(sensor_value, dict):
                 # For nested sensor values
                 for (sub_sensor, sub_sensor_value) in sensor_value.items():
                     sub_sensor_name = sensor_name + '_' + sub_sensor
-                    self.data_dict[sub_sensor_name] = sub_sensor_value
+                    data_dict[sub_sensor_name] = sub_sensor_value
             else:
-                self.data_dict[sensor_name] = sensor_value
+                data_dict[sensor_name] = sensor_value
 
     def parse_module_battery(self):
         """ Parses the module data if it is from the battery """
 
-        self.data_dict[self.module_id + "_percentage"] = \
-            self.module_data["percentage"]
+        data_dict[module_id + "_percentage"] = \
+            module_data["percentage"]
 
     def make_temp_csv(self):
         """ Makes a temporary CSV file that is hidden and is in the form of
@@ -42,7 +42,7 @@ def DataToTempCSV(msg, module_start_time, module_id):
 
         # Ensures that the temp file is in the same folder as the script
         current_dir = os.path.dirname(__file__)
-        temp_filename = '.~temp_' + self.module_id + '_' + self.type + '.csv'
+        temp_filename = '.~temp_' + module_id + '_' + type + '.csv'
         temp_file_path = os.path.join(current_dir, temp_filename)
 
         # If the temp file does not exist write the headers for the CSV
@@ -51,13 +51,13 @@ def DataToTempCSV(msg, module_start_time, module_id):
         with open(temp_file_path, mode='a') as temp_file:
             csv_writer = csv.DictWriter(
                 temp_file,
-                fieldnames=self.data_dict.keys())
+                fieldnames=data_dict.keys())
 
             if not new_file:
                 csv_writer.writeheader()
 
             # Append the data onto the temporary file
-            csv_writer.writerow(self.data_dict)
+            csv_writer.writerow(data_dict)
 
     data_dict = {}  # Data to be output to a temp CSV
 
@@ -86,4 +86,4 @@ def DataToTempCSV(msg, module_start_time, module_id):
     data_dict[time_dict_key] = time_delta
 
     # Add or create the temp CSV to store the data
-    self.make_temp_csv(module_data)
+    make_temp_csv(module_data)
