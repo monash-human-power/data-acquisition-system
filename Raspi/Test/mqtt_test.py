@@ -9,6 +9,9 @@ parser = argparse.ArgumentParser(description='DAS MQTT python script', add_help=
 parser.add_argument('-t', '--time', action='store', type=int, default=1, help="length of time to send data")
 parser.add_argument('-r', '--rate', action='store', type=float, default=0.5, help="rate of data in seconds")
 parser.add_argument('--host', action='store', type=str, default="localhost", help="address of the MQTT broker")
+parser.add_argument('--port', action='store', type=int, default=1883, help="address of the MQTT broker")
+parser.add_argument('--username', action='store', type=str, help="username for the MQTT broker (optional)")
+parser.add_argument('--password', action='store', type=str, help="password for the MQTT broker (optional)")
 parser.add_argument('-f', '--file', action='store', type=str, help="The csv file to replay. If not specified, makes up data.")
 parser.add_argument('-s', '--speed', action='store', type=float, default=1, help="Replay speed multiplier")
 parser.add_argument('-j', '--jump', action='store', type=int, default=0, help="Starts replaying from a specified time (in seconds)")
@@ -40,12 +43,18 @@ def on_message(client, userdata, msg):
 def run():
     args = parser.parse_args()
     broker_address = args.host
+    broker_port = args.port
     client = mqtt.Client()
 
     client.on_connect = on_connect
     client.on_message = on_message
 
-    client.connect(broker_address)
+    broker_username = args.username
+    broker_password = args.password
+    if broker_username is not None:
+        client.username_pw_set(broker_username, broker_password)
+
+    client.connect(broker_address, port=broker_port)
     start_publishing(client, args)
 
     client.loop_forever()
