@@ -78,10 +78,39 @@ async function antplusConnect() {
   });
 }
 
+/**
+ * @param antPlus
+ */
+async function bicyclePowerConnect(antPlus) {
+  return new Promise((resolve) => {
+    const bicyclePowerScanner = new Ant.BicyclePowerScanner(antPlus);
+    bicyclePowerScanner.scan();
+    bicyclePowerScanner.on('attached', () => {
+      winston.info('Bicycle power sensor attached');
+      resolve(bicyclePowerScanner);
+    });
+  });
+}
+
+/**
+ * @param antPlus
+ */
+async function heartRateConnect(antPlus) {
+  return new Promise((resolve) => {
+    const heartRateScanner = new Ant.HeartRateScanner(antPlus);
+    heartRateScanner.scan();
+    heartRateScanner.on('attached', () => {
+      winston.info('Heart rate sensor attached');
+      resolve(heartRateScanner);
+    });
+  });
+}
+
 (async () => {
   let isRecording = false;
   let power = 0;
   let cadence = 0;
+  let heartRate = 0;
 
   const mqttClient = await mqttConnect();
   const antPlus = await antplusConnect();
@@ -104,17 +133,19 @@ async function antplusConnect() {
     }
   });
 
-  const bicyclePowerSensor = new Ant.BicyclePowerSensor(antPlus);
-  // Connect to the first device found
-  bicyclePowerSensor.attach(0, 0);
-  bicyclePowerSensor.on('attached', () => {
-    winston.info('ant-plus sensor attached');
-  });
-  bicyclePowerSensor.on('powerData', (data) => {
+  const bicyclePowerScanner = await bicyclePowerConnect(antPlus);
+  bicyclePowerScanner.on('powerData', (data) => {
     // Store power meter into global variable
     cadence = data.Cadence;
     power = data.Power;
     winston.info(`ID: ${data.DeviceID}, Cadence: ${cadence}, Power: ${power}`);
+  });
+
+  const heartRateScanner = await heartRateConnect(antPlus);
+  heartRateScanner.on('hbData', (data) => {
+    // Store heart rate into global variable
+    heartRate = data.ComputedHeartRate;
+    winston.info(`ID: ${data.DeviceID}, Heart Rate: ${heartRate}`);
   });
 
   setInterval(() => {
@@ -129,6 +160,10 @@ async function antplusConnect() {
           {
             type: 'cadence',
             value: cadence,
+          },
+          {
+            type: 'heartRate',
+            value: heartRate,
           },
         ],
       };
