@@ -1,12 +1,5 @@
-let findAntPlusInterval;
-let FILENAME = null;
-
-/* Modules */
-const path = require('path');
 const mqtt = require('mqtt');
 const { ArgumentParser } = require('argparse');
-const SerialPort = require('serialport');
-const request = require('request-promise-native');
 const Ant = require('ant-plus');
 const winston = require('./config/winston');
 
@@ -16,165 +9,132 @@ const argumentParser = new ArgumentParser({
   description: 'MHP DAS',
 });
 
-argumentParser.addArgument(['-a', '--antplus'], {
-  help: 'Disable ant plus from DAS',
-  action: 'storeTrue',
+argumentParser.addArgument(['-i', '--id'], {
+  help: 'Wireless sensor module ID',
+  defaultValue: 4,
+  type: 'int',
+  action: 'store',
 });
-argumentParser.addArgument(['-p', '--serial-port'], {
-  help: 'Set the serial port to use',
-  defaultValue: '/dev/serial0',
+argumentParser.addArgument(['-a', '--host'], {
+  help:
+    'Address of the MQTT broker. If nothing is selected it will default to http://localhost.',
+  defaultValue: 'http://localhost',
+  action: 'store',
+});
+argumentParser.addArgument(['-r', '--rate'], {
+  help: 'Rate to publish data in Hz',
+  defaultValue: 1,
+  type: 'float',
+  action: 'store',
 });
 
 const args = argumentParser.parseArgs();
-winston.info(`Disable antplus: ${args.antplus}`);
-winston.info(`Serial port: ${args.serial_port}`);
+const { id: moduleID, host: mqttAddress, rate } = args;
+winston.info(`Wireless module ID: ${moduleID}`);
 
-// Set up server connection
+const startTopic = `/v3/wireless-module/${moduleID}/start`;
+const stopTopic = `/v3/wireless-module/${moduleID}/stop`;
+const dataTopic = `/v3/wireless-module/${moduleID}/data`;
 
-const DAS_SERVER_ADDR = 'http://127.0.0.1:5000';
-const IS_SERVER_CONNECTED = false;
-
-/* Serial connection */
-// Set up serial port connection
-
-const serialportOptions = {
-  autoOpen: false,
-  baudRate: 500000,
-  dataBits: 8,
-  stopBits: 1,
-  parity: 'none',
-};
-const serialPort = new SerialPort(
-  args['serial_port'],
-  serialportOptions,
-  err => {
-    // Print out error with opening serial port
-    if (err) {
-      winston.error(err);
-    }
-  },
-);
-// Parse incoming data;
-const { Readline } = SerialPort.parsers;
-const parser = new Readline();
-serialPort.pipe(parser);
-
-const antPlus = new Ant.GarminStick3();
-const bicyclePowerSensor = new Ant.BicyclePowerSensor(antPlus);
-
-/* MQTT */
-// Set up mqtt
-
-const mqttOptions = {
-  reconnectPeriod: 1000,
-  connectTimeout: 5000,
-};
-const mqttClient = mqtt.connect('mqtt://localhost:1883', mqttOptions);
-
-/* Start of main code */
-
-function connectWithTeensy() {
-  // Open event to tell us when connection with teensy has been made
-  serialPort.open(err => {
-    if (err) {
-      winston.error(err.message);
-    } else {
-      winston.info('Serial port open');
-    }
-  });
-
-  serialPort.write('reading', err => {
-    if (err) {
-      winston.error('Error on write: ', err.message);
-    } else {
-      winston.info('Reading Teensy Data!');
-    }
+/**
+ * Connect to the MQTT broker
+ *
+ * @returns {Promise<mqtt.MqttClient>} Promise of MQTT client
+ */
+async function mqttConnect() {
+  return new Promise((resolve) => {
+    winston.info('Connecting to MQTT broker...');
+    const mqttOptions = {
+      reconnectPeriod: 1000,
+      connectTimeout: 5000,
+    };
+    const mqttClient = mqtt.connect(mqttAddress, mqttOptions);
+    mqttClient.on('connect', () => {
+      winston.info('Connected to MQTT broker');
+      resolve(mqttClient);
+    });
   });
 }
 
-// Check if ant-plus dongle is connected to Raspberry Pi
-function checkAntPlusConnection() {
-  if (!args.antplus && !antPlus.open()) {
-    winston.error('Ant-plus usb stick not found!');
-    return false;
-  }
-  // Stop looking for ant-plus dongle
-  clearInterval(findAntPlusInterval);
-  setImmediate(connectWithTeensy);
-  return true;
-}
+/**
+ * @typedef {import('ant-plus/build/ant').GarminStick3} GarminStick3
+ */
 
-// Only ran if connected to mqtt broker
-function mqttConnected() {
-  findAntPlusInterval = setInterval(() => {
+/**
+ * Connect to the ANT+ stick
+ *
+ * @returns {Promise<GarminStick3>} Promise of ANT+ stick instance
+ */
+async function antplusConnect() {
+  return new Promise((resolve) => {
+    const antPlus = new Ant.GarminStick3();
     winston.info('Finding ant-plus USB...');
-    checkAntPlusConnection();
-  }, 1000);
+    antPlus.openAsync(() => {
+      antPlus.on('startup', () => {
+        winston.info('ant-plus stick initialized');
+        resolve(antPlus);
+      });
+    });
+  });
 }
 
-// Receive filename for us to use
-let IS_RECORDING = false;
-let INITIAL_TIME = 0;
-function main(topic, message) {
-  winston.info(`Topic fired: ${topic}`);
-  switch (topic) {
-    // Filename to use
-    case 'filename':
-      FILENAME = message.toString();
-      IS_RECORDING = true;
-      break;
-    default:
-      winston.error(`Unexpected topic: ${topic}`);
-  }
-}
+(async () => {
+  let isRecording = false;
+  let power = 0;
+  let cadence = 0;
 
-winston.info('Connecting to mqtt server...');
-mqttClient.subscribe('filename');
-mqttClient.on('connect', mqttConnected);
-mqttClient.on('message', main);
+  const mqttClient = await mqttConnect();
+  const antPlus = await antplusConnect();
 
-antPlus.on('startup', () => {
-  winston.info('ant-plus stick initialized');
+  mqttClient.subscribe([startTopic, stopTopic]);
+  mqttClient.on('message', (topic) => {
+    winston.info(`Topic fired: ${topic}`);
+    switch (topic) {
+      case startTopic:
+        isRecording = true;
+        winston.info('Start publishing data');
+        break;
+      case stopTopic:
+        isRecording = false;
+        winston.info('Stop publishing data');
+        break;
+      default:
+        winston.error(`Unexpected topic: ${topic}`);
+        break;
+    }
+  });
+
+  const bicyclePowerSensor = new Ant.BicyclePowerSensor(antPlus);
   // Connect to the first device found
   bicyclePowerSensor.attach(0, 0);
-});
-
-let CADENCE = 0;
-let POWER = 0;
-serialPort.on('open', () => {
-  winston.info('Port opened with Teensy');
-  // Power meter data
-  bicyclePowerSensor.on('powerData', data => {
-    if (IS_RECORDING) {
-      // Store power meter into global variable
-      CADENCE = data.Cadence;
-      POWER = data.Power;
-      winston.info(
-        `ID: ${data.DeviceID}, Cadence: ${CADENCE}, Power: ${POWER}`,
-      );
-    }
+  bicyclePowerSensor.on('attached', () => {
+    winston.info('ant-plus sensor attached');
+  });
+  bicyclePowerSensor.on('powerData', (data) => {
+    // Store power meter into global variable
+    cadence = data.Cadence;
+    power = data.Power;
+    winston.info(`ID: ${data.DeviceID}, Cadence: ${cadence}, Power: ${power}`);
   });
 
-  // mqtt broker and Teensy need to be both connected to receive data
-  parser.on('data', data => {
-    winston.info(`Teensy - ${data}`);
-    if (data === 'start') {
-      // Let mqtt broker know we have started recording
-      mqttClient.publish('start');
-      INITIAL_TIME = Math.floor(Date.now());
-    } else if (data === 'stop') {
-      // Reset variables
-      IS_RECORDING = false;
-      CADENCE = 0;
-      POWER = 0;
-      mqttClient.publish('stop');
+  setInterval(() => {
+    if (isRecording) {
+      const payload = {
+        'module-id': moduleID,
+        sensors: [
+          {
+            type: 'power',
+            value: power,
+          },
+          {
+            type: 'cadence',
+            value: cadence,
+          },
+        ],
+      };
+      const data = JSON.stringify(payload);
+      mqttClient.publish(dataTopic, data);
+      winston.info(`${dataTopic} -> ${data}`);
     }
-
-    if (IS_RECORDING) {
-      const currentTime = Math.floor(Date.now());
-      const outputData = `${data}&filename=${FILENAME}&time=${currentTime -
-        INITIAL_TIME}&power=${POWER}&cadence=${CADENCE}`;
-      mqttClient.publish('data', outputData);
-    }
-  });
-});
+  }, 1000 / rate);
+})();
