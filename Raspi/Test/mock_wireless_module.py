@@ -196,14 +196,15 @@ def start_modules(args):
     # TODO: Add posibility to make modules by importing a file or generating
     # random modules. The modules should not be hard coded to this script.
 
+    print()
     if args.id is None:
-        for i in range(1, 4):
+        for i in range(1, 5):
             publish(client, "/v3/wireless-module/" + str(i) + "/start", {
                 "filename": "M" + str(i)
                 + "_" + str(round(time.time()))
                 + ".csv"
             })
-        print('\nstarted module 1\nstarted module 2\nstarted module 3\n')
+            print('started module ' + str(i) + '\n')
 
     else:
         publish(client, "/v3/wireless-module/" + str(args.id) + "/start", {
@@ -219,9 +220,9 @@ def stop_modules(args):
     stop"""
 
     print()  # Newline for clarity
-    for i in range(1, 4):
+    for i in range(1, 5):
         publish(client, "/v3/wireless-module/" + str(i) + "/stop", {})
-    print('\nstopped module 1\nstopped module 2\nstopped module 3')
+        print('stopped module ' + str(i) + '\n')
 
 
 def start_publishing(client, args):
