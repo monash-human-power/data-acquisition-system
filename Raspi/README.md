@@ -34,5 +34,4 @@ sudo npm install serialport --unsafe-perm --build-from-source
 Running without the flags will lead to errors. See [this](https://github.com/node-serialport/node-serialport/tree/master/packages/serialport#raspberry-pi-linux) for more information about this.
 
 ## DAS Script
-The DAS script serves as the middle-man between the Teensy and the DAS web server. It enables the Teensy to send a string of data onto the Raspberry Pi which is then sent to a MQTT broker.
-
+The DAS script serves as the middle-man between the ANT+ sensors and the DAS MQTT broker. It allows the sensors to show up as a virtual wireless sensor module.
