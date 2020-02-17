@@ -44,6 +44,8 @@ s_gps = MockSensor(("speed", 50),
                    ("longitude", 25),
                    ("altitude", 50),
                    ("course", 0))
+s_power = MockSensor(200, percent_range=0.25)
+s_cadence = MockSensor(90, percent_range=0.20)
 
 
 def send_fake_data(client, duration, rate, module_id):
@@ -146,6 +148,23 @@ def send_fake_data(client, duration, rate, module_id):
                                 {
                                     "type": "gps",
                                     "value": s_gps.get_value()
+                                }
+                             ]
+                          }
+            publish_data_and_battery(module_num)
+        
+        # Power and cadence virtual module
+        if module_id == 4 or module_id is None:
+            module_num = 4
+            module_data = {
+                            "sensors": [
+                                {
+                                    "type": "power",
+                                    "value": s_power.get_value()
+                                },
+                                {
+                                    "type": "cadence",
+                                    "value": s_cadence.get_value()
                                 }
                              ]
                           }
