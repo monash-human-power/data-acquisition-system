@@ -4,6 +4,9 @@ import json
 import paho.mqtt.client as mqtt
 from MockSensor import MockSensor
 
+# The number of sensor modules to mock
+MODULE_COUNT = 4
+
 parser = argparse.ArgumentParser(
     description='MQTT wireless module test script that sends fake data',
     add_help=True)
@@ -198,7 +201,7 @@ def start_modules(args):
 
     print()
     if args.id is None:
-        for i in range(1, 5):
+        for i in range(1, MODULE_COUNT + 1):
             publish(client, "/v3/wireless-module/" + str(i) + "/start", {
                 "filename": "M" + str(i)
                 + "_" + str(round(time.time()))
@@ -220,7 +223,7 @@ def stop_modules(args):
     stop"""
 
     print()  # Newline for clarity
-    for i in range(1, 5):
+    for i in range(1, MODULE_COUNT + 1):
         publish(client, "/v3/wireless-module/" + str(i) + "/stop", {})
         print('stopped module ' + str(i) + '\n')
 
