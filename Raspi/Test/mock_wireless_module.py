@@ -47,7 +47,7 @@ s_gps = MockSensor(("speed", 50),
                    ("longitude", 25),
                    ("altitude", 50),
                    ("course", 0))
-s_power = MockSensor(200, percent_range=0.25)
+s_power = MockSensor(200, percent_range=0.8)
 s_cadence = MockSensor(90, percent_range=0.20)
 
 
