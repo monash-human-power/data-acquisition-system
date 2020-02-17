@@ -79,7 +79,9 @@ async function antplusConnect() {
 }
 
 /**
- * @param antPlus
+ * Connect to the bicycle power sensor
+ *
+ * @param {GarminStick3} antPlus ANT+ stick instance
  */
 async function bicyclePowerConnect(antPlus) {
   return new Promise((resolve) => {
@@ -93,7 +95,9 @@ async function bicyclePowerConnect(antPlus) {
 }
 
 /**
- * @param antPlus
+ * Connect to the heart rate sensor
+ *
+ * @param {GarminStick3} antPlus ANT+ stick instance
  */
 async function heartRateConnect(antPlus) {
   return new Promise((resolve) => {
