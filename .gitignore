@@ -5,3 +5,4 @@
 node_modules/
 .eslintrc.*
 **/.DS_Store
+*.pyc
