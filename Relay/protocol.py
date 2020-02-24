@@ -18,6 +18,8 @@ protocol_format += f'{BODY_LEN}s' # 32 byte frame body
 # CRC32 checksum of everything is appended
 protocol_struct = Struct(protocol_format)
 
+PACKET_LENGTH = protocol_struct.size
+
 start_message_format = '>h'       # Total message body size
 start_message_struct = Struct(start_message_format)
 
@@ -93,6 +95,12 @@ class RXProtocol:
   def __init__(self):
     self.frame_count = 0
     self.part_count = 0
+    self.reset()
+
+  def on_message(self, message):
+    pass
+
+  def reset(self):
     self.message = ''
     self.message_length = 0
     self.started_message = False
@@ -102,7 +110,8 @@ class RXProtocol:
       frame = Frame.unpack(packet)
     except:
       # Malformed frame, discard the message
-      self.started_message = False
+      self.reset()
+      return
 
     if frame.packet_type == START_MESSAGE_PACKET:
       (total_length,) = start_message_struct.unpack(frame.body)
@@ -118,13 +127,13 @@ class RXProtocol:
 
         if self.message_length <= 0:
           # Message is done
-          print(self.message)
-          self.started_message = False
+          self.on_message(self.message)
+          self.reset()
 
         self.part_count = frame.part_count
       else:
         # Stop processing this message and discard it
-        self.started_message = False
+        self.reset()
 
     self.frame_count = frame.frame_count
 
