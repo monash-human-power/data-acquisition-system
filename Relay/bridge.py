@@ -62,4 +62,7 @@ while True:
   if zeta.check_received():
     packet = zeta.read_packet(PACKET_LENGTH)
     rx.receive_packet(packet)
+  if len(send_queue) > 0:
+    packet = send_queue.pop(0)
+    zeta.send_packet(zeta_channel, packet, PACKET_LENGTH)
   time.sleep(0.01)
