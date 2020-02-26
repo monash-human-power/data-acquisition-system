@@ -4,7 +4,7 @@ import pandas as pd
 from DataToTempCSV import DataToTempCSV
 from datetime import datetime
 import argparse
-import topics
+import enum_topics
 
 # Global dicts to store state
 # Dict structure is {<module_id_str> : <data>}
@@ -48,14 +48,14 @@ def on_message(client, userdata, msg):
     module_id_str = "M" + module_id_num
 
     # Start the recording of <module_id>
-    if topics.WirelessModule.start(module_id_num) == msg.topic:
+    if enum_topics.WirelessModule.start(module_id_num) == msg.topic:
         start_recording(module_id_str)
         print(module_id_str,
               "STARTED, RECORDING TO FILE:",
               output_filename[module_id_str])
 
     # Stop the recording of <module_id>
-    elif topics.WirelessModule.stop(module_id_num) == msg.topic:
+    elif enum_topics.WirelessModule.stop(module_id_num) == msg.topic:
         stop_recording(module_id_str)
         print(module_id_str,
               "STOPPED, RECORDED TO FILE:",

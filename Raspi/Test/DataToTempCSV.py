@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 import os
 import csv
-import topics
+import enum_topics
 
 
 def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num):
@@ -67,15 +67,15 @@ def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num):
     module_data = json.loads(module_data)
 
     # Determine which type of data to parse
-    if topics.WirelessModule.data(module_id_num) == msg.topic:
+    if enum_topics.WirelessModule.data(module_id_num) == msg.topic:
         type = "DATA"
         parse_module_data()
 
-    elif topics.WirelessModule.low_battery(module_id_num) == msg.topic:
+    elif enum_topics.WirelessModule.low_battery(module_id_num) == msg.topic:
         type = "LOW_BATTERY"
         # Nothing to parse
 
-    elif topics.WirelessModule.battery(module_id_num) == msg.topic:
+    elif enum_topics.WirelessModule.battery(module_id_num) == msg.topic:
         type = "BATTERY"
         parse_module_battery()
 
