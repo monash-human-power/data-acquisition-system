@@ -70,13 +70,13 @@ def DataToTempCSV(msg, module_start_time, module_id):
         type = "DATA"
         parse_module_data()
 
+    elif msg.topic.endswith("low-battery"):
+        type = "LOW_BATTERY"
+        # Nothing to parse
+
     elif msg.topic.endswith("battery"):
         type = "BATTERY"
         parse_module_battery()
-
-    elif msg.topic.endswith("low-battery"):
-        type = "BATTERY_LOW"
-        # Nothing to parse
 
     # Find the difference in seconds to when the recording was started and
     # when the data was recieved.
