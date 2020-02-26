@@ -2,10 +2,8 @@ import paho.mqtt.client as mqtt
 import os
 import pandas as pd
 from DataToTempCSV import DataToTempCSV
-import json
 from datetime import datetime
 import argparse
-import topics
 
 # Global dicts to store state
 # Dict structure is {<module_id> : <data>}
