@@ -50,17 +50,16 @@ def on_message(client, userdata, msg):
     # Start the recording of <module_id>
     if msg.topic.endswith("start"):
         start_recording(module_id)
-        print(module_id, "STARTED, RECORDING TO FILE:", output_filename[module_id])
+        print(module_id,
+              "STARTED, RECORDING TO FILE:",
+              output_filename[module_id])
 
     # Stop the recording of <module_id>
     elif msg.topic.endswith("stop"):
         stop_recording(module_id)
-        print(module_id, "STOPPED, RECORDED TO FILE:", output_filename[module_id])
-
-    # # Record low battery data
-    # elif msg.topic.endswith("low-battery"):
-    #     # TODO: fix this so that it works
-    #     record_low_battery(msg)
+        print(module_id,
+              "STOPPED, RECORDED TO FILE:",
+              output_filename[module_id])
 
     # Record data (battery, low-battery and sensor data)
     elif is_recording[module_id]:
@@ -89,15 +88,6 @@ def stop_recording(module_id):
 
     # Save the temp CSV data into a proper CSV
     save_temp_csv(module_id)
-
-
-def record_low_battery(msg):
-    """ Record the low battery data for on message """
-    module_data = msg.payload.decode("utf-8")
-    module_data = json.loads(module_data)
-    module_id = "M" + module_data["module-id"]
-
-    DataToTempCSV(msg, module_start_time[module_id], module_id)
 
 
 def save_temp_csv(module_id):
