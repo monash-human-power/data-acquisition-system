@@ -171,8 +171,8 @@ def publish(client, topic, data={}):
 
 
 def start_modules(args):
-    """ Send the a fake filename on the start channel to start the appropriate
-    module"""
+    """ Sends a null message on the start channels for all of the selected
+    modules to start """
 
     # TODO: Add posibility to make modules by importing a file or generating
     # random modules. The modules should not be hard coded to this script.
@@ -182,8 +182,8 @@ def start_modules(args):
 
 
 def stop_modules(args):
-    """ Sends a null message on the stop channel for all of the modules to
-    stop"""
+    """ Sends a null message on the stop channels for all of the selected
+    modules to stop """
 
     for module_id_num in args.id:
         publish(client, topics.WirelessModule.stop(module_id_num))
