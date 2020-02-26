@@ -47,9 +47,17 @@ s_gps = MockSensor(("speed", 50),
                    ("course", 0))
 
 
-def send_fake_data(client, duration, rate, module_id_num):
+def send_fake_data(client, duration, rate, module_id_nums):
     """ Send artificial data over MQTT for each module chanel. Sends [rate] per
-    second for [duration] seconds"""
+    second for [duration] seconds
+
+    client:         MQTT client
+    duration:       How long in seconds the script should output data before
+                    terminating
+    rate:           Frequency of sending out data in Hz
+    module_id_nums: List of ints containing module ids that are enabled for the
+                    mock test
+    """
 
     start_time = round(time.time(), 2)
     total_time = 0
@@ -70,9 +78,8 @@ def send_fake_data(client, duration, rate, module_id_num):
                 "module-id": module_id_num,
                 "percentage": s_battery.get_value()
             }
-            print(module_id_num)
+
             module_topic = topics.WirelessModule.data(module_id_num)
-            print(module_topic)
             battery_topic = topics.WirelessModule.battery(module_id_num)
 
             # Publish data and battery if needed
@@ -83,73 +90,87 @@ def send_fake_data(client, duration, rate, module_id_num):
         if publish_battery:
             battery_counter += 1
 
-        # Wireless module 1 (Middle)
-        if module_id_num == 1 or module_id_num is None:
-            module_data = {
-                            "sensors": [
-                                {
-                                    "type": "temperature",
-                                    "value": s_temperature.get_value()
-                                },
-                                {
-                                    "type": "humidity",
-                                    "value": s_humidity.get_value()
-                                },
-                                {
-                                    "type": "steeringAngle",
-                                    "value": s_steering_angle.get_value()
-                                }
-                             ]
-                          }
-            publish_data_and_battery(module_id_num)
+        print("TIME:", current_time)
+        for module_id_num in module_id_nums:
+            # Wireless module 1 (Middle)
+            if module_id_num == 1:
+                module_data = {
+                                "sensors": [
+                                    {
+                                        "type": "temperature",
+                                        "value": s_temperature.get_value()
+                                    },
+                                    {
+                                        "type": "humidity",
+                                        "value": s_humidity.get_value()
+                                    },
+                                    {
+                                        "type": "steeringAngle",
+                                        "value": s_steering_angle.get_value()
+                                    }
+                                 ]
+                              }
+                publish_data_and_battery(module_id_num)
 
-        # Wireless module 2 (Back)
-        if module_id_num == 2 or module_id_num is None:
-            module_data = {
-                            "sensors": [
-                                {
-                                    "type": "co2",
-                                    "value": s_co2.get_value()
-                                },
-                                {
-                                    "type": "temperature",
-                                    "value": s_temperature.get_value()
-                                },
-                                {
-                                    "type": "humidity",
-                                    "value": s_humidity.get_value()
-                                },
-                                {
-                                    "type": "accelerometer",
-                                    "value": s_accelerometer.get_value()
-                                },
-                                {
-                                    "type": "gyroscope",
-                                    "value": s_gyroscope.get_value()
-                                }
-                             ]
-                          }
-            publish_data_and_battery(module_id_num)
+            # Wireless module 2 (Back)
+            elif module_id_num == 2:
+                module_data = {
+                                "sensors": [
+                                    {
+                                        "type": "co2",
+                                        "value": s_co2.get_value()
+                                    },
+                                    {
+                                        "type": "temperature",
+                                        "value": s_temperature.get_value()
+                                    },
+                                    {
+                                        "type": "humidity",
+                                        "value": s_humidity.get_value()
+                                    },
+                                    {
+                                        "type": "accelerometer",
+                                        "value": s_accelerometer.get_value()
+                                    },
+                                    {
+                                        "type": "gyroscope",
+                                        "value": s_gyroscope.get_value()
+                                    }
+                                 ]
+                              }
+                publish_data_and_battery(module_id_num)
 
-        # Wireless module 3 (Front)
-        if module_id_num == 3 or module_id_num is None:
-            module_data = {
-                            "sensors": [
-                                {
-                                    "type": "co2",
-                                    "value": s_co2.get_value()
-                                },
-                                {
-                                    "type": "reedVelocity",
-                                    "value": s_reed_velocity.get_value()
-                                },
-                                {
-                                    "type": "gps",
-                                    "value": s_gps.get_value()
-                                }
-                             ]
-                          }
-            publish_data_and_battery(module_id_num)
+            # Wireless module 3 (Front)
+            elif module_id_num == 3:
+                module_data = {
+                                "sensors": [
+                                    {
+                                        "type": "co2",
+                                        "value": s_co2.get_value()
+                                    },
+                                    {
+                                        "type": "reedVelocity",
+                                        "value": s_reed_velocity.get_value()
+                                    },
+                                    {
+                                        "type": "gps",
+                                        "value": s_gps.get_value()
+                                    }
+                                 ]
+                              }
+                publish_data_and_battery(module_id_num)
+
+            # For other 'fake modules'
+            else:
+                module_data = {
+                                "sensors": [
+                                    {
+                                        "type": "co2",
+                                        "value": s_co2.get_value()
+                                    }
+                                 ]
+                              }
+                publish_data_and_battery(module_id_num)
 
         print()  # Newline for clarity
         time.sleep(1/rate)
