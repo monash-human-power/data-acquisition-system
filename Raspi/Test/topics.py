@@ -24,6 +24,7 @@ class WirelessModuleBattery(NeatEnum):
     module_2 = '/v3/wireless-module/2/battery'
     module_3 = '/v3/wireless-module/3/battery'
     module_4 = '/v3/wireless-module/4/battery'
+    low_battery = '/v3/wireless-module/battery/low'
 
 
 class WirelessModuleStart(NeatEnum):
