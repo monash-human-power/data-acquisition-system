@@ -9,7 +9,7 @@ def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num):
     """ Function to parse the MQTT data and convert it to a temporary
     CSV file stored in the current derectory
     msg:                        Raw MQTT data
-    module_id_str:                  Module_id eg. M1, M2 or M3
+    module_id_str:              Module_id eg. M1, M2 or M3
     module_start_time:          Start time of the module (datetime obj)
     """
 

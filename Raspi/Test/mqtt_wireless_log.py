@@ -38,13 +38,12 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):
     """ MQTT callback for when data is sent on the subscribed
-    '/v3/wireless-module/#' topics. The module_id is found by squashing M
-    infront of the module number. eg M1, M2, M3... etc. The module_id is used
+    '/v3/wireless-module/#' topics. The module_id_str is found by squashing M
+    infront of the module number. eg M1, M2, M3... etc. The module_id_str is used
     for identifying what data came from where and is also used for naming the
     temp files.
     """
 
-    # TODO: FIX THIS
     module_id_num = msg.topic.split("/")[3]
     module_id_str = "M" + module_id_num
 
@@ -64,7 +63,9 @@ def on_message(client, userdata, msg):
 
     # Record data (battery, low-battery and sensor data)
     elif is_recording[module_id_str]:
-        DataToTempCSV(msg, module_start_time[module_id_str], module_id_str, module_id_num)
+        DataToTempCSV(
+            msg, module_start_time[module_id_str],
+            module_id_str, module_id_num)
 
 
 def start_recording(module_id_str):

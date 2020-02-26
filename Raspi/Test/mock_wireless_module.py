@@ -3,6 +3,7 @@ import argparse
 import json
 import paho.mqtt.client as mqtt
 from MockSensor import MockSensor
+import topics
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless module test script that sends fake data',
@@ -20,10 +21,10 @@ parser.add_argument(
     help="""Address of the MQTT broker. If nothing is selected it will
     default to localhost.""")
 parser.add_argument(
-    '-i', '--id', action='store', type=int, default=None,
-    help="""Specify the module to produce fake data. eg. --id 1 specifies that
-    module 1 only produces data. If nothing is given all modules will be
-    active.""")
+    '-i', '--id', action='store', nargs='+', type=int, default=[1, 2, 3, 4],
+    help="""Specify the module to produce fake data. eg. --id 1 2 25 specifies
+    that module 1, 2 and 25 will produce data. If nothing is given all modules
+    will be active.""")
 
 # Generate the fake sensors with average values
 s_steering_angle = MockSensor(10)
@@ -46,7 +47,7 @@ s_gps = MockSensor(("speed", 50),
                    ("course", 0))
 
 
-def send_fake_data(client, duration, rate, module_id):
+def send_fake_data(client, duration, rate, module_id_num):
     """ Send artificial data over MQTT for each module chanel. Sends [rate] per
     second for [duration] seconds"""
 
@@ -64,14 +65,15 @@ def send_fake_data(client, duration, rate, module_id):
         # it can be compaired with the the data read by the wireless logging
         # script
 
-        def publish_data_and_battery(module_num):
+        def publish_data_and_battery(module_id_num):
             battery_data = {
-                "module-id": module_num,
+                "module-id": module_id_num,
                 "percentage": s_battery.get_value()
             }
-
-            module_topic = "/v3/wireless-module/"+str(module_num)+"/data"
-            battery_topic = "/v3/wireless-module/"+str(module_num)+"/battery"
+            print(module_id_num)
+            module_topic = topics.WirelessModule.data(module_id_num)
+            print(module_topic)
+            battery_topic = topics.WirelessModule.battery(module_id_num)
 
             # Publish data and battery if needed
             publish(client, module_topic, module_data)
@@ -82,8 +84,7 @@ def send_fake_data(client, duration, rate, module_id):
             battery_counter += 1
 
         # Wireless module 1 (Middle)
-        if module_id == 1 or module_id is None:
-            module_num = 1
+        if module_id_num == 1 or module_id_num is None:
             module_data = {
                             "sensors": [
                                 {
@@ -100,11 +101,10 @@ def send_fake_data(client, duration, rate, module_id):
                                 }
                              ]
                           }
-            publish_data_and_battery(module_num)
+            publish_data_and_battery(module_id_num)
 
         # Wireless module 2 (Back)
-        if module_id == 2 or module_id is None:
-            module_num = 2
+        if module_id_num == 2 or module_id_num is None:
             module_data = {
                             "sensors": [
                                 {
@@ -129,11 +129,10 @@ def send_fake_data(client, duration, rate, module_id):
                                 }
                              ]
                           }
-            publish_data_and_battery(module_num)
+            publish_data_and_battery(module_id_num)
 
         # Wireless module 3 (Front)
-        if module_id == 3 or module_id is None:
-            module_num = 3
+        if module_id_num == 3 or module_id_num is None:
             module_data = {
                             "sensors": [
                                 {
@@ -150,13 +149,13 @@ def send_fake_data(client, duration, rate, module_id):
                                 }
                              ]
                           }
-            publish_data_and_battery(module_num)
+            publish_data_and_battery(module_id_num)
 
         print()  # Newline for clarity
         time.sleep(1/rate)
 
 
-def publish(client, topic, data):
+def publish(client, topic, data={}):
     """
     Publishes python dict data to a specific topic in JSON and prints it out
     client: MQTT client object
@@ -177,24 +176,9 @@ def start_modules(args):
 
     # TODO: Add posibility to make modules by importing a file or generating
     # random modules. The modules should not be hard coded to this script.
-
-    if args.id is None:
-        for i in range(1, 4):
-            publish(client, "/v3/wireless-module/" + str(i) + "/start", {
-                "filename": "M" + str(i)
-                + "_" + str(round(time.time()))
-                + ".csv"
-            })
-        print('\nstarted module 1\nstarted module 2\nstarted module 3\n')
-
-    else:
-        publish(client, "/v3/wireless-module/" + str(args.id) + "/start", {
-            "filename": "M" + str(args.id)
-            + "_" + str(round(time.time()))
-            + ".csv"
-        })
-        print('started module ' + str(args.id) + '\n')
-
+    for module_id_num in args.id:
+        publish(client, topics.WirelessModule.start(module_id_num))
+        print('Started module', module_id_num)
 
 def stop_modules(args):
     """ Sends a null message on the stop channel for all of the modules to
@@ -202,7 +186,7 @@ def stop_modules(args):
 
     print()  # Newline for clarity
     for i in range(1, 4):
-        publish(client, "/v3/wireless-module/" + str(i) + "/stop", {})
+        publish(client, topics.WirelessModule.stop(i))
     print('\nstopped module 1\nstopped module 2\nstopped module 3')
 
 
