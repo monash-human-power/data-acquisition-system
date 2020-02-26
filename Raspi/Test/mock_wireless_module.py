@@ -23,10 +23,10 @@ parser.add_argument(
 parser.add_argument(
     '-i', '--id', action='store', nargs='+', type=int, default=[1, 2, 3, 4],
     help="""Specify the module to produce fake data. eg. --id 1 2 25 specifies
-    that module 1, 2 and 25 will produce data. If nothing is given all modules
-    will be active.""")
+    that module 1, 2 and 25 will produce data. If nothing is given all real
+    modules will be active.""")
 
-# Generate the fake sensors with average values
+# Generate a dict of the fake sensors with average values
 sensors = {
     "steeringAngle": MockSensor(10),
     "co2": MockSensor(325),
@@ -51,23 +51,33 @@ sensors = {
     "heartRate": MockSensor(120),
 }
 
+# HARDCODED MODULE ONBOARD SENSORS (dict above contains the MockSensor objects)
+M1_sensors = ["temperature", "humidity", "steeringAngle"]
+M2_sensors = ["co2", "temperature", "humidity", "accelerometer", "gyroscope"]
+M3_sensors = ["co2", "reedVelocity", "gps"]
+M4_sensors = ["power", "cadence", "heartRate"]
+Mn_sensors = list(sensors.keys())  # For other fake module all sensors are used
+
 
 def generate_module_data(module_id_num, sensor_list):
     """
-    module_id_num
-    sensors:        array"""
+    Function to generate the module in the correct dict format before turning
+    it into JSON
+    module_id_num:  Unique module number (int)
+    sensor_list:    list of sensors as strings such as ["co2", "reedVelocity"]
+    """
 
+    # Full dict containing all of the sensor data and their type
     module_data = {
         "module-id": module_id_num,
         "sensors": []
     }
 
-    for sensor in sensor_list:
+    for sensor_name in sensor_list:
         sensor_data = {
-            "type": sensor,
-            "value": sensors[sensor].get_value()
+            "type": sensor_name,
+            "value": sensors[sensor_name].get_value()
         }
-        # print(sensor.get_value())
         module_data["sensors"].append(sensor_data)
 
     return module_data
@@ -120,27 +130,27 @@ def send_fake_data(client, duration, rate, module_id_nums):
         for module_id_num in module_id_nums:
             # Wireless module 1 (Front)
             if module_id_num == 1:
-                module_data = generate_module_data(module_id_num, ["temperature", "humidity", "steeringAngle"])
+                module_data = generate_module_data(module_id_num, M1_sensors)
                 publish_data_and_battery(module_id_num)
 
             # Wireless module 2 (Middle)
             elif module_id_num == 2:
-                module_data = generate_module_data(module_id_num, ["co2", "temperature", "humidity", "accelerometer", "gyroscope"])
+                module_data = generate_module_data(module_id_num, M2_sensors)
                 publish_data_and_battery(module_id_num)
 
             # Wireless module 3 (Back)
             elif module_id_num == 3:
-                module_data = generate_module_data(module_id_num, ["co2", "reedVelocity", "gps"])
+                module_data = generate_module_data(module_id_num, M3_sensors)
                 publish_data_and_battery(module_id_num)
 
             # Wireless module 4 (ANT+ sensor/DAS.js)
             elif module_id_num == 4:
-                module_data = generate_module_data(module_id_num, ["power", "cadence", "heartRate"])
+                module_data = generate_module_data(module_id_num, M4_sensors)
                 publish_data_and_battery(module_id_num)
 
-            # For other 'fake modules'
+            # Wireless module n (Other random sensor)
             else:
-                module_data = generate_module_data(module_id_num, ["power", "cadence", "heartRate"])
+                module_data = generate_module_data(module_id_num, Mn_sensors)
                 publish_data_and_battery(module_id_num)
 
         print()  # Newline for clarity
