@@ -2,13 +2,14 @@ import json
 from datetime import datetime
 import os
 import csv
+import topics
 
 
-def DataToTempCSV(msg, module_start_time, module_id):
+def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num):
     """ Function to parse the MQTT data and convert it to a temporary
     CSV file stored in the current derectory
     msg:                        Raw MQTT data
-    module_id:                  Module_id eg. M1, M2 or M3
+    module_id_str:                  Module_id eg. M1, M2 or M3
     module_start_time:          Start time of the module (datetime obj)
     """
 
@@ -19,7 +20,7 @@ def DataToTempCSV(msg, module_start_time, module_id):
         sensor_data = module_data["sensors"]
 
         for sensor in sensor_data:
-            sensor_name = module_id + "_" + sensor["type"]
+            sensor_name = module_id_str + "_" + sensor["type"]
             sensor_value = sensor["value"]
 
             if isinstance(sensor_value, dict):
@@ -33,7 +34,7 @@ def DataToTempCSV(msg, module_start_time, module_id):
     def parse_module_battery():
         """ Parses the module data if it is from the battery """
 
-        data_dict[module_id + "_percentage"] = \
+        data_dict[module_id_str + "_percentage"] = \
             module_data["percentage"]
 
     def make_temp_csv():
@@ -42,7 +43,7 @@ def DataToTempCSV(msg, module_start_time, module_id):
 
         # Ensures that the temp file is in the same folder as the script
         current_dir = os.path.dirname(__file__)
-        temp_filename = '.~temp_' + module_id + '_' + type + '.csv'
+        temp_filename = '.~temp_' + module_id_str + '_' + type + '.csv'
         temp_file_path = os.path.join(current_dir, temp_filename)
 
         # If the temp file does not exist write the headers for the CSV
@@ -66,23 +67,26 @@ def DataToTempCSV(msg, module_start_time, module_id):
     module_data = json.loads(module_data)
 
     # Determine which type of data to parse
-    if msg.topic.endswith("data"):
+    if topics.WirelessModule.data(module_id_num) == msg.topic:
         type = "DATA"
         parse_module_data()
 
-    elif msg.topic.endswith("low-battery"):
+    elif topics.WirelessModule.low_battery(module_id_num) == msg.topic:
         type = "LOW_BATTERY"
         # Nothing to parse
 
-    elif msg.topic.endswith("battery"):
+    elif topics.WirelessModule.battery(module_id_num) == msg.topic:
         type = "BATTERY"
         parse_module_battery()
+
+    else:
+        print("YOU MESSED UP")
 
     # Find the difference in seconds to when the recording was started and
     # when the data was recieved.
     time_delta = datetime.now() - module_start_time
     time_delta = time_delta.total_seconds()
-    time_dict_key = f"{module_id}_{type}_TIME"
+    time_dict_key = f"{module_id_str}_{type}_TIME"
     data_dict[time_dict_key] = time_delta
 
     # Add or create the temp CSV to store the data

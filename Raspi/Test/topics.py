@@ -12,7 +12,9 @@ class NeatEnum(Enum):
 
 class WirelessModule(NeatEnum):
     """Building blocks to make a topic for a wireless module. All that is
-    needed is to add a <module_id> number"""
+    needed is to add a <module_id> number."""
+
+    base = '/v3/wireless-module/'
 
     def battery(module_id):
         return '/v3/wireless-module/' + str(module_id) + '/battery'
