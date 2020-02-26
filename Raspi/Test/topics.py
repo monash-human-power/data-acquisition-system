@@ -24,7 +24,14 @@ class WirelessModuleBattery(NeatEnum):
     module_2 = '/v3/wireless-module/2/battery'
     module_3 = '/v3/wireless-module/3/battery'
     module_4 = '/v3/wireless-module/4/battery'
-    low_battery = '/v3/wireless-module/battery/low'
+
+
+class WirelessModuleLowBattery(NeatEnum):
+    """Topics for sending low battery flag over MQTT"""
+    module_1 = '/v3/wireless-module/1/low-battery'
+    module_2 = '/v3/wireless-module/2/low-battery'
+    module_3 = '/v3/wireless-module/3/low-battery'
+    module_4 = '/v3/wireless-module/4/low-battery'
 
 
 class WirelessModuleStart(NeatEnum):

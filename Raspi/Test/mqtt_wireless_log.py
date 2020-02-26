@@ -5,6 +5,7 @@ from DataToTempCSV import DataToTempCSV
 import json
 from datetime import datetime
 import argparse
+import topics
 
 # Global dicts to store state
 # Dict structure is {<module_id> : <data>}
@@ -57,7 +58,7 @@ def on_message(client, userdata, msg):
         print(module_id, "STOPPED")
 
     # Record low battery data
-    elif msg.topic == "/v3/wireless-module/battery/low":
+    elif msg.topic == topics.WirelessModuleBattery.low_battery:
         record_low_battery(msg)
 
     # Record other data (battery and sensor data)

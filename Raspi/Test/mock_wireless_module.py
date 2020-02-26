@@ -3,6 +3,7 @@ import argparse
 import json
 import paho.mqtt.client as mqtt
 from MockSensor import MockSensor
+import topics
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless module test script that sends fake data',
@@ -73,6 +74,7 @@ def send_fake_data(client, duration, rate, module_id):
             module_topic = "/v3/wireless-module/"+str(module_num)+"/data"
             battery_topic = "/v3/wireless-module/"+str(module_num)+"/battery"
 
+            # Publish data and battery if needed
             publish(client, module_topic, module_data)
             if publish_battery:
                 publish(client, battery_topic, battery_data)
