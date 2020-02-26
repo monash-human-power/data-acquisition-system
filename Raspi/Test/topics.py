@@ -10,41 +10,21 @@ class NeatEnum(Enum):
         return self.value
 
 
-class WirelessModuleData(NeatEnum):
-    """Topics for sending data over MQTT"""
-    module_1 = '/v3/wireless-module/1/data'
-    module_2 = '/v3/wireless-module/2/data'
-    module_3 = '/v3/wireless-module/3/data'
-    module_4 = '/v3/wireless-module/4/data'
+class WirelessModule(NeatEnum):
+    """Building blocks to make a topic for a wireless module. All that is
+    needed is to add a <module_id> number"""
 
+    def battery(module_id):
+        return '/v3/wireless-module/' + str(module_id) + '/battery'
 
-class WirelessModuleBattery(NeatEnum):
-    """Topics for sending battery information over MQTT"""
-    module_1 = '/v3/wireless-module/1/battery'
-    module_2 = '/v3/wireless-module/2/battery'
-    module_3 = '/v3/wireless-module/3/battery'
-    module_4 = '/v3/wireless-module/4/battery'
+    def low_battery(module_id):
+        return '/v3/wireless-module/' + str(module_id) + '/low-battery'
 
+    def data(module_id):
+        return '/v3/wireless-module/' + str(module_id) + '/data'
 
-class WirelessModuleLowBattery(NeatEnum):
-    """Topics for sending low battery flag over MQTT"""
-    module_1 = '/v3/wireless-module/1/low-battery'
-    module_2 = '/v3/wireless-module/2/low-battery'
-    module_3 = '/v3/wireless-module/3/low-battery'
-    module_4 = '/v3/wireless-module/4/low-battery'
+    def start(module_id):
+        return '/v3/wireless-module/' + str(module_id) + '/start'
 
-
-class WirelessModuleStart(NeatEnum):
-    """Topics for starting the data recording"""
-    module_1 = '/v3/wireless-module/1/start'
-    module_2 = '/v3/wireless-module/2/start'
-    module_3 = '/v3/wireless-module/3/start'
-    module_4 = '/v3/wireless-module/4/start'
-
-
-class WirelessModuleStop(NeatEnum):
-    """Topics for stopping the data recording"""
-    module_1 = '/v3/wireless-module/1/stop'
-    module_2 = '/v3/wireless-module/2/stop'
-    module_3 = '/v3/wireless-module/3/stop'
-    module_4 = '/v3/wireless-module/4/stop'
+    def stop(module_id):
+        return '/v3/wireless-module/' + str(module_id) + '/stop'
