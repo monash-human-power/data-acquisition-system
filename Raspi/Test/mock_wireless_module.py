@@ -46,8 +46,8 @@ sensors = {
                       ("longitude", 25),
                       ("altitude", 50),
                       ("course", 0)),
-    "power": MockSensor(900),
-    "cadence": MockSensor(60),
+    "power": MockSensor(200, percent_range=0.8),
+    "cadence": MockSensor(90, percent_range=0.2),
     "heartRate": MockSensor(120),
 }
 
