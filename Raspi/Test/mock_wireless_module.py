@@ -180,14 +180,14 @@ def start_modules(args):
         publish(client, topics.WirelessModule.start(module_id_num))
         print('Started module', module_id_num)
 
+
 def stop_modules(args):
     """ Sends a null message on the stop channel for all of the modules to
     stop"""
 
-    print()  # Newline for clarity
-    for i in range(1, 4):
-        publish(client, topics.WirelessModule.stop(i))
-    print('\nstopped module 1\nstopped module 2\nstopped module 3')
+    for module_id_num in args.id:
+        publish(client, topics.WirelessModule.stop(module_id_num))
+        print('Stopped module', module_id_num)
 
 
 def start_publishing(client, args):
