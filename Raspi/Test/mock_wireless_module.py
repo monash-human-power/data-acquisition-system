@@ -27,24 +27,50 @@ parser.add_argument(
     will be active.""")
 
 # Generate the fake sensors with average values
-s_steering_angle = MockSensor(10)
-s_co2 = MockSensor(325)
-s_temperature = MockSensor(25)
-s_humidity = MockSensor(85)
-s_reed_velocity = MockSensor(50)
-s_battery = MockSensor(80)
-s_accelerometer = MockSensor(("x", 90),
-                             ("y", 90),
-                             ("z", 90))
-s_gyroscope = MockSensor(("x", 90),
-                         ("y", 90),
-                         ("z", 90))
-s_gps = MockSensor(("speed", 50),
-                   ("satellites", 10),
-                   ("latitude", 25),
-                   ("longitude", 25),
-                   ("altitude", 50),
-                   ("course", 0))
+sensors = {
+    "steeringAngle": MockSensor(10),
+    "co2": MockSensor(325),
+    "temperature": MockSensor(25),
+    "humidity": MockSensor(85),
+    "reedVelocity": MockSensor(50),
+    "battery": MockSensor(80),
+    "accelerometer": MockSensor(("x", 90),
+                                ("y", 90),
+                                ("z", 90)),
+    "gyroscope": MockSensor(("x", 90),
+                            ("y", 90),
+                            ("z", 90)),
+    "gps": MockSensor(("speed", 50),
+                      ("satellites", 10),
+                      ("latitude", 25),
+                      ("longitude", 25),
+                      ("altitude", 50),
+                      ("course", 0)),
+    "power": MockSensor(900),
+    "cadence": MockSensor(60),
+    "heartRate": MockSensor(120),
+}
+
+
+def generate_module_data(module_id_num, sensor_list):
+    """
+    module_id_num
+    sensors:        array"""
+
+    module_data = {
+        "module-id": module_id_num,
+        "sensors": []
+    }
+
+    for sensor in sensor_list:
+        sensor_data = {
+            "type": sensor,
+            "value": sensors[sensor].get_value()
+        }
+        # print(sensor.get_value())
+        module_data["sensors"].append(sensor_data)
+
+    return module_data
 
 
 def send_fake_data(client, duration, rate, module_id_nums):
@@ -76,7 +102,7 @@ def send_fake_data(client, duration, rate, module_id_nums):
         def publish_data_and_battery(module_id_num):
             battery_data = {
                 "module-id": module_id_num,
-                "percentage": s_battery.get_value()
+                "percentage": sensors["battery"].get_value()
             }
 
             module_topic = enum_topics.WirelessModule.data(module_id_num)
@@ -92,84 +118,29 @@ def send_fake_data(client, duration, rate, module_id_nums):
 
         print("TIME:", current_time)
         for module_id_num in module_id_nums:
-            # Wireless module 1 (Middle)
+            # Wireless module 1 (Front)
             if module_id_num == 1:
-                module_data = {
-                                "sensors": [
-                                    {
-                                        "type": "temperature",
-                                        "value": s_temperature.get_value()
-                                    },
-                                    {
-                                        "type": "humidity",
-                                        "value": s_humidity.get_value()
-                                    },
-                                    {
-                                        "type": "steeringAngle",
-                                        "value": s_steering_angle.get_value()
-                                    }
-                                 ]
-                              }
+                module_data = generate_module_data(module_id_num, ["temperature", "humidity", "steeringAngle"])
                 publish_data_and_battery(module_id_num)
 
-            # Wireless module 2 (Back)
+            # Wireless module 2 (Middle)
             elif module_id_num == 2:
-                module_data = {
-                                "sensors": [
-                                    {
-                                        "type": "co2",
-                                        "value": s_co2.get_value()
-                                    },
-                                    {
-                                        "type": "temperature",
-                                        "value": s_temperature.get_value()
-                                    },
-                                    {
-                                        "type": "humidity",
-                                        "value": s_humidity.get_value()
-                                    },
-                                    {
-                                        "type": "accelerometer",
-                                        "value": s_accelerometer.get_value()
-                                    },
-                                    {
-                                        "type": "gyroscope",
-                                        "value": s_gyroscope.get_value()
-                                    }
-                                 ]
-                              }
+                module_data = generate_module_data(module_id_num, ["co2", "temperature", "humidity", "accelerometer", "gyroscope"])
                 publish_data_and_battery(module_id_num)
 
-            # Wireless module 3 (Front)
+            # Wireless module 3 (Back)
             elif module_id_num == 3:
-                module_data = {
-                                "sensors": [
-                                    {
-                                        "type": "co2",
-                                        "value": s_co2.get_value()
-                                    },
-                                    {
-                                        "type": "reedVelocity",
-                                        "value": s_reed_velocity.get_value()
-                                    },
-                                    {
-                                        "type": "gps",
-                                        "value": s_gps.get_value()
-                                    }
-                                 ]
-                              }
+                module_data = generate_module_data(module_id_num, ["co2", "reedVelocity", "gps"])
+                publish_data_and_battery(module_id_num)
+
+            # Wireless module 4 (ANT+ sensor/DAS.js)
+            elif module_id_num == 4:
+                module_data = generate_module_data(module_id_num, ["power", "cadence", "heartRate"])
                 publish_data_and_battery(module_id_num)
 
             # For other 'fake modules'
             else:
-                module_data = {
-                                "sensors": [
-                                    {
-                                        "type": "co2",
-                                        "value": s_co2.get_value()
-                                    }
-                                 ]
-                              }
+                module_data = generate_module_data(module_id_num, ["power", "cadence", "heartRate"])
                 publish_data_and_battery(module_id_num)
 
         print()  # Newline for clarity
