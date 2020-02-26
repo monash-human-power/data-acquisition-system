@@ -74,7 +74,7 @@ def DataToTempCSV(msg, module_start_time, module_id):
         type = "BATTERY"
         parse_module_battery()
 
-    elif msg.topic == "/v3/wireless-module/battery/low":
+    elif msg.topic.endswith("low-battery"):
         type = "BATTERY_LOW"
         # Nothing to parse
 
