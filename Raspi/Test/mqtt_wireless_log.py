@@ -123,7 +123,7 @@ def find_temp_csvs(module_id_str=""):
     # Find temp filepaths and store in the temp_filepaths list
     temp_filepaths = []
     for filename in filepaths:
-        if filename.startswith(".~temp_" + module_id_str) and filename.endswith(".csv"):
+        if filename.startswith(".~temp_"+module_id_str+"_") and filename.endswith(".csv"):
             if current_dir == '':
                 temp_filepaths.append(filename)
             else:
