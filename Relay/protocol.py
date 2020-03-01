@@ -1,7 +1,7 @@
 from struct import Struct
 from binascii import crc32
 
-BODY_LEN = 32
+BODY_LEN = 68
 PROTOCOL_ID = b'MHP'
 
 MESSAGE_PACKET = 0
@@ -18,7 +18,7 @@ protocol_format += f'{BODY_LEN}s' # 32 byte frame body
 # CRC32 checksum of everything is appended
 protocol_struct = Struct(protocol_format)
 
-PACKET_LENGTH = protocol_struct.size
+PACKET_LENGTH = protocol_struct.size + 4
 
 start_message_format = '>h'       # Total message body size
 start_message_struct = Struct(start_message_format)
@@ -101,7 +101,7 @@ class RXProtocol:
     pass
 
   def reset(self):
-    self.message = ''
+    self.message = b''
     self.message_length = 0
     self.started_message = False
   
@@ -117,17 +117,18 @@ class RXProtocol:
       (total_length,) = start_message_struct.unpack(frame.body)
 
       self.part_count = 0
-      self.message = ''
+      self.message = b''
       self.message_length = total_length
       self.started_message = True
     elif frame.packet_type == MESSAGE_PACKET:
       if self.started_message and frame.part_count == (self.part_count + 1) % 256:
-        self.message += frame.body.decode('utf-8')
+        self.message += frame.body
         self.message_length -= frame.length
 
         if self.message_length <= 0:
           # Message is done
-          self.on_message(self.message)
+          output = self.message.decode('utf-8')
+          self.on_message(output)
           self.reset()
 
         self.part_count = frame.part_count

@@ -3,8 +3,8 @@ import sys
 import argparse
 import json
 import paho.mqtt.client as mqtt
-from zetarf433 import PyZetaRF433
-from .protocol import RXProtocol, TXProtocol, PACKET_LENGTH
+from zetarf433 import PyZetaRF433, Status
+from protocol import RXProtocol, TXProtocol, PACKET_LENGTH
 
 parser = argparse.ArgumentParser(
   description='MQTT to Zeta433 bridge.',
@@ -36,7 +36,7 @@ mqtt_client.loop_start()
 
 zeta = PyZetaRF433(PACKET_LENGTH)
 print('Starting Zeta TxRx...')
-if not zeta.begin():
+if not zeta.beginWithPacketLengthOf(PACKET_LENGTH):
   print('Zeta begin failed')
   sys.exit()
 
@@ -46,16 +46,18 @@ if not zeta.start_listening_on_channel(zeta_channel):
 
 send_queue = []
 
-def on_zeta_message(_rx, message):
+def on_zeta_message(message):
   (topic, payload) = json.loads(message)
-  print(f'RX {topic}')
+  print(f'RX {msg.topic}')
   mqtt_client.publish(topic, payload)
 rx.on_message = on_zeta_message
 
 def on_mqtt_message(client, userdata, msg):
+  global send_queue
   print(f'TX {msg.topic}')
-  payload = json.dumps([msg.topic, msg.payload])
-  send_queue += tx.pack(payload)
+  p = msg.payload.decode('utf-8')
+  payload = json.dumps([msg.topic, p])
+  send_queue += tx.pack(str(payload))
 mqtt_client.on_message = on_mqtt_message
 
 while True:
@@ -65,4 +67,5 @@ while True:
   if len(send_queue) > 0:
     packet = send_queue.pop(0)
     zeta.send_packet(zeta_channel, packet, PACKET_LENGTH)
-  time.sleep(0.01)
+    while not zeta.check_for(Status.DataTransmitted):
+      pass
