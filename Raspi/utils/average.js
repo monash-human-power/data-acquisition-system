@@ -30,9 +30,9 @@ class RollingAverage {
   average() {
     // Remove all stale values
     const time = Date.now();
-    this.points = this.points.filter((x) => x.time >= time - this.interval);
+    this.points = this.points.filter((x) => x[0] >= time - this.interval);
 
-    const sum = this.points.reduce((a, b) => a + b, 0);
+    const sum = this.points.reduce((acc, curr) => acc + curr[1], 0);
     const average = sum / this.points.length;
     return average;
   }
