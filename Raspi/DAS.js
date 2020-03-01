@@ -2,6 +2,7 @@ const mqtt = require('mqtt');
 const { ArgumentParser } = require('argparse');
 const Ant = require('ant-plus');
 const winston = require('./config/winston');
+const RollingAverage = require('./utils/average');
 
 const argumentParser = new ArgumentParser({
   version: '1.0.0',
@@ -112,7 +113,7 @@ async function heartRateConnect(antPlus) {
 
 (async () => {
   let isRecording = false;
-  let power = 0;
+  const powerAverage = new RollingAverage(3000);
   let cadence = 0;
   let heartRate = 0;
 
@@ -141,7 +142,8 @@ async function heartRateConnect(antPlus) {
   bicyclePowerScanner.on('powerData', (data) => {
     // Store power meter into global variable
     cadence = data.Cadence;
-    power = data.Power;
+    const power = data.Power;
+    powerAverage.add(power);
     winston.info(`ID: ${data.DeviceID}, Cadence: ${cadence}, Power: ${power}`);
   });
 
@@ -159,7 +161,7 @@ async function heartRateConnect(antPlus) {
         sensors: [
           {
             type: 'power',
-            value: power,
+            value: powerAverage.average(),
           },
           {
             type: 'cadence',
