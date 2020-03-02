@@ -156,12 +156,13 @@ async function heartRateConnect(antPlus) {
 
   setInterval(() => {
     if (isRecording) {
+      const power = Math.round(powerAverage.average() * 100) / 100;
       const payload = {
         'module-id': moduleID,
         sensors: [
           {
             type: 'power',
-            value: powerAverage.average(),
+            value: power,
           },
           {
             type: 'cadence',
