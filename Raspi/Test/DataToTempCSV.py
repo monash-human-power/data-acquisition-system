@@ -68,15 +68,15 @@ def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num):
 
     # Determine which type of data to parse
     if enum_topics.WirelessModule.data(module_id_num) == msg.topic:
-        type = "DATA"
+        type = str(enum_topics.WirelessModuleType.data)
         parse_module_data()
 
     elif enum_topics.WirelessModule.low_battery(module_id_num) == msg.topic:
-        type = "LOW_BATTERY"
+        type = str(enum_topics.WirelessModuleType.low_battery)
         # Nothing to parse
 
     elif enum_topics.WirelessModule.battery(module_id_num) == msg.topic:
-        type = "BATTERY"
+        type = str(enum_topics.WirelessModuleType.battery)
         parse_module_battery()
 
     # Find the difference in seconds to when the recording was started and

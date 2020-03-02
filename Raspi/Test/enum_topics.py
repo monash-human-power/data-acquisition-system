@@ -30,3 +30,12 @@ class WirelessModule(NeatEnum):
 
     def stop(module_id):
         return str(WirelessModule.base) + str(module_id) + '/stop'
+
+
+class WirelessModuleType(NeatEnum):
+    """ Used in the DataToTempCSV script to specify the type of data
+    recieved"""
+
+    data = "DATA"
+    battery = "BATTERY"
+    low_battery = "LOW_BATTERY"
