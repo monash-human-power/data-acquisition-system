@@ -79,9 +79,6 @@ def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num):
         type = "BATTERY"
         parse_module_battery()
 
-    else:
-        print("YOU MESSED UP")
-
     # Find the difference in seconds to when the recording was started and
     # when the data was recieved.
     time_delta = datetime.now() - module_start_time
