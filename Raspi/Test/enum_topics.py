@@ -17,16 +17,16 @@ class WirelessModule(NeatEnum):
     base = '/v3/wireless-module/'
 
     def battery(module_id):
-        return '/v3/wireless-module/' + str(module_id) + '/battery'
+        return str(WirelessModule.base) + str(module_id) + '/battery'
 
     def low_battery(module_id):
-        return '/v3/wireless-module/' + str(module_id) + '/low-battery'
+        return str(WirelessModule.base) + str(module_id) + '/low-battery'
 
     def data(module_id):
-        return '/v3/wireless-module/' + str(module_id) + '/data'
+        return str(WirelessModule.base) + str(module_id) + '/data'
 
     def start(module_id):
-        return '/v3/wireless-module/' + str(module_id) + '/start'
+        return str(WirelessModule.base) + str(module_id) + '/start'
 
     def stop(module_id):
-        return '/v3/wireless-module/' + str(module_id) + '/stop'
+        return str(WirelessModule.base) + str(module_id) + '/stop'
