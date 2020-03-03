@@ -38,7 +38,7 @@ Send data once per second for modules 1, 2, 3 and 4 for host on 192.168.1.100 fo
 
 
 ### Test/mqtt_wireless_log.py
-Once started this script will log any data coming in on the MQTT module data and battery channels.
+Once started this script will log any data coming in on the MQTT module data and battery channels. The saved csv files will be in the format `module_id + _D%d-%m-%d_T%H-%M-%S + .csv`, where the date and time is the time when the start topic gets data sent on it. 
 
 ###### Usage: Just start the script and data will be auto logged
 General use with the default MQTT broker set to localhost
