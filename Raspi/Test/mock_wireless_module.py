@@ -3,6 +3,7 @@ import argparse
 import json
 import paho.mqtt.client as mqtt
 from MockSensor import MockSensor
+import enum_topics
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless module test script that sends fake data',
@@ -20,35 +21,79 @@ parser.add_argument(
     help="""Address of the MQTT broker. If nothing is selected it will
     default to localhost.""")
 parser.add_argument(
-    '-i', '--id', action='store', type=int, default=None,
-    help="""Specify the module to produce fake data. eg. --id 1 specifies that
-    module 1 only produces data. If nothing is given all modules will be
-    active.""")
+    '-i', '--id', action='store', nargs='+', type=int, default=[1, 2, 3, 4],
+    help="""Specify the module to produce fake data. eg. --id 1 2 25 specifies
+    that module 1, 2 and 25 will produce data. If nothing is given all real
+    modules will be active.""")
 
-# Generate the fake sensors with average values
-s_steering_angle = MockSensor(10)
-s_co2 = MockSensor(325)
-s_temperature = MockSensor(25)
-s_humidity = MockSensor(85)
-s_reed_velocity = MockSensor(50)
-s_battery = MockSensor(80)
-s_accelerometer = MockSensor(("x", 90),
-                             ("y", 90),
-                             ("z", 90))
-s_gyroscope = MockSensor(("x", 90),
-                         ("y", 90),
-                         ("z", 90))
-s_gps = MockSensor(("speed", 50),
-                   ("satellites", 10),
-                   ("latitude", 25),
-                   ("longitude", 25),
-                   ("altitude", 50),
-                   ("course", 0))
+# Generate a dict of the fake sensors with average values
+sensors = {
+    "steeringAngle": MockSensor(10),
+    "co2": MockSensor(325),
+    "temperature": MockSensor(25),
+    "humidity": MockSensor(85),
+    "reedVelocity": MockSensor(50),
+    "battery": MockSensor(80),
+    "accelerometer": MockSensor(("x", 90),
+                                ("y", 90),
+                                ("z", 90)),
+    "gyroscope": MockSensor(("x", 90),
+                            ("y", 90),
+                            ("z", 90)),
+    "gps": MockSensor(("speed", 50),
+                      ("satellites", 10),
+                      ("latitude", 25),
+                      ("longitude", 25),
+                      ("altitude", 50),
+                      ("course", 0)),
+    "power": MockSensor(200, percent_range=0.8),
+    "cadence": MockSensor(90, percent_range=0.2),
+    "heartRate": MockSensor(120),
+}
+
+# HARDCODED MODULE ONBOARD SENSORS (dict above contains the MockSensor objects)
+M1_sensors = ["temperature", "humidity", "steeringAngle"]
+M2_sensors = ["co2", "temperature", "humidity", "accelerometer", "gyroscope"]
+M3_sensors = ["co2", "reedVelocity", "gps"]
+M4_sensors = ["power", "cadence", "heartRate"]
+Mn_sensors = list(sensors.keys())  # For other fake module all sensors are used
 
 
-def send_fake_data(client, duration, rate, module_id):
+def generate_module_data(module_id_num, sensor_list):
+    """
+    Function to generate the module in the correct dict format before turning
+    it into JSON
+    module_id_num:  Unique module number (int)
+    sensor_list:    list of sensors as strings such as ["co2", "reedVelocity"]
+    """
+
+    # Full dict containing all of the sensor data and their type
+    module_data = {
+        "module-id": module_id_num,
+        "sensors": []
+    }
+
+    for sensor_name in sensor_list:
+        sensor_data = {
+            "type": sensor_name,
+            "value": sensors[sensor_name].get_value()
+        }
+        module_data["sensors"].append(sensor_data)
+
+    return module_data
+
+
+def send_fake_data(client, duration, rate, module_id_nums):
     """ Send artificial data over MQTT for each module chanel. Sends [rate] per
-    second for [duration] seconds"""
+    second for [duration] seconds
+
+    client:         MQTT client
+    duration:       How long in seconds the script should output data before
+                    terminating
+    rate:           Frequency of sending out data in Hz
+    module_id_nums: List of ints containing module ids that are enabled for the
+                    mock test
+    """
 
     start_time = round(time.time(), 2)
     total_time = 0
@@ -64,15 +109,16 @@ def send_fake_data(client, duration, rate, module_id):
         # it can be compaired with the the data read by the wireless logging
         # script
 
-        def publish_data_and_battery(module_num):
+        def publish_data_and_battery(module_id_num):
             battery_data = {
-                "module-id": module_num,
-                "percentage": s_battery.get_value()
+                "module-id": module_id_num,
+                "percentage": sensors["battery"].get_value()
             }
 
-            module_topic = "/v3/wireless-module/"+str(module_num)+"/data"
-            battery_topic = "/v3/wireless-module/"+str(module_num)+"/battery"
+            module_topic = enum_topics.WirelessModule.data(module_id_num)
+            battery_topic = enum_topics.WirelessModule.battery(module_id_num)
 
+            # Publish data and battery if needed
             publish(client, module_topic, module_data)
             if publish_battery:
                 publish(client, battery_topic, battery_data)
@@ -80,82 +126,38 @@ def send_fake_data(client, duration, rate, module_id):
         if publish_battery:
             battery_counter += 1
 
-        # Wireless module 1 (Middle)
-        if module_id == 1 or module_id is None:
-            module_num = 1
-            module_data = {
-                            "sensors": [
-                                {
-                                    "type": "temperature",
-                                    "value": s_temperature.get_value()
-                                },
-                                {
-                                    "type": "humidity",
-                                    "value": s_humidity.get_value()
-                                },
-                                {
-                                    "type": "steeringAngle",
-                                    "value": s_steering_angle.get_value()
-                                }
-                             ]
-                          }
-            publish_data_and_battery(module_num)
+        print("TIME:", current_time)
+        for module_id_num in module_id_nums:
+            # Wireless module 1 (Front)
+            if module_id_num == 1:
+                module_data = generate_module_data(module_id_num, M1_sensors)
+                publish_data_and_battery(module_id_num)
 
-        # Wireless module 2 (Back)
-        if module_id == 2 or module_id is None:
-            module_num = 2
-            module_data = {
-                            "sensors": [
-                                {
-                                    "type": "co2",
-                                    "value": s_co2.get_value()
-                                },
-                                {
-                                    "type": "temperature",
-                                    "value": s_temperature.get_value()
-                                },
-                                {
-                                    "type": "humidity",
-                                    "value": s_humidity.get_value()
-                                },
-                                {
-                                    "type": "accelerometer",
-                                    "value": s_accelerometer.get_value()
-                                },
-                                {
-                                    "type": "gyroscope",
-                                    "value": s_gyroscope.get_value()
-                                }
-                             ]
-                          }
-            publish_data_and_battery(module_num)
+            # Wireless module 2 (Middle)
+            elif module_id_num == 2:
+                module_data = generate_module_data(module_id_num, M2_sensors)
+                publish_data_and_battery(module_id_num)
 
-        # Wireless module 3 (Front)
-        if module_id == 3 or module_id is None:
-            module_num = 3
-            module_data = {
-                            "sensors": [
-                                {
-                                    "type": "co2",
-                                    "value": s_co2.get_value()
-                                },
-                                {
-                                    "type": "reedVelocity",
-                                    "value": s_reed_velocity.get_value()
-                                },
-                                {
-                                    "type": "gps",
-                                    "value": s_gps.get_value()
-                                }
-                             ]
-                          }
-            publish_data_and_battery(module_num)
+            # Wireless module 3 (Back)
+            elif module_id_num == 3:
+                module_data = generate_module_data(module_id_num, M3_sensors)
+                publish_data_and_battery(module_id_num)
+
+            # Wireless module 4 (ANT+ sensor/DAS.js)
+            elif module_id_num == 4:
+                module_data = generate_module_data(module_id_num, M4_sensors)
+                publish_data_and_battery(module_id_num)
+
+            # Wireless module n (Other random sensor)
+            else:
+                module_data = generate_module_data(module_id_num, Mn_sensors)
+                publish_data_and_battery(module_id_num)
 
         print()  # Newline for clarity
         time.sleep(1/rate)
 
 
-def publish(client, topic, data):
+def publish(client, topic, data={}):
     """
     Publishes python dict data to a specific topic in JSON and prints it out
     client: MQTT client object
@@ -171,38 +173,23 @@ def publish(client, topic, data):
 
 
 def start_modules(args):
-    """ Send the a fake filename on the start channel to start the appropriate
-    module"""
+    """ Sends a null message on the start channels for all of the selected
+    modules to start """
 
     # TODO: Add posibility to make modules by importing a file or generating
     # random modules. The modules should not be hard coded to this script.
-
-    if args.id is None:
-        for i in range(1, 4):
-            publish(client, "/v3/wireless-module/" + str(i) + "/start", {
-                "filename": "M" + str(i)
-                + "_" + str(round(time.time()))
-                + ".csv"
-            })
-        print('\nstarted module 1\nstarted module 2\nstarted module 3\n')
-
-    else:
-        publish(client, "/v3/wireless-module/" + str(args.id) + "/start", {
-            "filename": "M" + str(args.id)
-            + "_" + str(round(time.time()))
-            + ".csv"
-        })
-        print('started module ' + str(args.id) + '\n')
+    for module_id_num in args.id:
+        publish(client, enum_topics.WirelessModule.start(module_id_num))
+        print('Started module', module_id_num)
 
 
 def stop_modules(args):
-    """ Sends a null message on the stop channel for all of the modules to
-    stop"""
+    """ Sends a null message on the stop channels for all of the selected
+    modules to stop """
 
-    print()  # Newline for clarity
-    for i in range(1, 4):
-        publish(client, "/v3/wireless-module/" + str(i) + "/stop", {})
-    print('\nstopped module 1\nstopped module 2\nstopped module 3')
+    for module_id_num in args.id:
+        publish(client, enum_topics.WirelessModule.stop(module_id_num))
+        print('Stopped module', module_id_num)
 
 
 def start_publishing(client, args):

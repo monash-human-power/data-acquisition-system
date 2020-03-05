@@ -2,12 +2,12 @@ import paho.mqtt.client as mqtt
 import os
 import pandas as pd
 from DataToTempCSV import DataToTempCSV
-import json
 from datetime import datetime
 import argparse
+import enum_topics
 
 # Global dicts to store state
-# Dict structure is {<module_id> : <data>}
+# Dict structure is {<module_id_str> : <data>}
 is_recording = {}       # If the data is being recorded
 module_start_time = {}  # When the data started being recorded
 output_filename = {}    # Output filename
@@ -38,84 +38,78 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):
     """ MQTT callback for when data is sent on the subscribed
-    '/v3/wireless-module/#' topics. The module_id is found by squashing M
-    infront of the module number. eg M1, M2, M3... etc. The module_id is used
-    for identifying what data came from where and is also used for naming the
-    temp files.
+    '/v3/wireless-module/#' topics. The module_id_str is found by squashing M
+    infront of the module number. eg M1, M2, M3... etc. The module_id_str is
+    used for identifying what data came from where and is also used for naming
+    the temp files.
     """
 
-    module_id = "M" + msg.topic.split("/")[3]
+    module_id_num = msg.topic.split("/")[3]
+    module_id_str = "M" + module_id_num
 
     # Start the recording of <module_id>
-    if msg.topic.endswith("start"):
-        start_recording(msg, module_id)
-        print(module_id, "STARTED")
+    if enum_topics.WirelessModule.start(module_id_num) == msg.topic:
+        start_recording(module_id_str)
+        print(module_id_str,
+              "STARTED, RECORDING TO FILE:",
+              output_filename[module_id_str])
 
     # Stop the recording of <module_id>
-    elif msg.topic.endswith("stop"):
-        stop_recording(module_id)
-        print(module_id, "STOPPED")
+    elif enum_topics.WirelessModule.stop(module_id_num) == msg.topic:
+        stop_recording(module_id_str)
+        print(module_id_str,
+              "STOPPED, RECORDED TO FILE:",
+              output_filename[module_id_str])
 
-    # Record low battery data
-    elif msg.topic == "/v3/wireless-module/battery/low":
-        record_low_battery(msg)
-
-    # Record other data (battery and sensor data)
-    elif is_recording[module_id]:
-        DataToTempCSV(msg, module_start_time[module_id], module_id)
+    # Record data (battery, low-battery and sensor data)
+    elif is_recording[module_id_str]:
+        DataToTempCSV(
+            msg, module_start_time[module_id_str],
+            module_id_str, module_id_num)
 
 
-def start_recording(msg, module_id):
+def start_recording(module_id_str):
     """ Start recording for a specific module """
     # Clear the old temporary files in the folder, just in case the script
     # exited early and they were not cleared properly
-    remove_files(find_temp_csvs(module_id))
-
-    start_data = msg.payload.decode("utf-8")
-    start_data = json.loads(start_data)
+    remove_files(find_temp_csvs(module_id_str))
 
     # Save the state of recording and the output filename to global dicts
-    is_recording[module_id] = True
-    module_start_time[module_id] = datetime.now()
-    output_filename[module_id] = start_data["filename"]
+    is_recording[module_id_str] = True
+    module_start_time[module_id_str] = datetime.now()
+
+    # Generate filename from the current date and time in the Australian format
+    output_filename[module_id_str] = module_start_time[module_id_str].strftime(
+        module_id_str + "_D%d-%m-%d_T%H-%M-%S" + ".csv")
 
 
-def stop_recording(module_id):
+def stop_recording(module_id_str):
     """ Stop recording for a specific module """
     # Change the state of recording to false in global dict
-    is_recording[module_id] = False
+    is_recording[module_id_str] = False
 
     # Save the temp CSV data into a proper CSV
-    save_temp_csv(module_id)
+    save_temp_csv(module_id_str)
 
 
-def record_low_battery(msg):
-    """ Record the low battery data for on message """
-    module_data = msg.payload.decode("utf-8")
-    module_data = json.loads(module_data)
-    module_id = "M" + module_data["module-id"]
-
-    DataToTempCSV(msg, module_start_time[module_id], module_id)
-
-
-def save_temp_csv(module_id):
+def save_temp_csv(module_id_str):
     """ Saves the temp csvs into real csvs where the battery data and the
     module data is combined into a single CSV"""
 
     # Find the temp files in the current folder for the current module
-    temp_filepaths = find_temp_csvs(module_id)
+    temp_filepaths = find_temp_csvs(module_id_str)
 
     # Merge the battery and sensor data into a single CSV
-    merge_temps(output_filename[module_id], temp_filepaths)
+    merge_temps(output_filename[module_id_str], temp_filepaths)
 
     # Remove the temp files for the specific module that where generated
     remove_files(temp_filepaths)
 
 
-def find_temp_csvs(module_id=""):
+def find_temp_csvs(module_id_str=""):
     """ Searches throught the current directory and finds all the temp files
-    for a specific module_id and returns the filepaths in a list. If no
-    module_id is given then all temporary files will be found and returned
+    for a specific module_id_str and returns the filepaths in a list. If no
+    module_id_str is given then all temporary files will be found and returned
     in a list."""
 
     current_dir = os.path.dirname(__file__)
@@ -129,7 +123,7 @@ def find_temp_csvs(module_id=""):
     # Find temp filepaths and store in the temp_filepaths list
     temp_filepaths = []
     for filename in filepaths:
-        if filename.startswith(".~temp_" + module_id) and filename.endswith(".csv"):
+        if filename.startswith(".~temp_"+module_id_str+"_") and filename.endswith(".csv"):
             if current_dir == '':
                 temp_filepaths.append(filename)
             else:
