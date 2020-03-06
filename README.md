@@ -16,12 +16,6 @@ The Data Acquisition System (DAS) allows us to collect and store data from vario
 
 node.js program we run to communicate to the Teensy that is connected to the Raspberry Pi via serial communication.
 
-#### Test/serial_test.py
-
-Imitates the Teensy serial connection by creating a virtual serial port. Note that this will only work on Unix systems - if you're running Windows, perhaps try running the script under [Windows Subsystem for Linux (WSL)](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
-
-Usage: This script uses the same arguments as `mqtt_test.py`. For example, run the script with `python serial_test.py -f data_173.csv -j 1500`. The script will provide you with a serial port address. Run the DAS script with `node DAS.js -a -p [serial port]`. Return to the `serial_test` terminal, and press enter to begin sending data.
-
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -42,3 +36,5 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
+---
