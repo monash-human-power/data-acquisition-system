@@ -1,8 +1,15 @@
 import pandas as pd 
+import argparse 
 from math import *
 
+#accepts terminal commands
+parser = argparse.ArgumentParser()
+parser.add_argument("--file", help="Input CSV file", action="store")
+parser.add_argument("--output", help="Returns the filtered data", default="filtered_data.csv", action="store")
+args = parser.parse_args()
+
 #initialising data
-data = pd.read_excel("C:\\Users\JohnN\Documents\TheStuffOnHere\MHP\data_173.xlsx",sheet_name=0)
+data = pd.read_csv(args.file)
 time_array = data['time']/1000
 gps_course = data['gps_course']
 gps_speed = data['gps_speed']
@@ -31,105 +38,28 @@ for i in range(len(time_array)):
         i_array.append(i)
 seconds.append(i_array)
 
-# checks if time in seconds is continuous
-'''
-new_time_array = []
-previous_time2 =0
-for time in time_array:
-    if time > previous_time2:
-        if previous_time2 !=0:
-            #ignores first iteration
-            seconds.append(i_array)
+# averages data
+def avgData(array):
+    avg_array = []
+    for second in seconds:
+        total=0
+        for i in second:
+            total = total + array[i]
 
-        previous_time2 = ceil(time)
-        new_time_array.append(ceil(time))
-print(new_time_array)
-'''
+        avg = round(total/len(second), ndigits=2)
+        avg_array.append(avg)
+    return avg_array
 
-# averages gps course
-avg_course = []
-for i in range(len(seconds)):
-    total = 0
-    for j in seconds[i]:
-        total = total + gps_course[j]
-
-    avg = round(total/len(seconds[i]), ndigits=2)
-    avg_course.append(avg)
-print(avg_course)
-
-# averages gps speed
-avg_speed = []
-for i in range(len(seconds)):
-    total = 0
-    for j in seconds[i]:
-        total = total + gps_speed[j]
-
-    avg = round(total/len(seconds[i]), ndigits=2)
-    avg_speed.append(avg)
-print(avg_speed)
-
-# averages temperature in celsius
-avg_tempC = []
-for i in range(len(seconds)):
-    total = 0
-    for j in seconds[i]:
-        total = total + tempC[j]
-
-    avg = round(total/len(seconds[i]), ndigits=2)
-    avg_tempC.append(avg)
-print(avg_tempC)
-
-# averages temperature in farenheit
-avg_tempF = []
-for i in range(len(seconds)):
-    total = 0
-    for j in seconds[i]:
-        total = total + tempF[j]
-
-    avg = round(total/len(seconds[i]), ndigits=2)
-    avg_tempF.append(avg)
-print(avg_tempF)
-
-# averages cadence
-avg_cadence = []
-for i in range(len(seconds)):
-    total = 0
-    for j in seconds[i]:
-        total = total + cadence[j]
-
-    avg = round(total/len(seconds[i]), ndigits=2)
-    avg_cadence.append(avg)
-print(avg_cadence)
-
-# averages power
-avg_power = []
-for i in range(len(seconds)):
-    total = 0
-    for j in seconds[i]:
-        total = total + power[j]
-
-    avg = round(total/len(seconds[i]), ndigits=2)
-    avg_power.append(avg)
-print(avg_power)
-
-# averages reed velocity
-avg_reedV = []
-for i in range(len(seconds)):
-    total = 0
-    for j in seconds[i]:
-        total = total + reedV[j]
-
-    avg = round(total/len(seconds[i]), ndigits=2)
-    avg_reedV.append(avg)
-print(avg_reedV)
-
-# averages reed distance
-avg_reedD = []
-for i in range(len(seconds)):
-    total = 0
-    for j in seconds[i]:
-        total = total + reedD[j]
-
-    avg = round(total/len(seconds[i]), ndigits=2)
-    avg_reedD.append(avg)
-print(avg_reedD)
+#writes newly-manipulated data into new csv file
+final = pd.DataFrame({
+    'time':range(1, len(seconds)+1),
+    'gps_course':avgData(gps_course),
+    'gps_speed':avgData(gps_speed),
+    'tempC':avgData(tempC),
+    'tempF':avgData(tempF),
+    'cadence':avgData(cadence),
+    'power':avgData(power),
+    'reed_velocity':avgData(reedV),
+    'reed_distance':avgData(reedD)
+})
+final.to_csv(args.output, index=False)
