@@ -10,27 +10,27 @@ args = parser.parse_args()
 
 #initialising data
 data = pd.read_csv(args.file)
-time_array = data['time']/1000
+time = data['time']/1000
 gps_course = data['gps_course']
 gps_speed = data['gps_speed']
 tempC = data['thermoC']
 tempF = data['thermoF']
 cadence = data['cadence']
 power = data['power']
-reedV = data['reed_velocity']
-reedD = data['reed_distance']
+reed_vel = data['reed_velocity']
+reed_dis = data['reed_distance']
 
-# sorts data into seconds
+# sorts time into seconds
 seconds = []
 previous_time = 0
-for i in range(len(time_array)):
-    if time_array[i] > previous_time:
+for i in range(len(time)):
+    if time[i] > previous_time:
         # sets new previous_time, pushes current i_array into seconds array, creates new i_array
         if previous_time !=0:
             #ignores first iteration
             seconds.append(i_array)
 
-        previous_time = ceil(time_array[i])
+        previous_time = ceil(time[i])
         i_array = []
         i_array.append(i)
     else:
@@ -59,7 +59,7 @@ final = pd.DataFrame({
     'tempF':avgData(tempF),
     'cadence':avgData(cadence),
     'power':avgData(power),
-    'reed_velocity':avgData(reedV),
-    'reed_distance':avgData(reedD)
+    'reed_velocity':avgData(reed_vel),
+    'reed_distance':avgData(reed_dis)
 })
 final.to_csv(args.output, index=False)
