@@ -10,7 +10,7 @@ args = parser.parse_args()
 
 # initialising data
 data = pd.read_csv(args.file)
-time = data["time"]/1000
+milliseconds = data["time"]/1000
 gps_course = data["gps_course"]
 gps_speed = data["gps_speed"]
 tempC = data["thermoC"]
@@ -23,8 +23,8 @@ reed_dis = data["reed_distance"]
 # sorts time into seconds
 seconds = []
 previous_time = 0
-for i in range(len(time)):
-    if time[i] > previous_time:
+for i in range(len(milliseconds)):
+    if milliseconds[i] > previous_time:
         # sets new previous_time, pushes current millisecond_indices into seconds array, creates new millisecond_indices
         # millisecond_indices is an array of indexes for milliseconds within the same second
         if previous_time != 0:
