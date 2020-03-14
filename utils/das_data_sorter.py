@@ -6,8 +6,8 @@ from math import ceil
 parser = argparse.ArgumentParser()
 parser.add_argument("--file", help="Input CSV file", action="store", required=True)
 parser.add_argument("--output", help="Returns the filtered data", default="filtered_data.csv", action="store")
-parser.add_argument("--unit", help="Specify time units (seconds, s, or minutes, m)",
-                     default="seconds", choices=["seconds", "s", "minutes", "m"], action="store")
+parser.add_argument("--unit", help="Specify time units (seconds, s, or minutes, m)", default="seconds", 
+                    choices=["seconds", "s", "minutes", "m"], action="store")
 args = parser.parse_args()
 
 # initialising data
