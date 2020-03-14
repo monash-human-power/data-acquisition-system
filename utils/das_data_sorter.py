@@ -4,7 +4,7 @@ from math import ceil
 
 # accepts terminal commands
 parser = argparse.ArgumentParser()
-parser.add_argument("--file", help="Input CSV file", action="store")
+parser.add_argument("--file", help="Input CSV file", action="store", required=True)
 parser.add_argument("--output", help="Returns the filtered data", default="filtered_data.csv", action="store")
 args = parser.parse_args()
 
@@ -28,7 +28,7 @@ for i in range(len(time)):
         # sets new previous_time, pushes current millisecond_indices into seconds array, creates new millisecond_indices
         # millisecond_indices is an array of indexes for milliseconds within the same second
         if previous_time != 0:
-            #ignores first iteration
+            # ignores first iteration
             seconds.append(millisecond_indices)
 
         previous_time = ceil(time[i])
