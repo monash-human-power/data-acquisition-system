@@ -6,7 +6,8 @@ from math import ceil
 parser = argparse.ArgumentParser()
 parser.add_argument("--file", help="Input CSV file", action="store", required=True)
 parser.add_argument("--output", help="Returns the filtered data", default="filtered_data.csv", action="store")
-parser.add_argument("--unit", help="Specify time units (seconds, s, or minutes, m)", default="seconds", action="store")
+parser.add_argument("--unit", help="Specify time units (seconds, s, or minutes, m)",
+                     default="seconds", choices=["seconds", "s", "minutes", "m"], action="store")
 args = parser.parse_args()
 
 # initialising data
@@ -26,9 +27,6 @@ if args.unit == "seconds" or args.unit == "s":
     time = milliseconds/1000
 elif args.unit == "minutes" or args.unit =="m":
     time = milliseconds/1000/60
-else:
-    print("Time units need to be in seconds or minutes")
-    quit()
 
 # sorts time into specific time unit
 new_time = []
