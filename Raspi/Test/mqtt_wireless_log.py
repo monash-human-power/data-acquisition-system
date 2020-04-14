@@ -4,6 +4,8 @@ import pandas as pd
 from DataToTempCSV import DataToTempCSV
 from datetime import datetime
 import argparse
+import glob
+import re
 import enum_topics
 
 # Global dicts to store state
@@ -70,17 +72,29 @@ def on_message(client, userdata, msg):
 
 def start_recording(module_id_str):
     """ Start recording for a specific module """
-    # Clear the old temporary files in the folder, just in case the script
-    # exited early and they were not cleared properly
-    remove_files(find_temp_csvs(module_id_str))
+    # The old temporary files in the folder will not be removed just incase
+    # they contain just in case they need to be recovered.
 
     # Save the state of recording and the output filename to global dicts
     is_recording[module_id_str] = True
     module_start_time[module_id_str] = datetime.now()
 
-    # Generate filename from the current date and time in the Australian format
-    output_filename[module_id_str] = module_start_time[module_id_str].strftime(
-        module_id_str + "_D%d-%m-%d_T%H-%M-%S" + ".csv")
+    # Generate filename from the last log number + 1
+    max_file_id = 0
+    for filepath in glob.glob('./../logs/*_M?.csv'):
+        # split the filepath into the filename
+        filename = filepath.split("/")[3]
+
+        # Gets all the digits from the file name
+        temp = re.findall(r'\d+', filename)
+
+        # Gets all the digits from the file name
+        file_id = list(map(int, temp))[0]
+
+        if file_id > max_file_id:
+            max_file_id = file_id
+
+    output_filename[module_id_str] = f"{max_file_id+1}_{module_id_str}.csv"
 
 
 def stop_recording(module_id_str):
@@ -154,7 +168,7 @@ def merge_temps(output_filename, temp_filepaths):
 
     # Merge the dataframes and output the final csv
     merged_dataframe = pd.concat(temp_dataframes, axis=1)
-    merged_dataframe.to_csv(output_filename)
+    merged_dataframe.to_csv("../logs/" + output_filename)
 
 
 if __name__ == "__main__":
