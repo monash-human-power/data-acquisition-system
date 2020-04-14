@@ -10,7 +10,7 @@ paho-mqtt = "*"
 scipy = "*"
 pandas = "*"
 argparse = "*"
-glob = "*"
+urllib3 = "*"
 
 [requires]
 python_version = "3.8"
