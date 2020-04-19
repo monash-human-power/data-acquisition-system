@@ -40,7 +40,6 @@ for i in range(len(time)):
             # ignores first iteration
             new_time.append(millisecond_indices)
 
-
         previous_time = ceil(time[i])
         millisecond_indices = []
 
@@ -53,12 +52,12 @@ new_time.append(millisecond_indices)
 def avg_Data(array):
     avg_array = []
 
-    for t in new_time:
+    for index_array in new_time:
         total = 0
-        for i in t:
-            total += array[i]
+        for index in index_array:
+            total += array[index]
 
-        avg = round(total/len(t), ndigits=2)
+        avg = round(total/len(index_array), ndigits=2)
         avg_array.append(avg)
     return avg_array
 
