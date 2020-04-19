@@ -12,6 +12,7 @@ args = parser.parse_args()
 
 # initialising data
 data = pd.read_csv(args.file)
+
 milliseconds = data["time"]
 gps_course = data["gps_course"]
 gps_speed = data["gps_speed"]
@@ -39,16 +40,19 @@ for i in range(len(time)):
             # ignores first iteration
             new_time.append(millisecond_indices)
 
+
         previous_time = ceil(time[i])
         millisecond_indices = []
 
     # pushes index into current millisecond_indices
     millisecond_indices.append(i)
+
 new_time.append(millisecond_indices)
 
 # averages data within the seconds, according to seconds array 
 def avg_Data(array):
     avg_array = []
+
     for t in new_time:
         total = 0
         for i in t:
