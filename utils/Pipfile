@@ -9,7 +9,7 @@ verify_ssl = true
 pandas = "*"
 argparse = "*"
 math = "*"
-statistics = "*"
+numpy = "*"
 
 [requires]
 python_version = "3.8"

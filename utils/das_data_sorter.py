@@ -75,12 +75,26 @@ def smooth_data(data, technique):
     
     return final_data
 
+# averages data within the seconds, according to seconds array 
+def avg_Data(array):
+    avg_array = []
+
+    for index_array in new_time:
+        total = 0
+        for index in index_array:
+            total += array[index]
+
+        avg = round(total/len(index_array), ndigits=2)
+        avg_array.append(avg)
+    return avg_array
+
 # accepts terminal commands
 parser = argparse.ArgumentParser()
 parser.add_argument("--file", help="Input CSV file", action="store", required=True)
 parser.add_argument("--output", help="Returns the filtered data", default="filtered_data.csv", action="store")
 parser.add_argument("--unit", help="Specify time units (seconds, s, or minutes, m)", default="seconds", 
                     choices=["seconds", "s", "minutes", "m"], action="store")
+
 parser.add_argument("--smooth", help="Smoothens data points by 3-point mean or median smoothing", 
                     choices=["mean","median"], action="store")
 args = parser.parse_args()
@@ -120,6 +134,7 @@ for i in range(len(time)):
 
     # pushes index into current millisecond_indices
     millisecond_indices.append(i)
+
 new_time.append(millisecond_indices)
 
 # results of averaged data from milliseconds to seconds/minutes
