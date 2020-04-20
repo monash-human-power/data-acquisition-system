@@ -1,7 +1,7 @@
 import pandas as pd 
 import argparse 
 from math import ceil
-from statistics import median, mean
+from numpy import median, mean
 
 # averages data within the seconds or minutes, according to new_time array
 def avg_Data(array):
@@ -11,11 +11,11 @@ def avg_Data(array):
         avg = mean(array[millisecond_indices])
         avg = round(avg, ndigits=2)
         avg_array.append(avg)
-        
+
     return avg_array
 
 # 3 point moving mean smoothing
-def mean_smooth():
+def mean_smooth(data):
     new_data = []
 
     for i in range(1,len(data)-1):
@@ -23,8 +23,11 @@ def mean_smooth():
         second = data[i]
         third = data[i+1]
 
-        mean = mean([first, second, third])
-        new_data.append(mean)
+        new_data_point = mean([first, second, third])
+        new_data_point = round(new_data_point, ndigits=2)
+        new_data.append(new_data_point)
+    
+    return new_data
 
 # 3 point moving median smoothing
 def median_smooth(data):
@@ -36,10 +39,41 @@ def median_smooth(data):
         second = data[i]
         third = data[i+1]
 
-        median = median([first, second, third])
-        new_data.append(median)
+        new_data_point = median([first, second, third])
+        new_data.append(new_data_point)
     
     return new_data
+
+# smoothing technique function caller
+def smooth_data(data, technique):
+    if technique == "mean":
+        # when input is "--smooth mean"
+        final_data = {
+            "time": range(1, len(new_time)-1),
+            "gps_course": mean_smooth(data["gps_course"]),
+            "gps_speed": mean_smooth(data["gps_speed"]),
+            "tempC": mean_smooth(data["tempC"]),
+            "tempF": mean_smooth(data["tempF"]),
+            "cadence": mean_smooth(data["cadence"]),
+            "power": mean_smooth(data["power"]),
+            "reed_velocity": mean_smooth(data["reed_velocity"]),
+            "reed_distance": mean_smooth(data["reed_distance"])
+        }
+    elif technique == "median":
+        # when input is "--smooth median"
+        final_data = {
+            "time": range(1, len(new_time)-1),
+            "gps_course": median_smooth(data["gps_course"]),
+            "gps_speed": median_smooth(data["gps_speed"]),
+            "tempC": median_smooth(data["tempC"]),
+            "tempF": median_smooth(data["tempF"]),
+            "cadence": median_smooth(data["cadence"]),
+            "power": median_smooth(data["power"]),
+            "reed_velocity": median_smooth(data["reed_velocity"]),
+            "reed_distance": median_smooth(data["reed_distance"])
+        }
+    
+    return final_data
 
 # accepts terminal commands
 parser = argparse.ArgumentParser()
@@ -86,11 +120,10 @@ for i in range(len(time)):
 
     # pushes index into current millisecond_indices
     millisecond_indices.append(i)
-
 new_time.append(millisecond_indices)
 
-# writes newly-manipulated data into new csv file
-final = pd.DataFrame({
+# results of averaged data from milliseconds to seconds/minutes
+new_avg_data = {
     "time": range(1, len(new_time)+1),
     "gps_course": avg_Data(gps_course),
     "gps_speed": avg_Data(gps_speed),
@@ -100,5 +133,15 @@ final = pd.DataFrame({
     "power": avg_Data(power),
     "reed_velocity": avg_Data(reed_vel),
     "reed_distance": avg_Data(reed_dis)
-})
+}
+
+# checks if user wants to smooth data using moving mean or moving median method
+# if no input from user, script will ignore this whole block
+if args.smooth == "mean":
+    new_avg_data = smooth_data(new_avg_data, args.smooth)
+elif args.smooth == "median":
+    new_avg_data = smooth_data(new_avg_data, args.smooth)
+
+# writes newly-manipulated data into new csv file
+final = pd.DataFrame(new_avg_data)
 final.to_csv(args.output, index=False)
