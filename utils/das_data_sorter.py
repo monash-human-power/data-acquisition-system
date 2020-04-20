@@ -1,8 +1,9 @@
 import pandas as pd 
 import argparse 
 from math import ceil
+from statistics import median, mean
 
-# averages data within the seconds, according to seconds array 
+# averages data within the seconds or minutes, according to new_time array
 def avg_Data(array):
     avg_array = []
 
@@ -15,12 +16,41 @@ def avg_Data(array):
         avg_array.append(avg)
     return avg_array
 
+# 3 point moving mean smoothing
+def mean_smooth():
+    new_data = []
+
+    for i in range(1,len(data)-1):
+        first = data[i-1]
+        second = data[i]
+        third = data[i+1]
+
+        mean = mean([first, second, third])
+        new_data.append(mean)
+
+# 3 point moving median smoothing
+def median_smooth(data):
+    new_data = []
+
+    # iterates through each data point and its adjacents (excluding first and last) and finds the median 
+    for i in range(1, len(data)-1):
+        first = data[i-1]
+        second = data[i]
+        third = data[i+1]
+
+        median = median([first, second, third])
+        new_data.append(median)
+    
+    return new_data
+
 # accepts terminal commands
 parser = argparse.ArgumentParser()
 parser.add_argument("--file", help="Input CSV file", action="store", required=True)
 parser.add_argument("--output", help="Returns the filtered data", default="filtered_data.csv", action="store")
 parser.add_argument("--unit", help="Specify time units (seconds, s, or minutes, m)", default="seconds", 
                     choices=["seconds", "s", "minutes", "m"], action="store")
+parser.add_argument("--smooth", help="Smoothens data points by 3-point mean or median smoothing", 
+                    choices=["mean","median"], action="store")
 args = parser.parse_args()
 
 # initialising data
