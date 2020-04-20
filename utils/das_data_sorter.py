@@ -7,13 +7,11 @@ from statistics import median, mean
 def avg_Data(array):
     avg_array = []
 
-    for index_array in new_time:
-        total = 0
-        for index in index_array:
-            total += array[index]
-
-        avg = round(total/len(index_array), ndigits=2)
+    for millisecond_indices in new_time:
+        avg = mean(array[millisecond_indices])
+        avg = round(avg, ndigits=2)
         avg_array.append(avg)
+        
     return avg_array
 
 # 3 point moving mean smoothing
