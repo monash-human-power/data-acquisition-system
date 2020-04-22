@@ -77,7 +77,6 @@ def start_recording(module_id_str):
 
     # Save the state of recording and the output filename to global dicts
     file_path = os.path.dirname(__file__)
-    print(file_path)
     is_recording[module_id_str] = True
     module_start_time[module_id_str] = datetime.now()
 
@@ -85,7 +84,6 @@ def start_recording(module_id_str):
     max_file_id = 0
     for filepath in glob.glob(file_path + '/../csv_data/*_M?.csv'):
         # split the filepath into the filename
-        print(filepath)
         filename = filepath.split("/")[-1]
 
         # Gets all the digits from the file name
@@ -176,9 +174,6 @@ def merge_temps(output_filename, temp_filepaths):
 
 
 if __name__ == "__main__":
-    file_path = os.path.dirname(__file__)
-    print(file_path)
-
     args = parser.parse_args()
     broker_address = args.host
     client = mqtt.Client()
