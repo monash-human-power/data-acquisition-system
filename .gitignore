@@ -6,3 +6,4 @@
 node_modules/
 .eslintrc.*
 **/.DS_Store
+__pycache__/
