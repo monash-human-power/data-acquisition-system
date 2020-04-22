@@ -76,12 +76,13 @@ def start_recording(module_id_str):
     # they contain just in case they need to be recovered.
 
     # Save the state of recording and the output filename to global dicts
+    current_path = os.path.dirname(__file__)
     is_recording[module_id_str] = True
     module_start_time[module_id_str] = datetime.now()
 
     # Generate filename from the last log number + 1
     max_file_id = 0
-    for filepath in glob.glob('./../logs/*_M?.csv'):
+    for filepath in glob.glob(current_path + '/../csv_data/*_M?.csv'):
         # split the filepath into the filename
         filename = filepath.split("/")[3]
 
@@ -168,7 +169,8 @@ def merge_temps(output_filename, temp_filepaths):
 
     # Merge the dataframes and output the final csv
     merged_dataframe = pd.concat(temp_dataframes, axis=1)
-    merged_dataframe.to_csv("../logs/" + output_filename)
+    current_path = os.path.dirname(__file__)
+    merged_dataframe.to_csv(current_path + "/../csv_data/" + output_filename)
 
 
 if __name__ == "__main__":
