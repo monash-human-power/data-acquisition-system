@@ -10,6 +10,7 @@ pandas = "^1.0.3"
 argparse = "^1.4.0"
 datetime = "^4.3"
 "paho.mqtt" = "^1.5.0"
+pytest = "^5.4.1"
 
 [tool.poetry.dev-dependencies]
 
