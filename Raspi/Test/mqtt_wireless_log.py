@@ -18,6 +18,7 @@ output_filename = {}    # Output filename
 parser = argparse.ArgumentParser(
     description='MQTT wireless logger',
     add_help=True)
+
 parser.add_argument(
     '--host', action='store', type=str, default="localhost",
     help="""Address of the MQTT broker. If nothing is selected it will
@@ -45,7 +46,6 @@ def on_message(client, userdata, msg):
     used for identifying what data came from where and is also used for naming
     the temp files.
     """
-
     module_id_num = msg.topic.split("/")[3]
     module_id_str = "M" + module_id_num
 
@@ -76,15 +76,17 @@ def start_recording(module_id_str):
     # they contain just in case they need to be recovered.
 
     # Save the state of recording and the output filename to global dicts
-    current_path = os.path.dirname(__file__)
+    file_path = os.path.dirname(__file__)
+    print(file_path)
     is_recording[module_id_str] = True
     module_start_time[module_id_str] = datetime.now()
 
     # Generate filename from the last log number + 1
     max_file_id = 0
-    for filepath in glob.glob(current_path + '/../csv_data/*_M?.csv'):
+    for filepath in glob.glob(file_path + '/../csv_data/*_M?.csv'):
         # split the filepath into the filename
-        filename = filepath.split("/")[3]
+        print(filepath)
+        filename = filepath.split("/")[-1]
 
         # Gets all the digits from the file name
         temp = re.findall(r'\d+', filename)
@@ -169,11 +171,14 @@ def merge_temps(output_filename, temp_filepaths):
 
     # Merge the dataframes and output the final csv
     merged_dataframe = pd.concat(temp_dataframes, axis=1)
-    current_path = os.path.dirname(__file__)
-    merged_dataframe.to_csv(current_path + "/../csv_data/" + output_filename)
+    file_path = os.path.dirname(__file__)
+    merged_dataframe.to_csv(file_path + "/../csv_data/" + output_filename)
 
 
 if __name__ == "__main__":
+    file_path = os.path.dirname(__file__)
+    print(file_path)
+
     args = parser.parse_args()
     broker_address = args.host
     client = mqtt.Client()
