@@ -170,7 +170,10 @@ def merge_temps(output_filename, temp_filepaths):
     # Merge the dataframes and output the final csv
     merged_dataframe = pd.concat(temp_dataframes, axis=1)
     file_path = os.path.dirname(__file__)
-    merged_dataframe.to_csv(file_path + "/../csv_data/" + output_filename)
+    if file_path == "":
+        merged_dataframe.to_csv("../csv_data/" + output_filename)
+    else:
+        merged_dataframe.to_csv(file_path + "/../csv_data/" + output_filename)
 
 
 if __name__ == "__main__":
