@@ -114,7 +114,7 @@ def stop_recording(module_id_str):
     temp_filepaths = find_temp_csvs(module_id_str)
 
     # Merge the battery and sensor data into a single CSV
-    merge_temps(temp_filepaths, module_id_str)
+    merge_and_save_temps(temp_filepaths, output_filepath[module_id_str])
 
     # Remove the temp files for the specific module that where generated
     for file in temp_filepaths:
@@ -136,7 +136,7 @@ def find_temp_csvs(module_id_str=""):
     return temp_filepaths
 
 
-def merge_temps(temp_filepaths, module_id_str):
+def merge_and_save_temps(temp_filepaths, save_filepath):
     """ This function merges multiple temporary module CSVs into a final one
     and names the file correctly.
     temp_filepaths:     Example list of filepaths is [filepath1, filepath2]"""
@@ -153,7 +153,7 @@ def merge_temps(temp_filepaths, module_id_str):
     except Exception as e:
         print(e)
 
-    merged_dataframe.to_csv(output_filepath[module_id_str])
+    merged_dataframe.to_csv(save_filepath)
 
 if __name__ == "__main__":
     args = parser.parse_args()
