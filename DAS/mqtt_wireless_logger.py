@@ -13,7 +13,6 @@ from DAS.utils import enum_topics
 # Dict structure is {<module_id_str> : <data>}
 is_recording = {}       # If the data is being recorded
 module_start_time = {}  # When the data started being recorded
-# output_filename = {}    # Output filename
 output_filepath = {}    # Output filpath to save the file
 
 # Global file path
@@ -141,6 +140,10 @@ def merge_and_save_temps(temp_filepaths, save_filepath):
     and names the file correctly.
     temp_filepaths:     Example list of filepaths is [filepath1, filepath2]"""
 
+    # If the csv directory does not exist, make one
+    if not os.path.exists(CSV_DIR):
+        os.makedirs(CSV_DIR)
+
     # Place all of the pandas dataframes into a list
     temp_dataframes = []
     for temp_filename in temp_filepaths:
@@ -148,12 +151,9 @@ def merge_and_save_temps(temp_filepaths, save_filepath):
         temp_dataframes.append(df)
     
     # Merge the dataframes and output the final csv
-    try:
-        merged_dataframe = pd.concat(temp_dataframes, axis=1)
-    except Exception as e:
-        print(e)
-
+    merged_dataframe = pd.concat(temp_dataframes, axis=1)
     merged_dataframe.to_csv(save_filepath)
+
 
 if __name__ == "__main__":
     args = parser.parse_args()
