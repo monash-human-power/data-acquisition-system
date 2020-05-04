@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 import os
 import csv
-import enum_topics
+from utils import enum_topics
 
 
 def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num):
