@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 import os
 import csv
-from DAS.utils import enum_topics
+from DAS.utils import TopicsEnum
 
 
 def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num, temp_dir):
@@ -72,16 +72,16 @@ def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num, temp_dir
     module_data = json.loads(module_data)
 
     # Determine which type of data to parse
-    if enum_topics.WirelessModule.data(module_id_num) == msg.topic:
-        module_type = str(enum_topics.WirelessModuleType.data)
+    if TopicsEnum.WirelessModule.data(module_id_num) == msg.topic:
+        module_type = str(TopicsEnum.WirelessModuleType.data)
         parse_module_data()
 
-    elif enum_topics.WirelessModule.low_battery(module_id_num) == msg.topic:
-        module_type = str(enum_topics.WirelessModuleType.low_battery)
+    elif TopicsEnum.WirelessModule.low_battery(module_id_num) == msg.topic:
+        module_type = str(TopicsEnum.WirelessModuleType.low_battery)
         # Nothing to parse
 
-    elif enum_topics.WirelessModule.battery(module_id_num) == msg.topic:
-        module_type = str(enum_topics.WirelessModuleType.battery)
+    elif TopicsEnum.WirelessModule.battery(module_id_num) == msg.topic:
+        module_type = str(TopicsEnum.WirelessModuleType.battery)
         parse_module_battery()
 
     # Find the difference in seconds to when the recording was started and

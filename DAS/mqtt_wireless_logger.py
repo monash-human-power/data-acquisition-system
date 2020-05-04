@@ -6,7 +6,7 @@ import argparse
 import glob
 import re
 from DAS.utils.DataToTempCSV import DataToTempCSV 
-from DAS.utils import enum_topics 
+from DAS.utils import TopicsEnum 
 
 
 # Global dicts to store state
@@ -57,14 +57,14 @@ def on_message(client, userdata, msg):
     module_id_str = "M" + module_id_num
 
     # Start the recording of <module_id>
-    if enum_topics.WirelessModule.start(module_id_num) == msg.topic:
+    if TopicsEnum.WirelessModule.start(module_id_num) == msg.topic:
         start_recording(module_id_str)
         print(module_id_str,
               "STARTED, RECORDING TO FILE:",
               output_filepath[module_id_str])
 
     # Stop the recording of <module_id>
-    elif enum_topics.WirelessModule.stop(module_id_num) == msg.topic:
+    elif TopicsEnum.WirelessModule.stop(module_id_num) == msg.topic:
         stop_recording(module_id_str)
         print(module_id_str,
               "STOPPED, RECORDED TO FILE:",
