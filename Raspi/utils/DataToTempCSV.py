@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 import os
 import csv
-from utils import enum_topics
+import Raspi.utils.enum_topics
 
 
 def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num):

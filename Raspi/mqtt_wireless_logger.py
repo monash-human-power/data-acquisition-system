@@ -5,8 +5,8 @@ from datetime import datetime
 import argparse
 import glob
 import re
-import utils.DataToTempCSV as DataToTempCSV
-import utils.enum_topics as enum_topics
+from Raspi.utils.DataToTempCSV import DataToTempCSV 
+from Raspi.utils import enum_topics 
 
 
 # Global dicts to store state
