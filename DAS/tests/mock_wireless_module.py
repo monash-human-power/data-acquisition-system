@@ -2,8 +2,8 @@ import time
 import argparse
 import json
 import paho.mqtt.client as mqtt
-from Raspi.utils.MockSensor import MockSensor 
-from Raspi.utils import enum_topics
+from DAS.utils.MockSensor import MockSensor 
+from DAS.utils import enum_topics
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless module test script that sends fake data',
