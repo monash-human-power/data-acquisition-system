@@ -5,12 +5,14 @@ import csv
 from DAS.utils import enum_topics
 
 
-def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num):
+def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num, temp_dir):
     """ Function to parse the MQTT data and convert it to a temporary
     CSV file stored in the current derectory
     msg:                        Raw MQTT data
     module_id_str:              Module_id eg. M1, M2 or M3
     module_start_time:          Start time of the module (datetime obj)
+    module_start_time:          Start time of the module (datetime obj)
+    temp_dir:                   The temp directory to save the temp files
     """
 
     def parse_module_data():
@@ -41,15 +43,18 @@ def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num):
         """ Makes a temporary CSV file that is hidden and is in the form of
         .~temp_<filename>.csv in the current directory"""
 
+        # If the temporary directory does not exist, make one
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+
         # Ensures that the temp file is in the same folder as the script
-        current_dir = os.path.dirname(__file__)
-        temp_filename = '.~temp_' + module_id_str + '_' + type + '.csv'
-        temp_file_path = os.path.join(current_dir, temp_filename)
+        temp_filename = f".~temp_{module_id_str}_{module_type}.csv"
+        temp_filepath = os.path.join(temp_dir, temp_filename)
 
         # If the temp file does not exist write the headers for the CSV
-        temp_exists = os.path.exists(temp_file_path)
+        temp_exists = os.path.exists(temp_filepath)
 
-        with open(temp_file_path, mode='a') as temp_file:
+        with open(temp_filepath, mode='a') as temp_file:
             csv_writer = csv.DictWriter(
                 temp_file,
                 fieldnames=data_dict.keys())
@@ -68,22 +73,22 @@ def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num):
 
     # Determine which type of data to parse
     if enum_topics.WirelessModule.data(module_id_num) == msg.topic:
-        type = str(enum_topics.WirelessModuleType.data)
+        module_type = str(enum_topics.WirelessModuleType.data)
         parse_module_data()
 
     elif enum_topics.WirelessModule.low_battery(module_id_num) == msg.topic:
-        type = str(enum_topics.WirelessModuleType.low_battery)
+        module_type = str(enum_topics.WirelessModuleType.low_battery)
         # Nothing to parse
 
     elif enum_topics.WirelessModule.battery(module_id_num) == msg.topic:
-        type = str(enum_topics.WirelessModuleType.battery)
+        module_type = str(enum_topics.WirelessModuleType.battery)
         parse_module_battery()
 
     # Find the difference in seconds to when the recording was started and
     # when the data was recieved.
     time_delta = datetime.now() - module_start_time
     time_delta = time_delta.total_seconds()
-    time_dict_key = f"{module_id_str}_{type}_TIME"
+    time_dict_key = f"{module_id_str}_{module_type}_TIME"
     data_dict[time_dict_key] = time_delta
 
     # Add or create the temp CSV to store the data
