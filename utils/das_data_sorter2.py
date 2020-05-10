@@ -18,7 +18,7 @@ class DasSort:
         self.indexes = None
         self.time = self.convert_time(data["time"])
         self.gps = self.average_data(data["gps"])
-        self.gps_location = self.average_data(data["gps_location"])
+        self.gps_location = self.location_data(data["gps_location"])
         self.gps_course = self.average_data(data["gps_course"])
         self.gps_speed = self.average_data(data["gps_speed"])
         self.gps_satelite = self.average_data(data["gps_satellite"])
@@ -83,6 +83,26 @@ class DasSort:
 
         return universal_array
 
+    def mean(self, data_array:list) -> int:
+        '''Finds the average of a given set of numbers. 
+
+        Disregards None and zero in calculation. Otherwise, if input is invalid, then raises error.
+        '''
+        total = 0
+        for number in data_array:
+            if number == 0 or pd.isna(number):
+                # None and zeroes are ignored
+                continue
+            elif number > 0 or number < 0:
+                # 'number' value is valid
+                total += number
+            else:
+                # 'number' value is invalid
+                raise ValueError("Data point invalid and is neither zero nor None. The data point was "+str(number)+". ("+str(type(number))+")")
+        
+        return total/len(data_array)
+
+
     def average_data(self, data:D) -> D:
         '''Returns a column of new data points that has been averaged, based on specified time unit. 
 
@@ -92,11 +112,13 @@ class DasSort:
         avg_data = []
 
         for index_array in self.indexes:
-            avg = mean(data[index_array])
+            avg = self.mean(data[index_array])
             avg = round(avg, ndigits=2)
             avg_data.append(avg)
 
         return avg_data
+
+    def location_data(self, data:D) -> D:
     
     def print_output_file(self) -> None:
         '''Creates new CSV file and writes new data onto CSV file.'''
