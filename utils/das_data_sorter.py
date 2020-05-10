@@ -1,162 +1,170 @@
 import pandas as pd 
-import argparse 
-from math import ceil
-from numpy import median, mean
+from argparse import ArgumentParser
+from numpy import ceil
+from typing import TypeVar
 
-# averages data within the seconds or minutes, according to new_time array
-def avg_Data(array):
-    avg_array = []
+D = TypeVar('DAS_data') # data type to represent columns of the data in a given file
 
-    for millisecond_indices in new_time:
-        avg = mean(array[millisecond_indices])
-        avg = round(avg, ndigits=2)
-        avg_array.append(avg)
-
-    return avg_array
-
-# 3 point moving mean smoothing
-def mean_smooth(data):
-    new_data = []
-
-    for i in range(1,len(data)-1):
-        first = data[i-1]
-        second = data[i]
-        third = data[i+1]
-
-        new_data_point = mean([first, second, third])
-        new_data_point = round(new_data_point, ndigits=2)
-        new_data.append(new_data_point)
-    
-    return new_data
-
-# 3 point moving median smoothing
-def median_smooth(data):
-    new_data = []
-
-    # iterates through each data point and its adjacents (excluding first and last) and finds the median 
-    for i in range(1, len(data)-1):
-        first = data[i-1]
-        second = data[i]
-        third = data[i+1]
-
-        new_data_point = median([first, second, third])
-        new_data.append(new_data_point)
-    
-    return new_data
-
-# smoothing technique function caller
-def smooth_data(data, technique):
-    if technique == "mean":
-        # when input is "--smooth mean"
-        final_data = {
-            "time": range(1, len(new_time)-1),
-            "gps_course": mean_smooth(data["gps_course"]),
-            "gps_speed": mean_smooth(data["gps_speed"]),
-            "tempC": mean_smooth(data["tempC"]),
-            "tempF": mean_smooth(data["tempF"]),
-            "cadence": mean_smooth(data["cadence"]),
-            "power": mean_smooth(data["power"]),
-            "reed_velocity": mean_smooth(data["reed_velocity"]),
-            "reed_distance": mean_smooth(data["reed_distance"])
-        }
-    elif technique == "median":
-        # when input is "--smooth median"
-        final_data = {
-            "time": range(1, len(new_time)-1),
-            "gps_course": median_smooth(data["gps_course"]),
-            "gps_speed": median_smooth(data["gps_speed"]),
-            "tempC": median_smooth(data["tempC"]),
-            "tempF": median_smooth(data["tempF"]),
-            "cadence": median_smooth(data["cadence"]),
-            "power": median_smooth(data["power"]),
-            "reed_velocity": median_smooth(data["reed_velocity"]),
-            "reed_distance": median_smooth(data["reed_distance"])
-        }
-    
-    return final_data
-
-# averages data within the seconds, according to seconds array 
-def avg_Data(array):
-    avg_array = []
-
-    for index_array in new_time:
-        total = 0
-        for index in index_array:
-            total += array[index]
-
-        avg = round(total/len(index_array), ndigits=2)
-        avg_array.append(avg)
-    return avg_array
-
-# accepts terminal commands
-parser = argparse.ArgumentParser()
+# accepts terminal arguments
+parser = ArgumentParser()
 parser.add_argument("--file", help="Input CSV file", action="store", required=True)
 parser.add_argument("--output", help="Returns the filtered data", default="filtered_data.csv", action="store")
 parser.add_argument("--unit", help="Specify time units (seconds, s, or minutes, m)", default="seconds", 
                     choices=["seconds", "s", "minutes", "m"], action="store")
-
-parser.add_argument("--smooth", help="Smoothens data points by 3-point mean or median smoothing", 
-                    choices=["mean","median"], action="store")
 args = parser.parse_args()
 
-# initialising data
-data = pd.read_csv(args.file)
+class DasSort:
+    def __init__(self, data:str) -> None:
+        self.indexes = None
+        self.time = self.convert_time(data["time"])
+        self.gps = self.average_data(data["gps"])
+        self.gps_location = self.location_data(data["gps_location"])
+        self.gps_course = self.average_data(data["gps_course"])
+        self.gps_speed = self.average_data(data["gps_speed"])
+        self.gps_satellites = self.average_data(data["gps_satellites"])
+        self.ax = self.average_data(data["aX"])
+        self.ay = self.average_data(data["aY"])
+        self.az = self.average_data(data["aZ"])
+        self.gx = self.average_data(data["gX"])
+        self.gy = self.average_data(data["gY"])
+        self.gz = self.average_data(data["gZ"])
+        self.thermoc = self.average_data(data["thermoC"])
+        self.thermof = self.average_data(data["thermoF"])
+        self.pot = self.average_data(data["pot"])
+        self.cadence = self.average_data(data["cadence"])
+        self.power = self.average_data(data["power"])
+        self.reed_velocity = self.average_data(data["reed_velocity"])
+        self.reed_distance = self.average_data(data["reed_distance"])
 
-milliseconds = data["time"]
-gps_course = data["gps_course"]
-gps_speed = data["gps_speed"]
-tempC = data["thermoC"]
-tempF = data["thermoF"]
-cadence = data["cadence"]
-power = data["power"]
-reed_vel = data["reed_velocity"]
-reed_dis = data["reed_distance"]
+        self.print_output_file()
 
-time = []
-if args.unit == "seconds" or args.unit == "s":
-    time = milliseconds/1000
-elif args.unit == "minutes" or args.unit =="m":
-    time = milliseconds/1000/60
+    def convert_time(self, milliseconds:D) -> D:
+        '''Returns the conversion of the time data points from milliseconds to the specified time unit, depending on the 
+        argument passed by args.unit.
+        
+        args.unit accepts only seconds/s and minutes/m as arguments. 
+        '''
+        if args.unit == "seconds" or args.unit == "s":
+            milliseconds = milliseconds/1000
+        elif args.unit == "minutes" or args.unit == "m":
+            milliseconds = milliseconds/1000/60
+        else:
+            raise ValueError("Argument only accepts either seconds/s or minutes/m")
+        
+        # sets the groups of indexes to use for averaging in future
+        self.indexes = self.group_index(milliseconds)
 
-# sorts time into specific time unit
-new_time = []
-previous_time = 0
-for i in range(len(time)):
-    if time[i] > previous_time:
-        # sets new previous_time, pushes current millisecond_indices into seconds array, creates new millisecond_indices
-        # millisecond_indices is an array of indexes for milliseconds within the same specified unit
-        if previous_time != 0:
-            # ignores first iteration
-            new_time.append(millisecond_indices)
+        return range(1,len(self.indexes)+1)
 
-        previous_time = ceil(time[i])
-        millisecond_indices = []
+    def group_index(self, time:D) -> D:
+        '''Returns a universal array of arrays of indexes, based on the specified time unit. Each array represents the indexes 
+        of the data points within the same time interval. (eg. 1123ms and 1748ms are in the same time interval for seconds, 
+        but 2453ms isn't)
 
-    # pushes index into current millisecond_indices
-    millisecond_indices.append(i)
+        When given a valid value for args.unit, function will group the indexes within the same time interval in an array.
+        Once all the indexes of a time interval has been accounted for, the array of indexes will be pushed into a
+        universal array so that each element represents the data points of one singular time interval.
+        '''
+        universal_array = []
+        index_array = []
+        previous_time = 0
 
-new_time.append(millisecond_indices)
+        for i in range(len(time)):
+            if time[i] > previous_time:
+                # if true, then time at time[i] is the next second/minute
+                if previous_time != 0:
+                    # appends index array into universal array, but ignores the first iteration
+                    universal_array.append(index_array)
 
-# results of averaged data from milliseconds to seconds/minutes
-new_avg_data = {
-    "time": range(1, len(new_time)+1),
-    "gps_course": avg_Data(gps_course),
-    "gps_speed": avg_Data(gps_speed),
-    "tempC": avg_Data(tempC),
-    "tempF": avg_Data(tempF),
-    "cadence": avg_Data(cadence),
-    "power": avg_Data(power),
-    "reed_velocity": avg_Data(reed_vel),
-    "reed_distance": avg_Data(reed_dis)
-}
+                previous_time = ceil(time[i])
+                index_array = [] # recreates new array if previous time has changed
+            index_array.append(i) 
 
-# checks if user wants to smooth data using moving mean or moving median method
-# if no input from user, script will ignore this whole block
-if args.smooth == "mean":
-    new_avg_data = smooth_data(new_avg_data, args.smooth)
-elif args.smooth == "median":
-    new_avg_data = smooth_data(new_avg_data, args.smooth)
+        # pushes the final array when for loop has completed
+        universal_array.append(index_array)
 
-# writes newly-manipulated data into new csv file
-final = pd.DataFrame(new_avg_data)
-final.to_csv(args.output, index=False)
+        return universal_array
+
+    def mean(self, data_array:list) -> int:
+        '''Finds the average of a given set of numbers. 
+
+        Disregards None and zero in calculation. Otherwise, if input is invalid, then raises error.
+        '''
+        total = 0
+        length = len(data_array)
+        for number in data_array:
+            if number == 0 or pd.isna(number):
+                # None and zeroes are ignored
+                length -= 1
+                continue
+            elif number > 0 or number < 0:
+                # 'number' value is valid
+                total += number
+            else:
+                # 'number' value is invalid
+                raise ValueError("Data point invalid and is neither zero nor None. The data point was "+str(number)+". ("+str(type(number))+")")
+        
+        try:
+            return total/length
+        except ZeroDivisionError:
+            # in the event where length = 0, due to all the elements in data_array being ignored
+            return 0 
+
+    def average_data(self, data:D) -> D:
+        '''Returns a column of new data points that has been averaged, based on specified time unit. 
+
+        Finds the average of all data points within the same time interval. Appends this new value into an array, then continues
+        to the next time interval. Once all time intervals have been accounted for, returns the set of new data points.
+        '''
+        avg_data = []
+
+        for index_array in self.indexes:
+            avg = self.mean(data[index_array])
+            avg = round(avg, ndigits=2)
+            avg_data.append(avg)
+
+        return avg_data
+
+    def location_data(self, data:D) -> D:
+        '''Handles the location data and returns the data point at the first element of each time interval. 
+
+        gps_location requires a separate function, because the values are strings, whereas the other data columns are 
+        integers/floats. Handles it so that it will always return the location data at the first element of each time interval.
+        '''
+        new_location_data = []
+        for index_array in self.indexes:
+            first_element = index_array[0] 
+            new_location = data[first_element]
+            new_location_data.append(new_location)
+        
+        return new_location_data
+    
+    def print_output_file(self) -> None:
+        '''Creates new CSV file and writes new data onto CSV file.'''
+        final = pd.DataFrame({
+            "time": self.time,
+            "gps": self.gps,
+            "gps_location": self.gps_location,
+            "gps_course": self.gps_course,
+            "gps_speed": self.gps_speed,
+            "gps_satellites": self.gps_satellites,
+            "aX": self.ax,
+            "aY": self.ay,
+            "aZ": self.az,
+            "gX": self.gx,
+            "gY": self.gy,
+            "gZ": self.gz,
+            "thermoC": self.thermoc,
+            "tempF": self.thermof,
+            "pot": self.pot,
+            "cadence": self.cadence,
+            "power": self.power,
+            "reed_velocity": self.reed_velocity,
+            "reed_distance": self.reed_distance
+        })
+        final.to_csv(args.output, index=False)
+        print("Success! Check in the same folder for the new CSV file.")
+
+if __name__ == '__main__':
+    data = pd.read_csv(args.file)
+    das_sort = DasSort(data)
