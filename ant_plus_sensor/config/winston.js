@@ -4,7 +4,7 @@ const winston = require('../node_modules/winston');
 const options = {
   file: {
     level: 'info',
-    filename: path.join(__dirname, '../logs/DAS.log'),
+    filename: path.join(__dirname, '../logs/ant_plus.log'),
     handleExceptions: true,
     json: true,
     maxsize: 5242880, // 5MB
