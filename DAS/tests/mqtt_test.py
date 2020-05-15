@@ -2,7 +2,7 @@ import sys
 import argparse
 import paho.mqtt.client as mqtt
 
-from das_data_generator import send_csv_data, send_fake_data
+from DAS.tests.das_data_generator import send_csv_data, send_fake_data
 
 # Arguments
 parser = argparse.ArgumentParser(
@@ -32,7 +32,7 @@ def start_publishing(client, args):
     client.publish("power_model/start")
     client.publish("start")
 
-    def send_data_func(data): return client.publish("data", data)
+    send_data_func = lambda data: client.publish("data", data)
 
     if args.file is None:
         send_fake_data(send_data_func, args.time, args.rate)
