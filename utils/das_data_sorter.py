@@ -15,7 +15,9 @@ class DasSort:
         self.indexes = None
         self.time = self.convert_time(file_input["time"], unit)
         self.gps = self.gps_data(file_input["gps"])
-        self.gps_location = self.location_data(file_input["gps_location"])
+        self.gps_lat = self.location_data(file_input["gps_lat"])
+        self.gps_long = self.location_data(file_input["gps_long"])
+        self.gps_alt = self.location_data(file_input["gps_long"])
         self.gps_course = self.average_data(file_input["gps_course"])
         self.gps_speed = self.average_data(file_input["gps_speed"])
         self.gps_satellites = self.average_data(file_input["gps_satellites"])
