@@ -4,9 +4,9 @@ from numpy import ceil
 
 # accepts terminal arguments
 parser = ArgumentParser()
-parser.add_argument("--input", help="Input CSV file", action="store", required=True)
-parser.add_argument("--output", help="Returns the filtered data", default="filtered_data.csv", action="store")
-parser.add_argument("--unit", help="Specify time units (seconds, s, or minutes, m)", default="seconds", 
+parser.add_argument("--input", help="Reads the inputted CSV file to filter", action="store", required=True)
+parser.add_argument("--output", help="Writes the filtered data onto a new CSV file under this name", action="store", required=True)
+parser.add_argument("--unit", help="Specify time units [seconds, s, or minutes, m]. Default is in seconds.", default="seconds", 
                     choices=["seconds", "s", "minutes", "m"], action="store")
 args = parser.parse_args()
 
@@ -172,7 +172,7 @@ class DasSort:
             "reed_distance": self.reed_distance
         })
         final.to_csv(file_output, index=False)
-        print("Success! Output is written to {file_output}")
+        print(f"Success! Output is written to {file_output}")
 
 if __name__ == '__main__':
     data = pd.read_csv(args.input)
