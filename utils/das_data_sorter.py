@@ -1,6 +1,6 @@
 import pandas as pd 
 from argparse import ArgumentParser
-from numpy import ceil
+from numpy import ceil, int64
 
 # accepts terminal arguments
 parser = ArgumentParser()
@@ -14,7 +14,7 @@ class DasSort:
     def __init__(self, file_input:pd.DataFrame, file_output:str, unit:str) -> None:
         self.indexes = None
         self.time = self.convert_time(file_input["time"], unit)
-        self.gps = self.average_data(file_input["gps"])
+        self.gps = self.gps_data(file_input["gps"])
         self.gps_location = self.location_data(file_input["gps_location"])
         self.gps_course = self.average_data(file_input["gps_course"])
         self.gps_speed = self.average_data(file_input["gps_speed"])
@@ -122,20 +122,22 @@ class DasSort:
 
         return average_data_array
     
-    # def gps_data(self, data:pd.Series) -> pd.Series:
-        '''currently doesn't work as intended'''
+    def gps_data(self, data:pd.Series) -> pd.Series:
+        '''Returns the data array of the time intervals which the GPS was turned on. 
         
-    #     new_gps_data = []
-    #     for index_array in self.indexes:
-    #         if 1 is in data[index_array]:
-    #             new_gps_data.append(1)
-    #         else:
-    #             new_gps_data.append(0)
+        0 for when it was turned off at that point, 1 for when turned on.
+        '''
+        new_gps_data = []
+        for index_array in self.indexes:
+            if 1 in data[index_array].values:
+                new_gps_data.append(1)
+            else:
+                new_gps_data.append(0)
         
-    #     return new_gps_data
+        return new_gps_data
 
     def location_data(self, data:pd.Series) -> pd.Series:
-        '''Handles the certain gps data and returns the data point at the last element of each time interval. 
+        '''Handles certain gps data and returns an array of the data points at the last element of each time interval. 
 
         gps_location requires a separate function because the values are strings, whereas the other data columns are 
         integers/floats. Handles it so that it will always return the location data at the last element of each time interval.
