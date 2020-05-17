@@ -1,6 +1,6 @@
 import pandas as pd 
 from argparse import ArgumentParser
-from numpy import ceil, int64
+from numpy import ceil
 
 # accepts terminal arguments
 parser = ArgumentParser()
