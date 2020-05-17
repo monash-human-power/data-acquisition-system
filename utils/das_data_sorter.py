@@ -11,7 +11,7 @@ parser.add_argument("--unit", help="Specify time units [seconds, s, or minutes, 
 args = parser.parse_args()
 
 class DasSort:
-    def __init__(self, file_input:pd.DataFrame, file_output:str, unit:str) -> None:
+    def __init__(self, file_input:pd.DataFrame, unit:str) -> None:
         self.indexes = None
         self.time = self.convert_time(file_input["time"], unit)
         self.gps = self.gps_data(file_input["gps"])
@@ -32,8 +32,6 @@ class DasSort:
         self.power = self.average_data(file_input["power"])
         self.reed_velocity = self.average_data(file_input["reed_velocity"])
         self.reed_distance = self.average_data(file_input["reed_distance"])
-
-        self.write_to_output_file(file_output)
 
     def convert_time(self, milliseconds:pd.Series, unit) -> pd.Series:
         '''Returns the conversion of the time data points from milliseconds to the specified time unit, depending on the 
@@ -177,5 +175,6 @@ class DasSort:
         print(f"Success! Output is written to {file_output}")
 
 if __name__ == '__main__':
-    data = pd.read_csv(args.input)
-    das_sort = DasSort(data, args.output, args.unit)
+    data = pd.read_csv(args.input) # Loads and reads CSV file
+    das_sort = DasSort(data, args.unit) # Filters data in CSV file
+    das_sort.write_to_output_file(args.output) # Write filtered data into new CSV file
