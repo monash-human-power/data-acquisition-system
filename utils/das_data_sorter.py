@@ -15,9 +15,9 @@ class DasSort:
         self.indexes = None
         self.time = self.convert_time(file_input["time"], unit)
         self.gps = self.gps_data(file_input["gps"])
-        self.gps_lat = self.location_data(file_input["gps_lat"])
-        self.gps_long = self.location_data(file_input["gps_long"])
-        self.gps_alt = self.location_data(file_input["gps_long"])
+        self.gps_lat = self.average_data(file_input["gps_lat"])
+        self.gps_long = self.average_data(file_input["gps_long"])
+        self.gps_alt = self.average_data(file_input["gps_long"])
         self.gps_course = self.average_data(file_input["gps_course"])
         self.gps_speed = self.average_data(file_input["gps_speed"])
         self.gps_satellites = self.average_data(file_input["gps_satellites"])
@@ -125,7 +125,7 @@ class DasSort:
     def gps_data(self, data:pd.Series) -> pd.Series:
         '''Returns the data array of the time intervals which the GPS was turned on. 
         
-        0 for when it was turned off at that point, 1 for when turned on.
+        0 for when GPS was turned off, 1 for when turned on.
         '''
         new_gps_data = []
         for index_array in self.indexes:
@@ -135,20 +135,6 @@ class DasSort:
                 new_gps_data.append(0)
         
         return new_gps_data
-
-    def location_data(self, data:pd.Series) -> pd.Series:
-        '''Handles certain gps data and returns an array of the data points at the last element of each time interval. 
-
-        gps_location requires a separate function because the values are strings, whereas the other data columns are 
-        integers/floats. Handles it so that it will always return the location data at the last element of each time interval.
-        '''
-        new_location_data = []
-        for index_array in self.indexes:
-            last_element_index = index_array[-1] 
-            last_element = data[last_element_index]
-            new_location_data.append(last_element)
-        
-        return new_location_data
     
     def write_to_output_file(self, file_output:str) -> None:
         '''Creates new CSV file and writes new data onto CSV file.'''
