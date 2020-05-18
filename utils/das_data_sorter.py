@@ -141,7 +141,9 @@ class DasSort:
         final = pd.DataFrame({
             "time": self.time,
             "gps": self.gps,
-            "gps_location": self.gps_location,
+            "gps_lat": self.gps_lat,
+            "gps_long": self.gps_long,
+            "gps_alt": self.gps_alt,
             "gps_course": self.gps_course,
             "gps_speed": self.gps_speed,
             "gps_satellites": self.gps_satellites,
