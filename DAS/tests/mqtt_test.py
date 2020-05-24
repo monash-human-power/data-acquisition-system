@@ -32,7 +32,7 @@ def start_publishing(client, args):
     client.publish("power_model/start")
     client.publish("start")
 
-    send_data_func = lambda data: client.publish("data", data)
+    def send_data_func(data): return client.publish("data", data)
 
     if args.file is None:
         send_fake_data(send_data_func, args.time, args.rate)
@@ -53,7 +53,7 @@ def on_message(client, userdata, msg):
     print(msg.topic + " " + str(msg.payload.decode("utf-8")))
 
 
-def run():
+if __name__ == "__main__":
     args = parser.parse_args()
     broker_address = args.host
     broker_port = args.port
@@ -71,6 +71,3 @@ def run():
     start_publishing(client, args)
 
     client.loop_forever()
-
-
-run()

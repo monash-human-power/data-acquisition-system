@@ -2,8 +2,8 @@ import time
 import argparse
 import json
 import paho.mqtt.client as mqtt
-from DAS.utils import MockSensor
-from DAS.utils import TopicsEnum
+from DAS.utils.MockSensor import MockSensor
+from DAS.utils.TopicsEnum import WirelessModule
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless module test script that sends fake data',
@@ -115,8 +115,8 @@ def send_fake_data(client, duration, rate, module_id_nums):
                 "percentage": sensors["battery"].get_value()
             }
 
-            module_topic = TopicsEnum.WirelessModule.data(module_id_num)
-            battery_topic = TopicsEnum.WirelessModule.battery(module_id_num)
+            module_topic = WirelessModule.data(module_id_num)
+            battery_topic = WirelessModule.battery(module_id_num)
 
             # Publish data and battery if needed
             publish(client, module_topic, module_data)
@@ -179,7 +179,7 @@ def start_modules(args):
     # TODO: Add posibility to make modules by importing a file or generating
     # random modules. The modules should not be hard coded to this script.
     for module_id_num in args.id:
-        publish(client, TopicsEnum.WirelessModule.start(module_id_num))
+        publish(client, WirelessModule.start(module_id_num))
         print('Started module', module_id_num)
 
 
@@ -188,7 +188,7 @@ def stop_modules(args):
     modules to stop """
 
     for module_id_num in args.id:
-        publish(client, TopicsEnum.WirelessModule.stop(module_id_num))
+        publish(client, WirelessModule.stop(module_id_num))
         print('Stopped module', module_id_num)
 
 

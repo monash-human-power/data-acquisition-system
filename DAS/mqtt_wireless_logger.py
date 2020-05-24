@@ -5,8 +5,8 @@ from datetime import datetime
 import argparse
 import glob
 import re
-from DAS.utils import DataToTempCSV
-from DAS.utils import TopicsEnum
+from DAS.utils.DataToTempCSV import DataToTempCSV
+from DAS.utils.TopicsEnum import WirelessModule
 
 
 # Global dicts to store state
@@ -57,14 +57,14 @@ def on_message(client, userdata, msg):
     module_id_str = "M" + module_id_num
 
     # Start the recording of <module_id>
-    if TopicsEnum.WirelessModule.start(module_id_num) == msg.topic:
+    if WirelessModule.start(module_id_num) == msg.topic:
         start_recording(module_id_str)
         print(module_id_str,
               "STARTED, RECORDING TO FILE:",
               output_filepath[module_id_str])
 
     # Stop the recording of <module_id>
-    elif TopicsEnum.WirelessModule.stop(module_id_num) == msg.topic:
+    elif WirelessModule.stop(module_id_num) == msg.topic:
         stop_recording(module_id_str)
         print(module_id_str,
               "STOPPED, RECORDED TO FILE:",
