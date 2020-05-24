@@ -5,15 +5,15 @@ from datetime import datetime
 import argparse
 import glob
 import re
-from DAS.utils.DataToTempCSV import DataToTempCSV 
-from DAS.utils import TopicsEnum 
+from DAS.utils import DataToTempCSV
+from DAS.utils import TopicsEnum
 
 
 # Global dicts to store state
 # Dict structure is {<module_id_str> : <data>}
 is_recording = {}       # If the data is being recorded
 module_start_time = {}  # When the data started being recorded
-output_filepath = {}    # Output filpath to save the file
+output_filepath = {}    # Output filepath to save the file
 
 # Global file path
 GLOBAL_FILEPATH = os.path.dirname(__file__)
@@ -85,7 +85,7 @@ def start_recording(module_id_str):
 
     # Generate filename from the last log number + 1
     max_file_id = 0
-    for filepath in glob.glob(os.path.join(CSV_DIR,'*_M?.csv')):
+    for filepath in glob.glob(os.path.join(CSV_DIR, '*_M?.csv')):
         # split the filepath into the filename
         filename = filepath.split("/")[-1]
 
@@ -121,17 +121,17 @@ def stop_recording(module_id_str):
 
 
 def find_temp_csvs(module_id_str=""):
-    """ Searches throught the current directory and finds all the temp files
+    """ Searches through the current directory and finds all the temp files
     for a specific module_id_str and returns the filepaths in a list. If no
     module_id_str is given then all temporary files will be found and returned
     in a list."""
-    
+
     # Find temp filepaths and store in the temp_filepaths list
     temp_filepaths = []
     for filename in os.listdir(TEMP_DIR):
         if filename.startswith(f".~temp_{module_id_str}_") and filename.endswith(".csv"):
             temp_filepaths.append(os.path.join(TEMP_DIR, filename))
-        
+
     return temp_filepaths
 
 
@@ -149,7 +149,7 @@ def merge_and_save_temps(temp_filepaths, save_filepath):
     for temp_filename in temp_filepaths:
         df = pd.read_csv(temp_filename)
         temp_dataframes.append(df)
-    
+
     # Merge the dataframes and output the final csv
     merged_dataframe = pd.concat(temp_dataframes, axis=1)
     merged_dataframe.to_csv(save_filepath)
