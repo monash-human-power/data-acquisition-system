@@ -2,7 +2,7 @@ import time
 import argparse
 import json
 import paho.mqtt.client as mqtt
-from DAS.utils.MockSensor import MockSensor 
+from DAS.utils import MockSensor
 from DAS.utils import TopicsEnum
 
 parser = argparse.ArgumentParser(
