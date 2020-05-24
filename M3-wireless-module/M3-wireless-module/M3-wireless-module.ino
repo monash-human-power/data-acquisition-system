@@ -1,4 +1,59 @@
 #include <TinyGPS++.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
+
+#include <ArduinoJson.h>
+StaticJsonBuffer<500> jsonBuffer;
+JsonObject& data = jsonBuffer.createObject();
+
+// MQTT variables
+const char* ssid = "Lak";
+const char* password = "qwerty123";
+const char* mqtt_server = "soldier.cloudmqtt.com";
+#define mqtt_port 11989
+#define MQTT_USER "punbssjf"
+#define MQTT_PASSWORD "N5R0WZ4gQD9y"
+bool start_stop = false;
+
+WiFiClient wifiClient;
+
+PubSubClient client(wifiClient);
+
+// ----------------------- //
+// MQTT functions
+// ----------------------- //
+void setup_wifi() {
+    delay(10);
+    // We start by connecting to a WiFi network
+    Serial.println();
+    Serial.print("Connecting to ");
+    Serial.println(ssid);
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+    }
+    randomSeed(micros());
+    Serial.println("");
+    Serial.println("WiFi connected");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
+}
+
+// callback for start / stop
+void callback(char* topic, byte *payload, unsigned int length) {
+    if (topic == "/v3/wireless-module/3/start")
+    {
+        start_stop = true;
+        Serial.println("-------Start Data Tx-----");
+    }
+    else if (topic == "/v3/wireless-module/3/stop")
+    {
+        start_stop = false;
+        Serial.println("-------Stop Data Tx-----");
+    }
+}
+
 
 // CO2 Sensor parameters
 #define RLOAD 10.0
@@ -127,12 +182,39 @@ MQ135 co2Sensor(34);
 
 void setup() {
   Serial.begin(115200);
-  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
-  pinMode(reedPin, INPUT_PULLUP);
+
+  setup_wifi();
+
+  client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);
+
+  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2); // gps
+
+  pinMode(reedPin, INPUT_PULLUP); // reed
   attachInterrupt(digitalPinToInterrupt(reedPin), handleInterrupt, FALLING);
+
+   
+while (!client.connected()) {
+    Serial.println("Connecting to MQTT...");
+ 
+    if (client.connect("ESP32Client", MQTT_USER, MQTT_PASSWORD )) {
+ 
+      Serial.println("connected");  
+ 
+    } else {
+ 
+      Serial.print("failed with state ");
+      Serial.print(client.state());
+      Serial.println();
+      delay(2000);
+ 
+    }
+  }
+
 }
 
 void loop() {
+
   if(interruptCounter>0)
   {
       portENTER_CRITICAL(&mux);
@@ -152,5 +234,7 @@ void loop() {
   Serial.print("ALT =");  Serial.println(gps.altitude.meters());
   Serial.print("CO2 PPM =");  Serial.println(ppm);
   delay(1000);
+
+  client.loop();
 
 }
