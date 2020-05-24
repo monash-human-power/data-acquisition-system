@@ -2,9 +2,71 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-#include <ArduinoJson.h>
-StaticJsonBuffer<500> jsonBuffer;
-JsonObject& data = jsonBuffer.createObject();
+// add json
+
+// CO2 Sensor parameters
+#define RLOAD 10.0
+#define RZERO 18.35
+#define PARA 116.6020682
+#define PARB 2.769034857
+
+// Parameters to model temperature and humidity dependence
+#define CORA 0.00035
+#define CORB 0.02718
+#define CORC 1.39538
+#define CORD 0.0018
+
+// Atmospheric CO2 level for calibration purposes
+#define ATMOCO2 400
+
+class MQ135 {
+ private:
+  int _pin;
+
+ public:
+  MQ135(int pin);
+  float getCorrectionFactor(float t, float h);
+  float getResistance();
+  float getCorrectedResistance(float t, float h);
+  float getPPM();
+  float getCorrectedPPM(float t, float h);
+  float getRZero();
+  float getCorrectedRZero(float t, float h);
+};
+
+MQ135::MQ135(int pin) {
+  _pin = pin;
+}
+
+float MQ135::getCorrectionFactor(float t, float h) {
+  return CORA * t * t - CORB * t + CORC - (h-33.)*CORD;
+}
+
+float MQ135::getResistance() {
+  int val = analogRead(_pin);
+  return ((1023./(float)val) * 5. - 1.)*RLOAD;
+}
+
+float MQ135::getCorrectedResistance(float t, float h) {
+  return getResistance()/getCorrectionFactor(t, h);
+}
+
+float MQ135::getPPM() {
+  return PARA * pow((getResistance()/RZERO), -PARB);
+}
+
+float MQ135::getCorrectedPPM(float t, float h) {
+  return PARA * pow((getCorrectedResistance(t, h)/RZERO), -PARB);
+}
+
+float MQ135::getRZero() {
+  return getResistance() * pow((ATMOCO2/PARA), (1./PARB));
+}
+
+float MQ135::getCorrectedRZero(float t, float h) {
+  return getCorrectedResistance(t, h) * pow((ATMOCO2/PARA), (1./PARB));
+}
+
 
 // MQTT variables
 const char* ssid = "Lak";
@@ -54,22 +116,6 @@ void callback(char* topic, byte *payload, unsigned int length) {
     }
 }
 
-
-// CO2 Sensor parameters
-#define RLOAD 10.0
-#define RZERO 18.35
-#define PARA 116.6020682
-#define PARB 2.769034857
-
-// Parameters to model temperature and humidity dependence
-#define CORA 0.00035
-#define CORB 0.02718
-#define CORC 1.39538
-#define CORD 0.0018
-
-// Atmospheric CO2 level for calibration purposes
-#define ATMOCO2 400
-
 // GPS sensor instantiation
 #define RXD2 16
 #define TXD2 17
@@ -91,54 +137,6 @@ const float WHEEL_DIAMETER = 0.622 + (0.033 * 2);
 //ISR intializer
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
-class MQ135 {
- private:
-  uint8_t _pin;
-
- public:
-  MQ135(uint8_t pin);
-  float getCorrectionFactor(float t, float h);
-  float getResistance();
-  float getCorrectedResistance(float t, float h);
-  float getPPM();
-  float getCorrectedPPM(float t, float h);
-  float getRZero();
-  float getCorrectedRZero(float t, float h);
-};
-
-
-MQ135::MQ135(uint8_t pin) {
-  _pin = pin;
-}
-
-float MQ135::getCorrectionFactor(float t, float h) {
-  return CORA * t * t - CORB * t + CORC - (h-33.)*CORD;
-}
-
-float MQ135::getResistance() {
-  int val = analogRead(_pin);
-  return ((1023./(float)val) * 5. - 1.)*RLOAD;
-}
-
-float MQ135::getCorrectedResistance(float t, float h) {
-  return getResistance()/getCorrectionFactor(t, h);
-}
-
-float MQ135::getPPM() {
-  return PARA * pow((getResistance()/RZERO), -PARB);
-}
-
-float MQ135::getCorrectedPPM(float t, float h) {
-  return PARA * pow((getCorrectedResistance(t, h)/RZERO), -PARB);
-}
-
-float MQ135::getRZero() {
-  return getResistance() * pow((ATMOCO2/PARA), (1./PARB));
-}
-
-float MQ135::getCorrectedRZero(float t, float h) {
-  return getCorrectedResistance(t, h) * pow((ATMOCO2/PARA), (1./PARB));
-}
 
 // ----------------------- //
 // Reed functions
@@ -183,58 +181,58 @@ MQ135 co2Sensor(34);
 void setup() {
   Serial.begin(115200);
 
-  setup_wifi();
+//   setup_wifi();
 
-  client.setServer(mqtt_server, mqtt_port);
-  client.setCallback(callback);
+//   client.setServer(mqtt_server, mqtt_port);
+//   client.setCallback(callback);
 
-  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2); // gps
+//   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2); // gps
 
-  pinMode(reedPin, INPUT_PULLUP); // reed
-  attachInterrupt(digitalPinToInterrupt(reedPin), handleInterrupt, FALLING);
+//   pinMode(reedPin, INPUT_PULLUP); // reed
+//   attachInterrupt(digitalPinToInterrupt(reedPin), handleInterrupt, FALLING);
 
    
-while (!client.connected()) {
-    Serial.println("Connecting to MQTT...");
+// while (!client.connected()) {
+//     Serial.println("Connecting to MQTT...");
  
-    if (client.connect("ESP32Client", MQTT_USER, MQTT_PASSWORD )) {
+//     if (client.connect("ESP32Client", MQTT_USER, MQTT_PASSWORD )) {
  
-      Serial.println("connected");  
+//       Serial.println("connected");  
  
-    } else {
+//     } else {
  
-      Serial.print("failed with state ");
-      Serial.print(client.state());
-      Serial.println();
-      delay(2000);
+//       Serial.print("failed with state ");
+//       Serial.print(client.state());
+//       Serial.println();
+//       delay(2000);
  
-    }
-  }
+//     }
+//   }
 
 }
 
 void loop() {
 
-  if(interruptCounter>0)
-  {
-      portENTER_CRITICAL(&mux);
-      interruptCounter--;
-      portEXIT_CRITICAL(&mux);
+  // if(interruptCounter>0)
+  // {
+  //     portENTER_CRITICAL(&mux);
+  //     interruptCounter--;
+  //     portEXIT_CRITICAL(&mux);
 
-      numberOfInterrupts++;
+  //     numberOfInterrupts++;
 
-      get_vel_dis(numberOfInterrupts);
-  }
+  //     get_vel_dis(numberOfInterrupts);
+  // }
 
-  float ppm = co2Sensor.getPPM();
-  gps.encode(Serial2.read());
+  // float ppm = co2Sensor.getPPM();
+  // gps.encode(Serial2.read());
 
-  Serial.print("LAT =");  Serial.println(gps.location.lat(), 6);
-  Serial.print("LONG ="); Serial.println(gps.location.lng(), 6);
-  Serial.print("ALT =");  Serial.println(gps.altitude.meters());
-  Serial.print("CO2 PPM =");  Serial.println(ppm);
-  delay(1000);
+  // Serial.print("LAT =");  Serial.println(gps.location.lat(), 6);
+  // Serial.print("LONG ="); Serial.println(gps.location.lng(), 6);
+  // Serial.print("ALT =");  Serial.println(gps.altitude.meters());
+  // Serial.print("CO2 PPM =");  Serial.println(ppm);
+  // delay(1000);
 
-  client.loop();
+  // client.loop();
 
 }
