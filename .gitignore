@@ -1,6 +1,7 @@
 *.csv
 *.h264
 .vscode
+*.xlsx
 
 node_modules/
 .eslintrc.*
