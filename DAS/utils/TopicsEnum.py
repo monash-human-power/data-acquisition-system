@@ -33,8 +33,8 @@ class WirelessModule(NeatEnum):
 
 
 class WirelessModuleType(NeatEnum):
-    """ Used in the DataToTempCSV script to specify the type of data
-    recieved"""
+    """Used in the DataToTempCSV script to specify the type of data
+    received"""
 
     data = "DATA"
     battery = "BATTERY"

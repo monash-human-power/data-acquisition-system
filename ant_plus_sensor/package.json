@@ -1,8 +1,8 @@
 {
-  "name": "das",
+  "name": "ant_plus_logger",
   "version": "1.0.0",
   "description": "node.js script to communicate to the Teensy",
-  "main": "DAS.js",
+  "main": "ant_plus_logger.js",
   "scripts": {
     "eslint": "eslint --ignore-path .gitignore",
     "eslint-fix": "eslint --fix --ignore-path .gitignore .",
