@@ -1,5 +1,7 @@
 from config import ESSID
 from config import PASSWORD
+from machine import Pin
+import esp
 
 def connect(eesid, password):
     import network
@@ -13,15 +15,12 @@ def connect(eesid, password):
 
     print('network config:', sta_if.ifconfig())
 
-def no_debug():
-    import esp
-    esp.osdebug(None)
+# Allows the code to be uploaded with tools such as rshell / ampy
+esp.osdebug(None)
 
-# Bootup and connect to wifi credentials stored in config.py
-no_debug()
+# Connect to WiFi using credentials stored in config.py
 connect(ESSID, PASSWORD)
 
-# Turn on the built in LED when booted (blue light)
-from machine import Pin
+# Turn on the built in LED when booted and connected to WiFi (blue light)
 builtin_LED = Pin(2, Pin.OUT)
 builtin_LED.on()
