@@ -1,10 +1,15 @@
 import time
 import machine
-from machine import Pin
+import config
 import ubinascii
-from config import MQTT_BROKER
-from umqttsimple import MQTTClient
 import fake
+from machine import Pin
+
+# Use micro pip to install packages
+import upip
+upip.install("micropython-umqtt.simple2")
+from umqtt.simple import MQTTClient
+
 
 # Define module number and MQTT topics
 MODULE_NUM = "1"
@@ -22,6 +27,7 @@ builtin_LED = Pin(2, Pin.OUT)
 
 # Set up MQTT client by generating a client_id
 client_id = ubinascii.hexlify(machine.unique_id())
+
 
 # MQTT callbacks
 def sub_cb(topic, msg):
@@ -66,9 +72,10 @@ def MQTT_pub(data, topic):
     except OSError:
         restart_and_reconnect()
 
+
 # Try to connect to MQTT server
 try:
-    client = connect_and_subscribe(client_id, MQTT_BROKER, SUB_TOPICS)
+    client = connect_and_subscribe(client_id, config.MQTT_BROKER, SUB_TOPICS)
 except OSError:
     restart_and_reconnect()
 
@@ -83,6 +90,7 @@ def send_low_battery(timer):
     placeholder_battery_charge = 50
     if placeholder_battery_charge < 10:
         MQTT_pub(FAKE_MODULE.battery(), PUB_BATTERY)
+
 
 # Sends data every second
 data_timer = machine.Timer(0) 
