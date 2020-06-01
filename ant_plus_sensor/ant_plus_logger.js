@@ -7,7 +7,7 @@ const RollingAverage = require('./utils/average');
 const argumentParser = new ArgumentParser({
   version: '1.0.0',
   addHelp: true,
-  description: 'MHP DAS',
+  description: 'Ant-Plus MQTT Logger',
 });
 
 argumentParser.addArgument(['-i', '--id'], {
@@ -16,12 +16,14 @@ argumentParser.addArgument(['-i', '--id'], {
   type: 'int',
   action: 'store',
 });
+
 argumentParser.addArgument(['-a', '--host'], {
   help:
     'Address of the MQTT broker. If nothing is selected it will default to http://localhost.',
   defaultValue: 'http://localhost',
   action: 'store',
 });
+
 argumentParser.addArgument(['-r', '--rate'], {
   help: 'Rate to publish data in Hz',
   defaultValue: 1,
