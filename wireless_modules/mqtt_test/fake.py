@@ -3,101 +3,67 @@ import urandom
 
 class module:
     def __init__(self, module_num):
-        """ module_num what sensors to use"""
-        self.sensor = Sensor()
+        """ Mimics the real wireless modules on V3 """
 
-        # list of all of the fake sensors in each fasdfa
-        if module_num == "1":
-            self.sensor_lst = ["temperature", "humidity", "steering_angle"]
-        
-        elif module_num == "2":
-            self.sensor_lst = ["co2", "temperature", "humidity", "accelerometer", "gyroscope"]
-        
-        elif module_num == "3":
-            self.sensor_lst = ["co2", "reed_velocity", "gps"]
-        
-        elif module_num == "4":
-            self.sensor_lst = ["power", "cadence", "heart_rate"]
+        # Hardcoded sensors that are in each wireless module on the bike
+        MODULE_SENSORS = {
+            "1": ["temperature", "humidity", "steeringAngle"],
+            "2": ["co2", "temperature", "humidity", "accelerometer", "gyroscope"],
+            "3": ["co2", "reedVelocity", "gps"],
+            "4": ["power", "cadence", "heartRate"],
+        }
 
-                
+        # Select the correct module config
+        self.sensor_lst = MODULE_SENSORS[module_num]
+
         # Fake battery starts at 100%
         self.battery_pc = 100 
 
     def data(self):
+        # Dictionary to store the randomly generated data (to be sent over MQTT)
         data_dict = {"sensors": []}
 
-        for data in self.sensor_lst:
-            if data == "temperature":
-                data_dict["sensors"].append(self.sensor.temperature())
+        for sensor_name in self.sensor_lst:
+            if sensor_name == "gps":
+                fake_gps_data = FakeSensor(sensor_name).value_GPS()
+                data_dict["sensors"].append(fake_gps_data)
 
-            elif data == "humidity":
-                data_dict["sensors"].append(self.sensor.humidity())
+            elif sensor_name == "accelerometer" or sensor_name == "gyroscope":
+                fake_xyz_data = FakeSensor(sensor_name).value_xyz()
+                data_dict["sensors"].append(fake_xyz_data)
 
-            elif data == "steering_angle":
-                data_dict["sensors"].append(self.sensor.steering_angle())
-
-            elif data == "co2":
-                data_dict["sensors"].append(self.sensor.co2())
-
-            elif data == "accelerometer":
-                data_dict["sensors"].append(self.sensor.accelerometer())
-                
-            elif data == "gyroscope":
-                data_dict["sensors"].append(self.sensor.gyroscope())
-                
-            elif data == "reed_velocity":
-                data_dict["sensors"].append(self.sensor.reed_velocity())
-                
-            elif data == "gps":
-                data_dict["sensors"].append(self.sensor.gps())
-                
-            elif data == "power":
-                data_dict["sensors"].append(self.sensor.power())
-                
-            elif data == "cadence":
-                data_dict["sensors"].append(self.sensor.cadence())
-                
-            elif data == "heart_rate":
-                data_dict["sensors"].append(self.sensor.heart_rate())
+            else:
+                fake_single_data = FakeSensor(sensor_name).value_single()
+                data_dict["sensors"].append(fake_single_data)
 
         return ujson.dumps(data_dict)
 
     def battery(self):
         """ Decrease battery % by 1 and convert to JSON string """
+        
         self.battery_pc -= 1
         battery_dict = {"percentage": self.battery_pc}
         return ujson.dumps(battery_dict)
 
 
 
-class Sensor:
-    def temperature(self):
-        return {
-            "type": "temperature",
-            "value": self._random_num(),
-		}
-    
-    def humidity(self):
-        return {
-            "type": "humidity",
-            "value": self._random_num(),
-		}
-    
-    def steering_angle(self):
-        return {
-            "type": "steeringAngle",
-            "value": self._random_num(),
-		}
+class FakeSensor:
+    def __init__(self, sensor_name):
+        """ Takes a sensor_name to be used in the output data dict """
+        self.sensor_name = sensor_name
 
-    def co2(self):
+    def value_single(self):
+        """ Returns fake simple (only value) data for the given 
+        self.sensor_name """
         return {
-            "type": "co2",
+            "type": str(self.sensor_name),
             "value": self._random_num(),
-		}
+        }
 
-    def accelerometer(self):
+    def value_xyz(self):
+        """ Returns fake xyz data for the given self.sensor_name """
         return {
-            "type": "accelerometer",
+            "type": str(self.sensor_name),
             "value": {
                 "x": self._random_num(),
                 "y": self._random_num(),
@@ -105,25 +71,10 @@ class Sensor:
             }
         }
 
-    def gyroscope(self):
+    def value_GPS(self):
+        """ Returns fake GPS data for the given self.sensor_name """
         return {
-            "type": "gyroscope",
-            "value": {
-                "x": self._random_num(),
-                "y": self._random_num(),
-                "z": self._random_num(),
-            }
-        }
-
-    def reed_velocity(self):
-        return {
-            "type": "reedVelocity",
-            "value": self._random_num(),
-        }
-
-    def gps(self):
-        return {
-            "type": "gyroscope",
+            "type": str(self.sensor_name),
             "value": {
                 "speed": self._random_num(),
                 "satellites": self._random_num(),
@@ -134,23 +85,6 @@ class Sensor:
             }
         }     
 
-    def power(self):
-        return {
-            "type": "power",
-            "value": self._random_num(),
-        }
-
-    def cadence(self):
-        return {
-            "type": "cadence",
-            "value": self._random_num(),
-        }
-
-    def heart_rate(self):
-        return {
-            "type": "heartRate",
-            "value": self._random_num(),
-        } 
-
     def _random_num(self):
+        """ Generates a pseudo-random number """
         return urandom.getrandbits(10)
