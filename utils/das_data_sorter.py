@@ -140,7 +140,7 @@ class DasSort:
     def smooths_data(self, data:pd.Series, technique:str, n:int=3) -> pd.Series:
         if n < 3 or n > len(data):
             raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
-        smooth_data_array = [range(len(data))] 
+        smooth_data_array = [] 
 
         if technique == "mean" and n % 2 != 0: # Mean Smoothing for odd number N
             for i in range(len(length) - N + 1):
@@ -148,7 +148,21 @@ class DasSort:
                 new_data_point = self.mean(data_points)
                 new_data_point = round(new_data_point, ndigits=2)
                 smooth_data_array.append(new_data_point)
-        return smooth_data array 
+        elif technique == "mean" and n % 2 == 0: # Mean Smoothing for even number N
+            temp_array = []
+            for i in range(len(length) - N + 1):
+                data_points = data[i:i+N]
+                new_data_point = self.mean(data_points)
+                new_data_point = round(new_data_point, ndigits=2)
+                temp_array.append(new_data_point)
+            
+            for j in range(len(temp_array) - 1): # centres the data by averaging adjacent data points
+                first = temp_array[j]
+                second = temp_array[j+1]
+                new_data_point = self.mean([first,second])
+                smooth_data_array.append(new_data_point)
+        
+        return smooth_data_array 
     
     def write_to_output_file(self, file_output:str) -> None:
         '''Creates new CSV file and writes new data onto CSV file.'''
