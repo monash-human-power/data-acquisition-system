@@ -1,6 +1,6 @@
 import pandas as pd 
 from argparse import ArgumentParser
-from numpy import ceil
+from numpy import ceil, median
 
 # accepts terminal arguments
 parser = ArgumentParser()
@@ -164,6 +164,9 @@ class DasSort:
                 smooth_data_array.append(new_data_point)
         elif technique == "median" and n % 2 != 0: # Median Smoothing for odd number N
             for i in range(len(data) - N + 1):
+                data_points = data[i:i+N]
+                new_data_point = median(data_points)
+                smooth_data_array.append(new_data_point)
         return smooth_data_array 
     
     def write_to_output_file(self, file_output:str) -> None:
