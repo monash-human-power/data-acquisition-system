@@ -77,9 +77,7 @@ class DasSort:
                 previous_time = ceil(time[i])
                 index_array = [] # recreates new array if previous time has changed
             index_array.append(i) 
-
-        # pushes the final array when for loop has completed
-        universal_array.append(index_array)
+        universal_array.append(index_array) # pushes the final array
 
         return universal_array
 
@@ -90,6 +88,7 @@ class DasSort:
         '''
         total = 0
         length = len(data_array)
+
         for number in data_array:
             if number > 0 or number < 0:
                 # 'number' value is valid
@@ -101,7 +100,6 @@ class DasSort:
             else:
                 # 'number' value is invalid
                 raise ValueError("Data point invalid and is neither zero nor None. The data point was "+str(number)+". ("+str(type(number))+")")
-        
         try:
             return total/length
         except ZeroDivisionError:
@@ -129,12 +127,13 @@ class DasSort:
         0 for when GPS was turned off, 1 for when turned on.
         '''
         new_gps_data = []
+
         for index_array in self.indexes:
             if 1 in data[index_array].values:
                 new_gps_data.append(1)
             else:
                 new_gps_data.append(0)
-        
+
         return new_gps_data
     
     def smooths_data(self, data:pd.Series, technique:str, n:int=3) -> pd.Series:
@@ -176,6 +175,7 @@ class DasSort:
                 new_data_point = round(new_data_point, ndigits=2)
                 temp_array.append(new_data_point)
             
+            # centres the data by averaging adjacent data points
             for j in range(len(temp_array) - 1):
                 first = temp_array[j]
                 second = temp_array[j+1]
@@ -184,6 +184,7 @@ class DasSort:
                 smooth_data_array.append(new_data_point)
         else:
             raise Exception("Code broken. Choices should be limited to [median,mean] and invalid N values should be caught beforehand.")
+        
         return smooth_data_array 
     
     def write_to_output_file(self, file_output:str) -> None:
