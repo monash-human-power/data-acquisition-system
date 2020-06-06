@@ -8,6 +8,7 @@ parser.add_argument("--input", help="Reads the inputted CSV file to filter", act
 parser.add_argument("--output", help="Writes the filtered data onto a new CSV file under this name", action="store", required=True)
 parser.add_argument("--unit", help="Specify time units [seconds, s, or minutes, m]. Default is in seconds.", default="seconds", 
                     choices=["seconds", "s", "minutes", "m"], action="store")
+parser.add_argument("--smooth", help="Smooths data points using 3-point mean or median smoothing", choices=["mean", "median"], action="store")
 args = parser.parse_args()
 
 class DasSort:
