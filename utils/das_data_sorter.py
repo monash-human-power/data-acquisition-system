@@ -161,6 +161,7 @@ class DasSort:
                 first = temp_array[j]
                 second = temp_array[j+1]
                 new_data_point = self.mean([first,second])
+                new_data_point = round(new_data_point, ndigits=2)
                 smooth_data_array.append(new_data_point)
         elif technique == "median" and n % 2 != 0: # Median Smoothing for odd number N
             for i in range(len(data) - N + 1):
@@ -179,6 +180,7 @@ class DasSort:
                 first = temp_array[j]
                 second = temp_array[j+1]
                 new_data_point = median([first,second])
+                new_data_point = round(new_data_point, ndigits=2)
                 smooth_data_array.append(new_data_point)
         else:
             raise Exception("Code broken. Choices should be limited to [median,mean] and invalid N values should be caught beforehand.")
