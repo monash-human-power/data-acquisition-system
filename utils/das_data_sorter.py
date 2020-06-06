@@ -143,25 +143,27 @@ class DasSort:
         smooth_data_array = [] 
 
         if technique == "mean" and n % 2 != 0: # Mean Smoothing for odd number N
-            for i in range(len(length) - N + 1):
+            for i in range(len(data) - N + 1):
                 data_points = data[i:i+N]
                 new_data_point = self.mean(data_points)
                 new_data_point = round(new_data_point, ndigits=2)
                 smooth_data_array.append(new_data_point)
         elif technique == "mean" and n % 2 == 0: # Mean Smoothing for even number N
             temp_array = []
-            for i in range(len(length) - N + 1):
+            for i in range(len(data) - N + 1):
                 data_points = data[i:i+N]
                 new_data_point = self.mean(data_points)
                 new_data_point = round(new_data_point, ndigits=2)
                 temp_array.append(new_data_point)
             
-            for j in range(len(temp_array) - 1): # centres the data by averaging adjacent data points
+            # centres the data by averaging adjacent data points
+            for j in range(len(temp_array) - 1): 
                 first = temp_array[j]
                 second = temp_array[j+1]
                 new_data_point = self.mean([first,second])
                 smooth_data_array.append(new_data_point)
-        
+        elif technique == "median" and n % 2 != 0: # Median Smoothing for odd number N
+            for i in range(len(data) - N + 1):
         return smooth_data_array 
     
     def write_to_output_file(self, file_output:str) -> None:
