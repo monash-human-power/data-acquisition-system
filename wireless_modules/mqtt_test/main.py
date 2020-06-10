@@ -3,7 +3,6 @@ import machine
 import config
 import ubinascii
 import fake
-from machine import Pin
 
 # Use micro pip to install packages
 import upip
@@ -22,12 +21,9 @@ PUB_LOW_BATTERY = b'/v3/wireless-module/{}/low-battery'.format(MODULE_NUM)
 SUB_LED = b'/v3/wireless-module/{}/LED'.format(MODULE_NUM)
 SUB_TOPICS = [SUB_LED]
 
-# Define built in LED
-builtin_LED = Pin(2, Pin.OUT)
 
 # Set up MQTT client by generating a client_id
 client_id = ubinascii.hexlify(machine.unique_id())
-
 
 # MQTT callbacks
 def sub_cb(topic, msg):
