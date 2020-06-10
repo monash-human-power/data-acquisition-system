@@ -1,8 +1,6 @@
 import config 
 import esp
 import network
-from machine import Pin
-
 
 def connect(eesid, password):
     """ Small function that continuously tries to connect to WiFi """
@@ -25,10 +23,12 @@ def connect(eesid, password):
 
 # Allows the code to be uploaded with tools such as rshell / ampy
 esp.osdebug(None)
+config.red_LED.on()
 
 # Connect to WiFi using credentials stored in config.py
 connect(config.ESSID, config.PASSWORD)
+config.red_LED.off()
+config.orange_LED.on()
 
 # Turn on the built in LED when booted and connected to WiFi (blue light)
-builtin_LED = Pin(2, Pin.OUT)
-builtin_LED.on()
+config.builtin_LED.on()

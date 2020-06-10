@@ -77,6 +77,7 @@ def MQTT_pub(data, topic):
 try:
     client = connect_and_subscribe(client_id, config.MQTT_BROKER, SUB_TOPICS)
 except OSError:
+    config.red_LED.on()
     restart_and_reconnect()
 
 # Set up data recording timers / interupts
@@ -91,6 +92,10 @@ def send_low_battery(timer):
     if placeholder_battery_charge < 10:
         MQTT_pub(FAKE_MODULE.battery(), PUB_BATTERY)
 
+# Update status lights
+config.orange_LED.off()
+config.red_LED.off()
+config.green_LED.on()
 
 # Sends data every second
 data_timer = machine.Timer(0) 
@@ -103,6 +108,3 @@ battery_timer.init(period=300000, mode=machine.Timer.PERIODIC, callback=send_bat
 # If low battery send data every 5 seconds
 low_battery_timer = machine.Timer(2) 
 low_battery_timer.init(period=10000, mode=machine.Timer.PERIODIC, callback=send_low_battery)
-
-    
-
