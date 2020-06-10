@@ -25,16 +25,15 @@ class module:
 
         for sensor_name in self.sensor_lst:
             if sensor_name == "gps":
-                fake_gps_data = FakeSensor(sensor_name).value_GPS()
-                data_dict["sensors"].append(fake_gps_data)
+                fake_data = FakeSensor(sensor_name).value_GPS()
 
             elif sensor_name == "accelerometer" or sensor_name == "gyroscope":
-                fake_xyz_data = FakeSensor(sensor_name).value_xyz()
-                data_dict["sensors"].append(fake_xyz_data)
+                fake_data = FakeSensor(sensor_name).value_xyz()
 
             else:
-                fake_single_data = FakeSensor(sensor_name).value_single()
-                data_dict["sensors"].append(fake_single_data)
+                fake_data = FakeSensor(sensor_name).value_single()
+
+            data_dict["sensors"].append(fake_data)
 
         return ujson.dumps(data_dict)
 
@@ -44,7 +43,6 @@ class module:
         self.battery_pc -= 1
         battery_dict = {"percentage": self.battery_pc}
         return ujson.dumps(battery_dict)
-
 
 
 class FakeSensor:
