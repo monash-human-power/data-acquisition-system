@@ -2,7 +2,7 @@ from machine import Pin
 ESSID = "<WIFI NETWORK NAME HERE>"
 PASSWORD = "<WIFI PASSWORD HERE>"
 
-MQTT_BROKER = "<MQTT BROKER HERE>"
+MQTT_BROKER = "192.168.100.100"
 
 builtin_LED = Pin(2, Pin.OUT)
 red_LED = Pin(13, Pin.OUT)
