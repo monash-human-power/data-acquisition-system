@@ -69,7 +69,7 @@ def MQTT_pub(data, topic):
         restart_and_reconnect()
 
 
-# Try to connect to MQTT server
+# Try to connect to MQTT server, restart device if it times out
 try:
     client = connect_and_subscribe(client_id, config.MQTT_BROKER, SUB_TOPICS)
 except OSError:
