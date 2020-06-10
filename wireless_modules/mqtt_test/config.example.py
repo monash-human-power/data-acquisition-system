@@ -1,4 +1,5 @@
 from machine import Pin
+
 ESSID = "<WIFI NETWORK NAME HERE>"
 PASSWORD = "<WIFI PASSWORD HERE>"
 
