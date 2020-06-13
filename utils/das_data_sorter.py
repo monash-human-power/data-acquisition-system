@@ -175,7 +175,8 @@ class DasSort:
         
         # passes instance variables as an argument in smoothing function
         for variable in self.__dict__:
-            self.__dict__[variable] = self.__median_smooth(self.__dict__[variable], n)
+            if variable != "indexes": # excludes self.indexes
+                self.__dict__[variable] = self.__median_smooth(self.__dict__[variable], n)
     
     def __median_smooth(self, data:pd.Series, n:int=3) -> pd.Series:
         if n < 3 or n > len(data):
