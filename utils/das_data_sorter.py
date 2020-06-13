@@ -88,7 +88,6 @@ class DasSort:
         '''
         total = 0
         length = len(data_array)
-
         for number in data_array:
             if number > 0 or number < 0:
                 # 'number' value is valid
@@ -136,11 +135,17 @@ class DasSort:
 
         return new_gps_data
     
-    def mean_smooth(self, data:pd.Series, n:int=3) -> pd.Series:
+    def mean_smooth_caller(self, n:int=3) -> None:
         if n < 3 or n > len(data):
             raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
-        smooth_data_array = [] 
+        
+        # passes instance variables as an argument in smoothing function
+        for variable in self.__dict__:
+            if variable != "indexes": # excludes self.indexes
+                self.__dict__[variable] = self.__mean_smooth(self.__dict__[variable], n)
 
+    def __mean_smooth(self, data:pd.Series, n:int) -> pd.Series:
+        smooth_data_array = [] 
         if n % 2 != 0: # Mean Smoothing for odd number N
             for i in range(len(data) - n + 1):
                 data_points = data[i:i+n]
@@ -164,7 +169,15 @@ class DasSort:
         
         return smooth_data_array 
     
-    def median_smooth(self, data:pd.Series, n:int=3) -> pd.Series:
+    def median_smooth_caller(self, n:int=3) -> None:
+        if n < 3 or n > len(data):
+            raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
+        
+        # passes instance variables as an argument in smoothing function
+        for variable in self.__dict__:
+            self.__dict__[variable] = self.__median_smooth(self.__dict__[variable], n)
+    
+    def __median_smooth(self, data:pd.Series, n:int=3) -> pd.Series:
         if n < 3 or n > len(data):
             raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
         smooth_data_array = [] 
@@ -222,4 +235,8 @@ class DasSort:
 if __name__ == '__main__':
     data = pd.read_csv(args.input) # Loads and reads CSV file
     das_sort = DasSort(data, args.unit) # Filters data in CSV file
+    if args.smooth == "mean": # Applies smoothing technique, when provided
+        das_sort.mean_smooth_caller()
+    elif args.smooth == "median":
+        das_sort.median_smooth_caller()
     das_sort.write_to_output_file(args.output) # Write filtered data into new CSV file
