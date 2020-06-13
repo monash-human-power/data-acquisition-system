@@ -9,7 +9,7 @@ parser.add_argument("--output", help="Writes the filtered data onto a new CSV fi
 parser.add_argument("--unit", help="Specifies time units [seconds, s, or minutes, m]. Default is in seconds.", default="seconds", 
                     choices=["seconds", "s", "minutes", "m"], action="store")
 parser.add_argument("--smooth", help="Smooths data points using N-point mean or median smoothing", choices=["mean", "median"], action="store")
-parser.add_argument("--n", help="Specifies number of data points taken for smoothing", action="store", type=int)
+parser.add_argument("--n", help="Specifies number of data points taken for smoothing", default=3, action="store", type=int)
 args = parser.parse_args()
 
 class DasSort:
@@ -136,7 +136,7 @@ class DasSort:
 
         return new_gps_data
     
-    def mean_smooth_caller(self, n:int=3) -> None:
+    def mean_smooth_caller(self, n:int) -> None:
         '''Calls __mean_smooth function to smooth the data in instance variables, without requiring to refer to the variables themselves.'''
         if n < 3 or n > len(data):
             raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
@@ -176,7 +176,7 @@ class DasSort:
         
         return smooth_data_array 
     
-    def median_smooth_caller(self, n:int=3) -> None:
+    def median_smooth_caller(self, n:int) -> None:
         '''Calls __median_smooth function to smooth the data in instance variables, without requiring to refer to the variables themselves.'''
         if n < 3 or n > len(data):
             raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
@@ -186,7 +186,7 @@ class DasSort:
             if variable != "indexes": # excludes self.indexes
                 self.__dict__[variable] = self.__median_smooth(self.__dict__[variable], n)
     
-    def __median_smooth(self, data:pd.Series, n:int=3) -> pd.Series:
+    def __median_smooth(self, data:pd.Series, n:int) -> pd.Series:
         '''Returns an array of smoothed data based on number of data points taken to smooth. 
         
         For an odd number N, the data points are simply averaged. 
