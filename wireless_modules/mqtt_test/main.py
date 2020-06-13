@@ -1,3 +1,5 @@
+""" Tests the MQTT functionality of the esp32. red, orange and red LEDs do not need to be attached for the script to work """
+
 import time
 import machine
 import ubinascii
