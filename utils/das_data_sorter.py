@@ -6,9 +6,10 @@ from numpy import ceil, median
 parser = ArgumentParser()
 parser.add_argument("--input", help="Reads the inputted CSV file to filter", action="store", required=True)
 parser.add_argument("--output", help="Writes the filtered data onto a new CSV file under this name", action="store", required=True)
-parser.add_argument("--unit", help="Specify time units [seconds, s, or minutes, m]. Default is in seconds.", default="seconds", 
+parser.add_argument("--unit", help="Specifies time units [seconds, s, or minutes, m]. Default is in seconds.", default="seconds", 
                     choices=["seconds", "s", "minutes", "m"], action="store")
 parser.add_argument("--smooth", help="Smooths data points using N-point mean or median smoothing", choices=["mean", "median"], action="store")
+parser.add_argument("--n", help="Specifies number of data points taken for smoothing", action="store", type=int)
 args = parser.parse_args()
 
 class DasSort:
@@ -136,6 +137,7 @@ class DasSort:
         return new_gps_data
     
     def mean_smooth_caller(self, n:int=3) -> None:
+        '''Calls __mean_smooth function to smooth the data in instance variables, without requiring to refer to the variables themselves.'''
         if n < 3 or n > len(data):
             raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
         
@@ -145,6 +147,11 @@ class DasSort:
                 self.__dict__[variable] = self.__mean_smooth(self.__dict__[variable], n)
 
     def __mean_smooth(self, data:pd.Series, n:int) -> pd.Series:
+        '''Returns an array of smoothed data based on number of data points taken to smooth. 
+        
+        For an odd number N, the data points are simply averaged. 
+        Whereas for an even number N, the data points are averaged, then centered. This is because the data point will misalign with integer
+        numbers of time if not done.'''
         smooth_data_array = [] 
         if n % 2 != 0: # Mean Smoothing for odd number N
             for i in range(len(data) - n + 1):
@@ -170,6 +177,7 @@ class DasSort:
         return smooth_data_array 
     
     def median_smooth_caller(self, n:int=3) -> None:
+        '''Calls __median_smooth function to smooth the data in instance variables, without requiring to refer to the variables themselves.'''
         if n < 3 or n > len(data):
             raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
         
@@ -179,6 +187,11 @@ class DasSort:
                 self.__dict__[variable] = self.__median_smooth(self.__dict__[variable], n)
     
     def __median_smooth(self, data:pd.Series, n:int=3) -> pd.Series:
+        '''Returns an array of smoothed data based on number of data points taken to smooth. 
+        
+        For an odd number N, the data points are simply averaged. 
+        Whereas for an even number N, the data points are averaged, then centered. This is because the data point will misalign with integer
+        numbers of time if not done.'''
         if n < 3 or n > len(data):
             raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
         smooth_data_array = [] 
@@ -237,7 +250,7 @@ if __name__ == '__main__':
     data = pd.read_csv(args.input) # Loads and reads CSV file
     das_sort = DasSort(data, args.unit) # Filters data in CSV file
     if args.smooth == "mean": # Applies smoothing technique, when provided
-        das_sort.mean_smooth_caller()
+        das_sort.mean_smooth_caller(args.n)
     elif args.smooth == "median":
-        das_sort.median_smooth_caller()
+        das_sort.median_smooth_caller(args.n)
     das_sort.write_to_output_file(args.output) # Write filtered data into new CSV file
