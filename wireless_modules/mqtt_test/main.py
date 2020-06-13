@@ -1,8 +1,12 @@
 import time
 import machine
-import config
 import ubinascii
 import fake
+
+try:
+    import config
+except ImportError:
+    print("Config file not supplied. Add config.py")
 
 # Use micro pip to install packages
 import upip
