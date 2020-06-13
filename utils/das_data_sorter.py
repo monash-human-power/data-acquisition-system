@@ -8,7 +8,7 @@ parser.add_argument("--input", help="Reads the inputted CSV file to filter", act
 parser.add_argument("--output", help="Writes the filtered data onto a new CSV file under this name", action="store", required=True)
 parser.add_argument("--unit", help="Specify time units [seconds, s, or minutes, m]. Default is in seconds.", default="seconds", 
                     choices=["seconds", "s", "minutes", "m"], action="store")
-parser.add_argument("--smooth", help="Smooths data points using 3-point mean or median smoothing", choices=["mean", "median"], action="store")
+parser.add_argument("--smooth", help="Smooths data points using N-point mean or median smoothing", choices=["mean", "median"], action="store")
 args = parser.parse_args()
 
 class DasSort:
@@ -67,16 +67,16 @@ class DasSort:
         index_array = []
         previous_time = 0
 
-        for i in range(len(time)):
-            if time[i] > previous_time:
+        for index in range(len(time)):
+            if time[index] > previous_time:
                 # if true, then time at time[i] is the next second/minute
                 if previous_time != 0:
                     # appends index array into universal array, but ignores the first iteration
                     universal_array.append(index_array)
 
-                previous_time = ceil(time[i])
+                previous_time = ceil(time[index])
                 index_array = [] # recreates new array if previous time has changed
-            index_array.append(i) 
+            index_array.append(index) 
         universal_array.append(index_array) # pushes the final array
 
         return universal_array
@@ -142,14 +142,14 @@ class DasSort:
         smooth_data_array = [] 
 
         if technique == "mean" and n % 2 != 0: # Mean Smoothing for odd number N
-            for i in range(len(data) - N + 1):
-                data_points = data[i:i+N]
+            for i in range(len(data) - n + 1):
+                data_points = data[i:i+n]
                 new_data_point = self.mean(data_points)
                 new_data_point = round(new_data_point, ndigits=2)
                 smooth_data_array.append(new_data_point)
         elif technique == "mean" and n % 2 == 0: # Mean Smoothing for even number N
             temp_array = []
-            for i in range(len(data) - N + 1):
+            for i in range(len(data) - n + 1):
                 data_points = data[i:i+N]
                 new_data_point = self.mean(data_points)
                 new_data_point = round(new_data_point, ndigits=2)
@@ -163,14 +163,14 @@ class DasSort:
                 new_data_point = round(new_data_point, ndigits=2)
                 smooth_data_array.append(new_data_point)
         elif technique == "median" and n % 2 != 0: # Median Smoothing for odd number N
-            for i in range(len(data) - N + 1):
-                data_points = data[i:i+N]
+            for i in range(len(data) - n + 1):
+                data_points = data[i:i+n]
                 new_data_point = median(data_points) # round not required, since it will always be the middle number
                 smooth_data_array.append(new_data_point)
         elif technique == "median" and n % 2 == 0:
             temp_array = []
-            for i in range(len(data) - N + 1):
-                data_points = data[i:i+N]
+            for i in range(len(data) - n + 1):
+                data_points = data[i:i+n]
                 new_data_point = median(data_points)
                 new_data_point = round(new_data_point, ndigits=2)
                 temp_array.append(new_data_point)
@@ -184,7 +184,7 @@ class DasSort:
                 smooth_data_array.append(new_data_point)
         else:
             raise Exception("Code broken. Choices should be limited to [median,mean] and invalid N values should be caught beforehand.")
-        
+
         return smooth_data_array 
     
     def write_to_output_file(self, file_output:str) -> None:
