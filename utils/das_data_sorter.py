@@ -15,27 +15,29 @@ args = parser.parse_args()
 class DasSort:
     def __init__(self, file_input:pd.DataFrame, unit:str) -> None:
         self.indexes = None
-        self.time = self.convert_time(file_input["time"], unit)
-        self.gps = self.gps_data(file_input["gps"])
-        self.gps_lat = self.average_data(file_input["gps_lat"])
-        self.gps_long = self.average_data(file_input["gps_long"])
-        self.gps_alt = self.average_data(file_input["gps_long"])
-        self.gps_course = self.average_data(file_input["gps_course"])
-        self.gps_speed = self.average_data(file_input["gps_speed"])
-        self.gps_satellites = self.average_data(file_input["gps_satellites"])
-        self.ax = self.average_data(file_input["aX"])
-        self.ay = self.average_data(file_input["aY"])
-        self.az = self.average_data(file_input["aZ"])
-        self.gx = self.average_data(file_input["gX"])
-        self.gy = self.average_data(file_input["gY"])
-        self.gz = self.average_data(file_input["gZ"])
-        self.thermoc = self.average_data(file_input["thermoC"])
-        self.thermof = self.average_data(file_input["thermoF"])
-        self.pot = self.average_data(file_input["pot"])
-        self.cadence = self.average_data(file_input["cadence"])
-        self.power = self.average_data(file_input["power"])
-        self.reed_velocity = self.average_data(file_input["reed_velocity"])
-        self.reed_distance = self.average_data(file_input["reed_distance"])
+        self.data = {
+            "time": self.convert_time(file_input["time"], unit),
+            "gps": self.gps_data(file_input["gps"]),
+            "gps_lat": self.average_data(file_input["gps_lat"]),
+            "gps_long": self.average_data(file_input["gps_long"]),
+            "gps_alt": self.average_data(file_input["gps_long"]),
+            "gps_course": self.average_data(file_input["gps_course"]),
+            "gps_speed": self.average_data(file_input["gps_speed"]),
+            "gps_satellites": self.average_data(file_input["gps_satellites"]),
+            "ax": self.average_data(file_input["aX"]),
+            "ay": self.average_data(file_input["aY"]),
+            "az": self.average_data(file_input["aZ"]),
+            "gx": self.average_data(file_input["gX"]),
+            "gy": self.average_data(file_input["gY"]),
+            "gz": self.average_data(file_input["gZ"]),
+            "thermoc": self.average_data(file_input["thermoC"]),
+            "thermof": self.average_data(file_input["thermoF"]),
+            "pot": self.average_data(file_input["pot"]),
+            "cadence": self.average_data(file_input["cadence"]),
+            "power": self.average_data(file_input["power"]),
+            "reed_velocity": self.average_data(file_input["reed_velocity"]),
+            "reed_distance": self.average_data(file_input["reed_distance"])
+        }
 
     def convert_time(self, milliseconds:pd.Series, unit) -> pd.Series:
         '''Returns the conversion of the time data points from milliseconds to the specified time unit, depending on the 
@@ -44,16 +46,16 @@ class DasSort:
         unit accepts only seconds/s and minutes/m as arguments. 
         '''
         if unit == "seconds" or unit == "s":
-            new_time = milliseconds/1000
+            new_time = milliseconds / 1000
         elif unit == "minutes" or unit == "m":
-            new_time = milliseconds/1000/60
+            new_time = milliseconds / 1000 / 60
         else:
             raise ValueError("Argument only accepts either seconds/s or minutes/m")
         
         # sets the groups of indexes to use for averaging in future
         self.indexes = self.group_index(new_time)
 
-        return range(1,len(self.indexes)+1)
+        return range(1, len(self.indexes) + 1)
 
     def group_index(self, time:pd.Series) -> pd.Series:
         '''Returns a universal array of arrays of indexes, based on the specified time unit. Each array represents the indexes 
@@ -138,13 +140,12 @@ class DasSort:
     
     def mean_smooth_caller(self, n:int) -> None:
         '''Calls __mean_smooth function to smooth the data in instance variables, without requiring to refer to the variables themselves.'''
-        if n < 3 or n > len(data):
+        if n < 3 or n > len(self.indexes):
             raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
         
         # passes instance variables as an argument in smoothing function
-        for variable in self.__dict__:
-            if variable != "indexes": # excludes self.indexes
-                self.__dict__[variable] = self.__mean_smooth(self.__dict__[variable], n)
+        for variable in self.data:
+            self.data[variable] = self.__mean_smooth(self.data[variable], n)
 
     def __mean_smooth(self, data:pd.Series, n:int) -> pd.Series:
         '''Returns an array of smoothed data based on number of data points taken to smooth. 
@@ -153,6 +154,7 @@ class DasSort:
         Whereas for an even number N, the data points are averaged, then centered. This is because the data point will misalign with integer
         numbers of time if not done.'''
         smooth_data_array = [] 
+        
         if n % 2 != 0: # Mean Smoothing for odd number N
             for i in range(len(data) - n + 1):
                 data_points = data[i:i+n]
@@ -178,13 +180,12 @@ class DasSort:
     
     def median_smooth_caller(self, n:int) -> None:
         '''Calls __median_smooth function to smooth the data in instance variables, without requiring to refer to the variables themselves.'''
-        if n < 3 or n > len(data):
+        if n < 3 or n > len(self.indexes):
             raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
         
         # passes instance variables as an argument in smoothing function
-        for variable in self.__dict__:
-            if variable != "indexes": # excludes self.indexes
-                self.__dict__[variable] = self.__median_smooth(self.__dict__[variable], n)
+        for variable in self.data:
+            self.data[variable] = self.__median_smooth(self.data[variable], n)
     
     def __median_smooth(self, data:pd.Series, n:int) -> pd.Series:
         '''Returns an array of smoothed data based on number of data points taken to smooth. 
@@ -192,8 +193,6 @@ class DasSort:
         For an odd number N, the data points are simply averaged. 
         Whereas for an even number N, the data points are averaged, then centered. This is because the data point will misalign with integer
         numbers of time if not done.'''
-        if n < 3 or n > len(data):
-            raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
         smooth_data_array = [] 
 
         if n % 2 != 0: # Median Smoothing for odd number N
@@ -220,30 +219,8 @@ class DasSort:
     
     def write_to_output_file(self, file_output:str) -> None:
         '''Creates new CSV file and writes new data onto CSV file.'''
-        final = pd.DataFrame({
-            "time": self.time,
-            "gps": self.gps,
-            "gps_lat": self.gps_lat,
-            "gps_long": self.gps_long,
-            "gps_alt": self.gps_alt,
-            "gps_course": self.gps_course,
-            "gps_speed": self.gps_speed,
-            "gps_satellites": self.gps_satellites,
-            "aX": self.ax,
-            "aY": self.ay,
-            "aZ": self.az,
-            "gX": self.gx,
-            "gY": self.gy,
-            "gZ": self.gz,
-            "thermoC": self.thermoc,
-            "tempF": self.thermof,
-            "pot": self.pot,
-            "cadence": self.cadence,
-            "power": self.power,
-            "reed_velocity": self.reed_velocity,
-            "reed_distance": self.reed_distance
-        })
-        final.to_csv(file_output, index=False)
+        final_document = pd.DataFrame(self.data)
+        final_document.to_csv(file_output, index=False)
         print(f"Success! Output is written to {file_output}")
 
 if __name__ == '__main__':
