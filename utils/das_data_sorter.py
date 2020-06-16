@@ -138,14 +138,17 @@ class DasSort:
 
         return new_gps_data
     
-    def mean_smooth_caller(self, n:int) -> None:
+    def smooth_caller(self, n:int, technique:str) -> None:
         '''Calls __mean_smooth function to smooth the data in instance variables, without requiring to refer to the variables themselves.'''
         if n < 3 or n > len(self.indexes):
             raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
         
-        # passes instance variables as an argument in smoothing function
-        for variable in self.data:
-            self.data[variable] = self.__mean_smooth(self.data[variable], n)
+        if technique == "mean":
+            for variable in self.data:
+                self.data[variable] = self.__mean_smooth(self.data[variable], n)
+        elif technique == "median":
+            for variable in self.data:
+                self.data[variable] = self.__median_smooth(self.data[variable], n)
 
     def __mean_smooth(self, data:pd.Series, n:int) -> pd.Series:
         '''Returns an array of smoothed data based on number of data points taken to smooth. 
@@ -154,7 +157,7 @@ class DasSort:
         Whereas for an even number N, the data points are averaged, then centered. This is because the data point will misalign with integer
         numbers of time if not done.'''
         smooth_data_array = [] 
-        
+
         if n % 2 != 0: # Mean Smoothing for odd number N
             for i in range(len(data) - n + 1):
                 data_points = data[i:i+n]
@@ -177,15 +180,6 @@ class DasSort:
                 smooth_data_array.append(new_data_point)
         
         return smooth_data_array 
-    
-    def median_smooth_caller(self, n:int) -> None:
-        '''Calls __median_smooth function to smooth the data in instance variables, without requiring to refer to the variables themselves.'''
-        if n < 3 or n > len(self.indexes):
-            raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
-        
-        # passes instance variables as an argument in smoothing function
-        for variable in self.data:
-            self.data[variable] = self.__median_smooth(self.data[variable], n)
     
     def __median_smooth(self, data:pd.Series, n:int) -> pd.Series:
         '''Returns an array of smoothed data based on number of data points taken to smooth. 
@@ -226,8 +220,6 @@ class DasSort:
 if __name__ == '__main__':
     data = pd.read_csv(args.input) # Loads and reads CSV file
     das_sort = DasSort(data, args.unit) # Filters data in CSV file
-    if args.smooth == "mean": # Applies smoothing technique, when provided
-        das_sort.mean_smooth_caller(args.n)
-    elif args.smooth == "median":
-        das_sort.median_smooth_caller(args.n)
+    if args.smooth: # Applies smoothing technique, when provided
+        das_sort.smooth_caller(args.n, args.smooth)
     das_sort.write_to_output_file(args.output) # Write filtered data into new CSV file
