@@ -67,7 +67,7 @@ class DasSort:
         Once all the indexes of a time interval has been accounted for, the array of indexes will be pushed into a
         universal array so that each element represents the data points of one singular time interval.
         '''
-        universal_array = []
+        universal_index_array = []
         index_array = []
         previous_time = 0
 
@@ -76,14 +76,14 @@ class DasSort:
                 # if true, then time at time[i] is the next second/minute
                 if previous_time != 0:
                     # appends index array into universal array, but ignores the first iteration
-                    universal_array.append(index_array)
+                    universal_index_array.append(index_array)
 
                 previous_time = ceil(time[index])
                 index_array = [] # recreates new array if previous time has changed
             index_array.append(index) 
-        universal_array.append(index_array) # pushes the final array
+        universal_index_array.append(index_array) # pushes the final array
 
-        return universal_array
+        return universal_index_array
 
     def mean(self, data_array:pd.Series) -> float:
         '''Finds the average of a given set of numbers. 
