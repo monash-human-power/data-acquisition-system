@@ -138,8 +138,8 @@ class DasSort:
 
         return new_gps_data
     
-    def smooth_caller(self, n:int, technique:str) -> None:
-        '''Calls __mean_smooth function to smooth the data in instance variables, without requiring to refer to the variables themselves.'''
+    def smooth(self, n:int, technique:str) -> None:
+        '''Calls a smooth function to smooth the data.'''
         if n < 3 or n > len(self.indexes):
             raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
         
