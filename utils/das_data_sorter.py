@@ -53,7 +53,7 @@ class DasSort:
         else:
             raise ValueError("Argument only accepts either seconds/s or minutes/m")
         
-        # sets the groups of indexes to use for averaging data, once time has been sorted
+        # sorts into groups of indexes to average columns in self.data
         self.indexes = self.__group_index(new_time)
 
         return range(1, len(self.indexes) + 1)
