@@ -53,12 +53,12 @@ class DasSort:
         else:
             raise ValueError("Argument only accepts either seconds/s or minutes/m")
         
-        # sets the groups of indexes to use for averaging in future
-        self.indexes = self.group_index(new_time)
+        # sets the groups of indexes to use for averaging data, once time has been sorted
+        self.indexes = self.__group_index(new_time)
 
         return range(1, len(self.indexes) + 1)
 
-    def group_index(self, time:pd.Series) -> pd.Series:
+    def __group_index(self, time:pd.Series) -> pd.Series:
         '''Returns a universal array of arrays of indexes, based on the specified time unit. Each array represents the indexes 
         of the data points within the same time interval. (eg. 1123ms and 1748ms are in the same time interval for seconds, 
         but 2453ms isn't)
