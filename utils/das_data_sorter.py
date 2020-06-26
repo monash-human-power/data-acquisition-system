@@ -193,5 +193,5 @@ if __name__ == '__main__':
     data = pd.read_csv(args.input) # Loads and reads CSV file
     das_sort = DasSort(data, args.unit) # Filters data in CSV file
     if args.smooth: # Applies smoothing technique, when provided
-        das_sort.smooth_caller(args.n, args.smooth)
+        das_sort.smooth(args.n, args.smooth)
     das_sort.write_to_output_file(args.output) # Write filtered data into new CSV file
