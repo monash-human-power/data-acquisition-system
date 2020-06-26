@@ -1,6 +1,7 @@
 import pandas as pd 
 from argparse import ArgumentParser
 from numpy import ceil, median
+from typing import Callable
 
 # accepts terminal arguments
 parser = ArgumentParser()
@@ -145,12 +146,12 @@ class DasSort:
         
         if technique == "mean":
             for variable in self.data:
-                self.data[variable] = self.__mean_smooth(self.data[variable], n)
+                self.data[variable] = self.__smooth_function(self.data[variable], n, self.mean)
         elif technique == "median":
             for variable in self.data:
-                self.data[variable] = self.__median_smooth(self.data[variable], n)
+                self.data[variable] = self.__smooth_function(self.data[variable], n, median)
 
-    def __mean_smooth(self, data:pd.Series, n:int) -> pd.Series:
+    def __smooth_function(self, data:pd.Series, n:int, technique:Callable) -> pd.Series:
         '''Returns an array of smoothed data based on number of data points taken to smooth. 
         
         For an odd number N, the data points are simply averaged. 
@@ -158,17 +159,18 @@ class DasSort:
         numbers of time if not done.'''
         smooth_data_array = [] 
 
-        if n % 2 != 0: # Mean Smoothing for odd number N
+        if n % 2 != 0: # Smoothing for odd number N
             for i in range(len(data) - n + 1):
                 data_points = data[i:i+n]
-                new_data_point = self.mean(data_points)
+                new_data_point = technique(data_points)
                 new_data_point = round(new_data_point, ndigits=2)
                 smooth_data_array.append(new_data_point)
-        else: # Mean Smoothing for even number N
+        else: # Smoothing for even number N
             temp_array = []
+
             for i in range(len(data) - n + 1):
                 data_points = data[i:i+N]
-                new_data_point = self.mean(data_points)
+                new_data_point = technique(data_points)
                 temp_array.append(new_data_point)
             
             # an extra step to centre the data by averaging adjacent data points
@@ -179,36 +181,6 @@ class DasSort:
                 new_data_point = round(new_data_point, ndigits=2)
                 smooth_data_array.append(new_data_point)
         
-        return smooth_data_array 
-    
-    def __median_smooth(self, data:pd.Series, n:int) -> pd.Series:
-        '''Returns an array of smoothed data based on number of data points taken to smooth. 
-        
-        For an odd number N, the data points are simply averaged. 
-        Whereas for an even number N, the data points are averaged, then centered. This is because the data point will misalign with integer
-        numbers of time if not done.'''
-        smooth_data_array = [] 
-
-        if n % 2 != 0: # Median Smoothing for odd number N
-            for i in range(len(data) - n + 1):
-                data_points = data[i:i+n]
-                new_data_point = median(data_points) # round not required, since it will always be the middle number
-                smooth_data_array.append(new_data_point)
-        else: # Median Smoothing for even number N
-            temp_array = []
-            for i in range(len(data) - n + 1):
-                data_points = data[i:i+n]
-                new_data_point = median(data_points)
-                temp_array.append(new_data_point)
-            
-            # an extra step to centre the data by averaging adjacent data points
-            for j in range(len(temp_array) - 1):
-                first = temp_array[j]
-                second = temp_array[j+1]
-                new_data_point = median([first,second])
-                new_data_point = round(new_data_point, ndigits=2)
-                smooth_data_array.append(new_data_point)
-
         return smooth_data_array 
     
     def write_to_output_file(self, file_output:str) -> None:
