@@ -6,10 +6,10 @@ from numpy import ceil, median
 parser = ArgumentParser()
 parser.add_argument("-i", "--input", help="Reads the inputted CSV file to filter", action="store", required=True)
 parser.add_argument("-o", "--output", help="Writes the filtered data onto a new CSV file under this name", action="store", required=True)
-parser.add_argument("--unit", help="Specifies time units [seconds, s, or minutes, m]. Default is in seconds.", default="seconds", 
+parser.add_argument("--unit", help="Specifies time units. Default is in seconds.", default="seconds", 
                     choices=["seconds", "s", "minutes", "m"], action="store")
 parser.add_argument("--smooth", help="Smooths data points using N-point mean or median smoothing", choices=["mean", "median"], action="store")
-parser.add_argument("-n", help="Specifies number of data points taken for smoothing", default=3, action="store", type=int)
+parser.add_argument("-n", help="Specifies number of data points taken for smoothing. Default is 3 points", default=3, action="store", type=int)
 args = parser.parse_args()
 
 class DasSort:
