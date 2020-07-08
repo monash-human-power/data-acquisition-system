@@ -1,39 +1,44 @@
 import pandas as pd 
 from argparse import ArgumentParser
-from numpy import ceil
+from numpy import ceil, median
+from typing import Callable
 
 # accepts terminal arguments
 parser = ArgumentParser()
-parser.add_argument("--input", help="Reads the inputted CSV file to filter", action="store", required=True)
-parser.add_argument("--output", help="Writes the filtered data onto a new CSV file under this name", action="store", required=True)
-parser.add_argument("--unit", help="Specify time units [seconds, s, or minutes, m]. Default is in seconds.", default="seconds", 
+parser.add_argument("-i", "--input", help="Reads the inputted CSV file to filter", action="store", required=True)
+parser.add_argument("-o", "--output", help="Writes the filtered data onto a new CSV file under this name", action="store", required=True)
+parser.add_argument("--unit", help="Specifies time units. Default is in seconds.", default="seconds", 
                     choices=["seconds", "s", "minutes", "m"], action="store")
+parser.add_argument("--smooth", help="Smooths data points using N-point mean or median smoothing", choices=["mean", "median"], action="store")
+parser.add_argument("-n", help="Specifies number of data points taken for smoothing. Default is 3 points", default=3, action="store", type=int)
 args = parser.parse_args()
 
 class DasSort:
     def __init__(self, file_input:pd.DataFrame, unit:str) -> None:
         self.indexes = None
-        self.time = self.convert_time(file_input["time"], unit)
-        self.gps = self.gps_data(file_input["gps"])
-        self.gps_lat = self.average_data(file_input["gps_lat"])
-        self.gps_long = self.average_data(file_input["gps_long"])
-        self.gps_alt = self.average_data(file_input["gps_long"])
-        self.gps_course = self.average_data(file_input["gps_course"])
-        self.gps_speed = self.average_data(file_input["gps_speed"])
-        self.gps_satellites = self.average_data(file_input["gps_satellites"])
-        self.ax = self.average_data(file_input["aX"])
-        self.ay = self.average_data(file_input["aY"])
-        self.az = self.average_data(file_input["aZ"])
-        self.gx = self.average_data(file_input["gX"])
-        self.gy = self.average_data(file_input["gY"])
-        self.gz = self.average_data(file_input["gZ"])
-        self.thermoc = self.average_data(file_input["thermoC"])
-        self.thermof = self.average_data(file_input["thermoF"])
-        self.pot = self.average_data(file_input["pot"])
-        self.cadence = self.average_data(file_input["cadence"])
-        self.power = self.average_data(file_input["power"])
-        self.reed_velocity = self.average_data(file_input["reed_velocity"])
-        self.reed_distance = self.average_data(file_input["reed_distance"])
+        self.data = {
+            "time": self.convert_time(file_input["time"], unit),
+            "gps": self.gps_data(file_input["gps"]),
+            "gps_lat": self.average_data(file_input["gps_lat"]),
+            "gps_long": self.average_data(file_input["gps_long"]),
+            "gps_alt": self.average_data(file_input["gps_long"]),
+            "gps_course": self.average_data(file_input["gps_course"]),
+            "gps_speed": self.average_data(file_input["gps_speed"]),
+            "gps_satellites": self.average_data(file_input["gps_satellites"]),
+            "ax": self.average_data(file_input["aX"]),
+            "ay": self.average_data(file_input["aY"]),
+            "az": self.average_data(file_input["aZ"]),
+            "gx": self.average_data(file_input["gX"]),
+            "gy": self.average_data(file_input["gY"]),
+            "gz": self.average_data(file_input["gZ"]),
+            "thermoc": self.average_data(file_input["thermoC"]),
+            "thermof": self.average_data(file_input["thermoF"]),
+            "pot": self.average_data(file_input["pot"]),
+            "cadence": self.average_data(file_input["cadence"]),
+            "power": self.average_data(file_input["power"]),
+            "reed_velocity": self.average_data(file_input["reed_velocity"]),
+            "reed_distance": self.average_data(file_input["reed_distance"])
+        }
 
     def convert_time(self, milliseconds:pd.Series, unit) -> pd.Series:
         '''Returns the conversion of the time data points from milliseconds to the specified time unit, depending on the 
@@ -42,18 +47,18 @@ class DasSort:
         unit accepts only seconds/s and minutes/m as arguments. 
         '''
         if unit == "seconds" or unit == "s":
-            new_time = milliseconds/1000
+            new_time = milliseconds / 1000
         elif unit == "minutes" or unit == "m":
-            new_time = milliseconds/1000/60
+            new_time = milliseconds / 1000 / 60
         else:
             raise ValueError("Argument only accepts either seconds/s or minutes/m")
         
-        # sets the groups of indexes to use for averaging in future
-        self.indexes = self.group_index(new_time)
+        # sorts into groups of indexes to average columns in self.data
+        self.indexes = self.__group_index(new_time)
 
-        return range(1,len(self.indexes)+1)
+        return range(1, len(self.indexes) + 1)
 
-    def group_index(self, time:pd.Series) -> pd.Series:
+    def __group_index(self, time:pd.Series) -> pd.Series:
         '''Returns a universal array of arrays of indexes, based on the specified time unit. Each array represents the indexes 
         of the data points within the same time interval. (eg. 1123ms and 1748ms are in the same time interval for seconds, 
         but 2453ms isn't)
@@ -62,25 +67,23 @@ class DasSort:
         Once all the indexes of a time interval has been accounted for, the array of indexes will be pushed into a
         universal array so that each element represents the data points of one singular time interval.
         '''
-        universal_array = []
+        universal_index_array = []
         index_array = []
         previous_time = 0
 
-        for i in range(len(time)):
-            if time[i] > previous_time:
+        for index in range(len(time)):
+            if time[index] > previous_time:
                 # if true, then time at time[i] is the next second/minute
                 if previous_time != 0:
                     # appends index array into universal array, but ignores the first iteration
-                    universal_array.append(index_array)
+                    universal_index_array.append(index_array)
 
-                previous_time = ceil(time[i])
+                previous_time = ceil(time[index])
                 index_array = [] # recreates new array if previous time has changed
-            index_array.append(i) 
+            index_array.append(index) 
+        universal_index_array.append(index_array) # pushes the final array
 
-        # pushes the final array when for loop has completed
-        universal_array.append(index_array)
-
-        return universal_array
+        return universal_index_array
 
     def mean(self, data_array:pd.Series) -> float:
         '''Finds the average of a given set of numbers. 
@@ -100,7 +103,6 @@ class DasSort:
             else:
                 # 'number' value is invalid
                 raise ValueError("Data point invalid and is neither zero nor None. The data point was "+str(number)+". ("+str(type(number))+")")
-        
         try:
             return total/length
         except ZeroDivisionError:
@@ -128,43 +130,68 @@ class DasSort:
         0 for when GPS was turned off, 1 for when turned on.
         '''
         new_gps_data = []
+
         for index_array in self.indexes:
             if 1 in data[index_array].values:
                 new_gps_data.append(1)
             else:
                 new_gps_data.append(0)
-        
+
         return new_gps_data
+    
+    def smooth(self, n:int, technique:str) -> None:
+        '''Calls a smooth function to smooth the data.'''
+        if n < 3 or n > len(self.indexes):
+            raise ValueError("Number of smoothing points must be at least 3 and less than the length of the data set to perform smoothing.")
+        
+        if technique == "mean":
+            for variable in self.data:
+                self.data[variable] = self.__smooth_function(self.data[variable], n, self.mean)
+        elif technique == "median":
+            for variable in self.data:
+                self.data[variable] = self.__smooth_function(self.data[variable], n, median)
+
+    def __smooth_function(self, data:pd.Series, n:int, technique:Callable) -> pd.Series:
+        '''Returns an array of smoothed data based on number of data points taken to smooth. 
+        
+        For an odd number N, the data points are simply averaged. 
+        Whereas for an even number N, the data points are averaged, then centered. This is because the data point will misalign with integer
+        numbers of time if not done.'''
+        smooth_data_array = [] 
+
+        if n % 2 != 0: # Smoothing for odd number N
+            for i in range(len(data) - n + 1):
+                data_points = data[i:i+n]
+                new_data_point = technique(data_points)
+                new_data_point = round(new_data_point, ndigits=2)
+                smooth_data_array.append(new_data_point)
+        else: # Smoothing for even number N
+            temp_array = []
+
+            for i in range(len(data) - n + 1):
+                data_points = data[i:i+N]
+                new_data_point = technique(data_points)
+                temp_array.append(new_data_point)
+            
+            # an extra step to centre the data by averaging adjacent data points
+            for j in range(len(temp_array) - 1): 
+                first = temp_array[j]
+                second = temp_array[j+1]
+                new_data_point = self.mean([first,second])
+                new_data_point = round(new_data_point, ndigits=2)
+                smooth_data_array.append(new_data_point)
+        
+        return smooth_data_array 
     
     def write_to_output_file(self, file_output:str) -> None:
         '''Creates new CSV file and writes new data onto CSV file.'''
-        final = pd.DataFrame({
-            "time": self.time,
-            "gps": self.gps,
-            "gps_lat": self.gps_lat,
-            "gps_long": self.gps_long,
-            "gps_alt": self.gps_alt,
-            "gps_course": self.gps_course,
-            "gps_speed": self.gps_speed,
-            "gps_satellites": self.gps_satellites,
-            "aX": self.ax,
-            "aY": self.ay,
-            "aZ": self.az,
-            "gX": self.gx,
-            "gY": self.gy,
-            "gZ": self.gz,
-            "thermoC": self.thermoc,
-            "tempF": self.thermof,
-            "pot": self.pot,
-            "cadence": self.cadence,
-            "power": self.power,
-            "reed_velocity": self.reed_velocity,
-            "reed_distance": self.reed_distance
-        })
-        final.to_csv(file_output, index=False)
+        final_document = pd.DataFrame(self.data)
+        final_document.to_csv(file_output, index=False)
         print(f"Success! Output is written to {file_output}")
 
 if __name__ == '__main__':
     data = pd.read_csv(args.input) # Loads and reads CSV file
     das_sort = DasSort(data, args.unit) # Filters data in CSV file
+    if args.smooth: # Applies smoothing technique, when provided
+        das_sort.smooth(args.n, args.smooth)
     das_sort.write_to_output_file(args.output) # Write filtered data into new CSV file
