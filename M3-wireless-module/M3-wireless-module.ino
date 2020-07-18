@@ -3,7 +3,7 @@
 #include <PubSubClient.h>
 #include "header.h"
 
-//const char* json = "{'sensors':[{'type':'co2','value':400},{'type':'reedVelocity','value':34},{'type':'gps','value':{'speed':32,'satellites':2,'latitude':-32.88899,'longitude':122.44322,'altitude':100.23,'course':1}}]}";
+// output json data for publishing
 const char* json = "{\"sensors\":[{\"type\":\"co2\",\"value\":%f},{\"type\":\"reedVelocity\",\
                     \"value\":%f},{\"type\":\"gps\",\"value\":{\"speed\":%d,\"satellites\":%d,\
                     \"latitude\":%f,\"longitude\":%f,\"altitude\":%f,\"course\":%d}}]}";
