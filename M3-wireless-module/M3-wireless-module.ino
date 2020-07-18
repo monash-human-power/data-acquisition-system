@@ -2,29 +2,12 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include "header.h"
-#include <ArduinoJson.h>
 
-// add json
-const size_t capacity = JSON_ARRAY_SIZE(3) + JSON_OBJECT_SIZE(1) + 3*JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(6);
-DynamicJsonDocument data(capacity);
-JsonObject root = data.to<JsonObject>();
-JsonArray sensors = root.createNestedArray("sensors");
-JsonObject sensors_0  = sensors.createNestedObject();
-JsonObject  gps_obj = sensors.createNestedObject();
-JsonObject gps_value_obj = gps_obj.createNestedObject("value");
-
-//sensors[0]["type"] = "co2";
-//sensors[1]["value"] = 400;
-//JsonObject reed_obj = sensors
-//reed_obj["type"] = "reedVelocity";
-//reed_obj["value"] = 45;
-//gps_obj["type"] = "gps";
-//gps_value_obj["speed"] = 45;
-//gps_value_obj["satellites"] = 3;
-//gps_value_obj["latitude"] = -37.910309;
-//gps_value_obj["longitude"] = 145.188507;
-//gps_value_obj["altitude"] = 200;
-//gps_value_obj["course"] = 1;
+//const char* json = "{'sensors':[{'type':'co2','value':400},{'type':'reedVelocity','value':34},{'type':'gps','value':{'speed':32,'satellites':2,'latitude':-32.88899,'longitude':122.44322,'altitude':100.23,'course':1}}]}";
+const char* json = "{\"sensors\":[{\"type\":\"co2\",\"value\":%f},{\"type\":\"reedVelocity\",\
+                    \"value\":%f},{\"type\":\"gps\",\"value\":{\"speed\":%d,\"satellites\":%d,\
+                    \"latitude\":%f,\"longitude\":%f,\"altitude\":%f,\"course\":%d}}]}";
+char data[500];
 
 // MQTT variables
 const char* ssid = "Lak";
@@ -33,7 +16,7 @@ const char* mqtt_server = "soldier.cloudmqtt.com";
 #define mqtt_port 11989
 #define MQTT_USER "punbssjf"
 #define MQTT_PASSWORD "N5R0WZ4gQD9y"
-bool start_stop = false;
+bool start_stop = true;
 
 // Reed Switch variables
 static const int reedPin = 5;
@@ -97,7 +80,6 @@ void callback(char* topic, byte *payload, unsigned int length) {
 // ----------------------- //
 //      Reed functions     //
 // ----------------------- //
-
 // Interrupt Service Routine
 void IRAM_ATTR handleInterrupt() {
   
@@ -126,78 +108,69 @@ void get_vel_dis(int numberOfInterrupts)
 {
   VELOCITY = (1/t_time) * PI * WHEEL_DIAMETER * 3600;
   DISTANCE = numberOfInterrupts * WHEEL_DIAMETER;
-
-  Serial.println("New ping: ");
-  Serial.println(t_time);
-  Serial.println(DISTANCE);
-  Serial.println(VELOCITY);
 }
-
 
 void setup() {
   Serial.begin(115200);
 
-  // setup_wifi();
+  setup_wifi();
 
-  // client.setServer(mqtt_server, mqtt_port);
-  // client.setCallback(callback);
+  client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);
 
-  //  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2); // gps
+  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2); // gps
+ 
+  
 
-  serializeJson(data, Serial);
+  pinMode(reedPin, INPUT_PULLUP); // reed i/o for attaching ISR
+  attachInterrupt(digitalPinToInterrupt(reedPin), handleInterrupt, FALLING);
 
-  // pinMode(reedPin, INPUT_PULLUP); // reed i/o for attaching ISR
-  // attachInterrupt(digitalPinToInterrupt(reedPin), handleInterrupt, FALLING);
-
-   
-  // while (!client.connected()) {
-  //     Serial.println("Connecting to MQTT...");
+  while (!client.connected()) {
+      Serial.println("Connecting to MQTT...");
   
-  //     if (client.connect("ESP32Client", MQTT_USER, MQTT_PASSWORD )) {
+      if (client.connect("ESP32Client", MQTT_USER, MQTT_PASSWORD )) {
   
-  //       Serial.println("connected");  
+        Serial.println("connected");  
   
-  //     } else {
+      } else {
   
-  //       Serial.print("failed with state ");
-  //       Serial.print(client.state());
-  //       Serial.println();
-  //       delay(2000);
+        Serial.print("failed with state ");
+        Serial.print(client.state());
+        Serial.println();
+        delay(2000);
   
-  //     }
-  //   }
+      }
+    }
 
 }
 
 void loop() {
 
-  // if(interruptCounter>0)
-  // {
-  //     portENTER_CRITICAL(&mux);
-  //     interruptCounter--;
-  //     portEXIT_CRITICAL(&mux);
+  if(interruptCounter>0)
+  {
+      portENTER_CRITICAL(&mux);
+      interruptCounter--;
+      portEXIT_CRITICAL(&mux);
 
-  //     numberOfInterrupts++;
+      numberOfInterrupts++;
 
-  //     get_vel_dis(numberOfInterrupts);
-  // }
+      get_vel_dis(numberOfInterrupts);
+  }
 
   float ppm = co2Sensor.getPPM();
-//  gps.encode(Serial2.read());
-
-  // Serial.print("LAT =");  Serial.println(gps.location.lat(), 6);
-  // Serial.print("LONG ="); Serial.println(gps.location.lng(), 6);
-  // Serial.print("ALT =");  Serial.println(gps.altitude.meters());
-  // Serial.print("CO2 PPM =");  Serial.println(ppm);
+  gps.encode(Serial2.read());
   delay(1000);
-  serializeJson(data, Serial); 
+  
   Serial.print("\n");
   if (start_stop)
   {
     // create json and publish on /v3/wireless-module/3/data
-    
+    sprintf(data, json, ppm, VELOCITY, 32, 2, gps.location.lat(), gps.location.lng(), gps.altitude.meters(), 2);
+    Serial.println(data);
+
+    //TODO: publish json data
   }
 
-//  client.loop();
+ client.loop();
 
 }
