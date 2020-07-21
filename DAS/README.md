@@ -7,7 +7,7 @@ These steps assume that you are in the data-acquisition-system root directory.
 1. `cd DAS`
 2. `poetry install`
 3. `poetry shell`
-5. Run any DAS command, eg. `python -m das.mqtt_wireless_logger` (or `python mqtt_wireless_logger.py` as appropriate for your current directory)
+4. Run any DAS command, eg. `python -m das.mqtt_wireless_logger` (or `python mqtt_wireless_logger.py` as appropriate for your current directory)
 
 <br>
 
