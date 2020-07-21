@@ -2,7 +2,8 @@ import json
 from datetime import datetime
 import os
 import csv
-from DAS.utils import TopicsEnum
+
+from das.utils import TopicsEnum
 
 
 def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num, temp_dir):
