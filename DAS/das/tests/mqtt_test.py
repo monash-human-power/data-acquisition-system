@@ -2,7 +2,7 @@ import sys
 import argparse
 import paho.mqtt.client as mqtt
 
-from DAS.tests.das_data_generator import send_csv_data, send_fake_data
+from das.tests.das_data_generator import send_csv_data, send_fake_data
 
 # Arguments
 parser = argparse.ArgumentParser(

@@ -5,8 +5,9 @@ from datetime import datetime
 import argparse
 import glob
 import re
-from DAS.utils.DataToTempCSV import DataToTempCSV
-from DAS.utils.TopicsEnum import WirelessModule
+
+from das.utils import DataToTempCSV
+from das.utils import WirelessModule
 
 
 # Global dicts to store state
