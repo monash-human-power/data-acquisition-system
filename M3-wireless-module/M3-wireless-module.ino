@@ -2,21 +2,20 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include "header.h"
+#include "string.h"
 
 // output json data for publishing
-const char* json = "{\"sensors\":[{\"type\":\"co2\",\"value\":%f},{\"type\":\"reedVelocity\",\
-                    \"value\":%f},{\"type\":\"gps\",\"value\":{\"speed\":%d,\"satellites\":%d,\
-                    \"latitude\":%f,\"longitude\":%f,\"altitude\":%f,\"course\":%d}}]}";
+const char* json = "{\"sensors\":[{\"type\":\"co2\",\"value\":%f},{\"type\":\"reedVelocity\",\"value\":%f},{\"type\":\"gps\",\"value\":{\"speed\":%d,\"satellites\":%d,\"latitude\":%f,\"longitude\":%f,\"altitude\":%f,\"course\":%d}}]}";
 char data[500];
 
 // MQTT variables
-const char* ssid = "Lak";
-const char* password = "qwerty123";
+const char* ssid = "Slow Wifi";
+const char* password = "5gqzkv7bpb";
 const char* mqtt_server = "soldier.cloudmqtt.com";
 #define mqtt_port 11989
 #define MQTT_USER "punbssjf"
 #define MQTT_PASSWORD "N5R0WZ4gQD9y"
-bool start_stop = true;
+bool start_stop = false;
 
 // Reed Switch variables
 static const int reedPin = 5;
@@ -64,16 +63,9 @@ void setup_wifi() {
 
 // callback for start / stop
 void callback(char* topic, byte *payload, unsigned int length) {
-    if (topic == "/v3/wireless-module/3/start")
-    {
-        start_stop = true;
-        Serial.println("-------Start Data Tx-----");
-    }
-    else if (topic == "/v3/wireless-module/3/stop")
-    {
-        start_stop = false;
-        Serial.println("-------Stop Data Tx-----");
-    }
+  String strTopic = String((char*)topic);
+  if(strTopic == "/v3/wireless-module/3/start") start_stop = true;
+  else if (strTopic == "/v3/wireless-module/3/stop") start_stop = false;
 }
 
 
@@ -117,11 +109,10 @@ void setup() {
 
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
-
+  
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2); // gps
  
   
-
   pinMode(reedPin, INPUT_PULLUP); // reed i/o for attaching ISR
   attachInterrupt(digitalPinToInterrupt(reedPin), handleInterrupt, FALLING);
 
@@ -130,7 +121,9 @@ void setup() {
   
       if (client.connect("ESP32Client", MQTT_USER, MQTT_PASSWORD )) {
   
-        Serial.println("connected");  
+        Serial.println("..connected..");
+        client.subscribe("/v3/wireless-module/#");
+        Serial.println("Subscribed to topic");  
   
       } else {
   
@@ -141,7 +134,7 @@ void setup() {
   
       }
     }
-
+    
 }
 
 void loop() {
@@ -161,14 +154,13 @@ void loop() {
   gps.encode(Serial2.read());
   delay(1000);
   
-  Serial.print("\n");
   if (start_stop)
   {
     // create json and publish on /v3/wireless-module/3/data
     sprintf(data, json, ppm, VELOCITY, 32, 2, gps.location.lat(), gps.location.lng(), gps.altitude.meters(), 2);
     Serial.println(data);
 
-    //TODO: publish json data
+    boolean err = client.publish("/v3/wireless-module/3/data", "hi");
   }
 
  client.loop();
