@@ -160,7 +160,7 @@ void loop() {
     sprintf(data, json, ppm, VELOCITY, 32, 2, gps.location.lat(), gps.location.lng(), gps.altitude.meters(), 2);
     Serial.println(data);
 
-    boolean err = client.publish("/v3/wireless-module/3/data", "hi");
+    boolean err = client.publish("/v3/wireless-module/3/data", data);
   }
 
  client.loop();
