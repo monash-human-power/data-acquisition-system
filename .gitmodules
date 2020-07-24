@@ -1,0 +1,4 @@
+[submodule "Bridge/ZetaRF"]
+	path = Bridge/ZetaRF
+	url = https://github.com/GIPdA/ZetaRF
+	branch = v2
