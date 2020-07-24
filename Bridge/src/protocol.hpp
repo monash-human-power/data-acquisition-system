@@ -1,6 +1,7 @@
 #include <iomanip>
 #include <ostream>
 #include <stdint.h>
+#include <vector>
 
 enum class FrameType : uint8_t
 {
@@ -30,3 +31,34 @@ std::ostream& operator<<(std::ostream& os, Frame *frame)
 
     return os;
 }
+
+class RxProtocol
+{
+public:
+    RxProtocol(void (*received_callback)(std::vector<uint8_t>));
+
+    void receivePacket(const uint8_t *packet);
+
+private:
+    void reset();
+
+    uint8_t m_frame_count = 0;
+    uint8_t m_part_count = 0;
+
+    std::vector<uint8_t> body;
+    uint8_t m_remaining_body_bytes;
+
+    void (*m_on_received)(std::vector<uint8_t>);
+};
+
+class TxProtocol
+{
+public:
+    TxProtocol();
+
+    std::vector<Frame> packPackets(std::vector<uint8_t> body);
+
+private:
+    uint8_t m_frame_count = 0;
+    uint8_t m_part_count = 0;
+};
