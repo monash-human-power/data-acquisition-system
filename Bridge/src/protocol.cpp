@@ -19,13 +19,13 @@ std::ostream& operator<<(std::ostream& os, Frame *frame)
 
 RxProtocol::RxProtocol(void (*received_callback)(std::vector<uint8_t>))
 {
-    this->m_on_received = received_callback;
+    this->on_received_ = received_callback;
 }
 
 void RxProtocol::reset()
 {
-    this->body.clear();
-    this->m_next_part_count = 0;
+    this->body_.clear();
+    this->next_part_count_ = 0;
 }
 
 void RxProtocol::receivePacket(const uint8_t *packet)
@@ -36,34 +36,34 @@ void RxProtocol::receivePacket(const uint8_t *packet)
         // Not implemented
         return;
 
-    if (frame->frame_counter != this->m_next_frame_count)
+    if (frame->frame_counter != this->next_frame_count_)
         // We must have skipped a frame, discard everything
         this->reset();
-    this->m_next_frame_count++;
+    this->next_frame_count_++;
 
     if (frame->part_counter == 0)
     {
         // Starting new message
         this->reset();
-        this->m_remaining_body_bytes = frame->body_length;
-    } else if (frame->part_counter != this->m_next_part_count)
+        this->remaining_body_bytes_ = frame->body_length;
+    } else if (frame->part_counter != this->next_part_count_)
     {
         // We're resuming a message but dropped a packet, unrecoverable
         // Reset will occur when we next successfully start a new message
         return;
     }
-    this->m_next_part_count++;
+    this->next_part_count_++;
 
     // Read frame body
-    uint16_t bytes_to_read = std::min(this->m_remaining_body_bytes, BODY_LENGTH);
+    uint16_t bytes_to_read = std::min(this->remaining_body_bytes_, BODY_LENGTH);
     for (size_t i = 0; i < bytes_to_read; i++)
-        this->body.push_back(frame->body[i]);
-    this->m_remaining_body_bytes -= bytes_to_read;
+        this->body_.push_back(frame->body[i]);
+    this->remaining_body_bytes_ -= bytes_to_read;
 
-    if (this->m_remaining_body_bytes == 0)
+    if (this->remaining_body_bytes_ == 0)
     {
         // Full message has been received
-        this->m_on_received(this->body);
+        this->on_received_(this->body_);
         this->reset();
     }
 }

@@ -32,13 +32,13 @@ public:
 private:
     void reset();
 
-    uint8_t m_next_frame_count = 0;
-    uint8_t m_next_part_count = 0;
+    uint8_t next_frame_count_ = 0;
+    uint8_t next_part_count_ = 0;
 
-    std::vector<uint8_t> body;
-    uint16_t m_remaining_body_bytes = 0;
+    std::vector<uint8_t> body_;
+    uint16_t remaining_body_bytes_ = 0;
 
-    void (*m_on_received)(std::vector<uint8_t>);
+    void (*on_received_)(std::vector<uint8_t>);
 };
 
 class TxProtocol
@@ -49,6 +49,6 @@ public:
     std::vector<Frame> packPackets(std::vector<uint8_t> body);
 
 private:
-    uint8_t m_next_frame_count = 0;
-    uint8_t m_next_part_count = 0;
+    uint8_t next_frame_count_ = 0;
+    uint8_t next_part_count_ = 0;
 };
