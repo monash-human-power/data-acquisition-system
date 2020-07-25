@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iomanip>
 
+#include "mqtt/async_client.h"
+
 #include "protocol.hpp"
 
 void receive_callback(std::vector<uint8_t> bytes)
@@ -14,6 +16,12 @@ void receive_callback(std::vector<uint8_t> bytes)
 
 int main() {
     std::cout << "Hello world!" << std::endl;
+
+
+    mqtt::async_client cli("tcp://localhost:1883", "main_cpp");
+
+
+    ////////////// PROTOCOL ///////////////
 
     TxProtocol tx;
 
