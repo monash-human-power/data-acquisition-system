@@ -20,7 +20,7 @@ struct __attribute__((packed)) Frame
     uint8_t body[BODY_LENGTH];
 };
 
-std::ostream& operator<<(std::ostream& os, Frame *frame);
+std::ostream& operator<<(std::ostream& os, const Frame *frame);
 
 class RxProtocol
 {
