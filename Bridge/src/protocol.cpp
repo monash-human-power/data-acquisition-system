@@ -67,3 +67,25 @@ void RxProtocol::receivePacket(const uint8_t *packet)
         this->reset();
     }
 }
+
+std::vector<Frame> TxProtocol::packPackets(const std::vector<uint8_t> body)
+{
+    std::vector<Frame> frames;
+    uint8_t next_part_count = 0;
+
+    for (size_t i = 0; i < body.size(); i += BODY_LENGTH)
+    {
+        auto last = std::min(body.size(), i + BODY_LENGTH);
+
+        Frame frame;
+        frame.frame_counter = this->next_frame_count_++;
+        frame.frame_type = FrameType::Message;
+        frame.part_counter = next_part_count++;
+        frame.body_length = body.size();
+        std::copy(body.begin() + i, body.begin() + last, frame.body);
+
+        frames.push_back(frame);
+    }
+
+    return frames;
+}

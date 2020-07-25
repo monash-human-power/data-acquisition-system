@@ -17,7 +17,7 @@ struct __attribute__((packed)) Frame
     FrameType frame_type;
     uint8_t part_counter;
     uint16_t body_length;
-    uint8_t body[BODY_LENGTH];
+    uint8_t body[BODY_LENGTH] = {0};
 };
 
 std::ostream& operator<<(std::ostream& os, const Frame *frame);
@@ -44,11 +44,8 @@ private:
 class TxProtocol
 {
 public:
-    TxProtocol();
-
-    std::vector<Frame> packPackets(std::vector<uint8_t> body);
+    std::vector<Frame> packPackets(const std::vector<uint8_t> body);
 
 private:
     uint8_t next_frame_count_ = 0;
-    uint8_t next_part_count_ = 0;
 };
