@@ -4,7 +4,12 @@
 #include <stdint.h>
 #include <vector>
 
+#include <mqtt/message.h>
+
 constexpr uint16_t BODY_LENGTH = 75;
+
+constexpr uint8_t QOS_MASK    = 0b0000'0011;
+constexpr uint8_t RETAIN_MASK = 0b0000'0100;
 
 enum class FrameType : uint8_t
 {
@@ -25,12 +30,13 @@ std::ostream& operator<<(std::ostream& os, const Frame *frame);
 class RxProtocol
 {
 public:
-    RxProtocol(void (*received_callback)(std::vector<uint8_t>));
+    RxProtocol(void (*mqtt_pub_func)(std::vector<uint8_t>));
 
     void receivePacket(const uint8_t *packet);
 
 private:
     void reset();
+    mqtt::message_ptr parse_mqtt_message();
 
     uint8_t next_frame_count_ = 0;
     uint8_t next_part_count_ = 0;
@@ -38,7 +44,7 @@ private:
     std::vector<uint8_t> body_;
     uint16_t remaining_body_bytes_ = 0;
 
-    void (*on_received_)(std::vector<uint8_t>);
+    void (*mqtt_pub_func_)(std::vector<uint8_t>);
 };
 
 class TxProtocol

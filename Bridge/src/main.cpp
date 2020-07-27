@@ -26,21 +26,19 @@ int main() {
     ////////////// PROTOCOL //////////////
 
     TxProtocol tx;
-
-    auto message1 = tx.packPackets(std::vector<uint8_t>({4, 5, 6}));
-
-    std::vector<uint8_t> big_body;
-    for (uint8_t i = 0; i < 128; i++)
-        big_body.push_back(i);
-    auto message2 = tx.packPackets(big_body);
-    auto message3 = tx.packPackets(big_body);
-
     RxProtocol rx(receive_callback);
+
+    // QOS: 1, Retain: true, Topic: "AB", Payload: "CD"
+    auto message1 = tx.packPackets(std::vector<uint8_t>(
+        { 0b0000'0101, 2, 'A', 'B', 'C', 'D' }
+    ));
+    // QOS: 3 (INVALID), Retain: false, Topic: "wxyz", Payload: ""
+    auto message2 = tx.packPackets(std::vector<uint8_t>(
+        { 0b0000'0011, 4, 'w', 'x', 'y', 'z' }
+    ));
 
     rx.receivePacket(reinterpret_cast<uint8_t *>(&message1[0]));
     rx.receivePacket(reinterpret_cast<uint8_t *>(&message2[0]));
-    rx.receivePacket(reinterpret_cast<uint8_t *>(&message2[1])); // Valid up to here
-    rx.receivePacket(reinterpret_cast<uint8_t *>(&message3[1])); // Skipped a packet
 
     while (std::cin.get() != 'q')
         ;

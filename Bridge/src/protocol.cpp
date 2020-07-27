@@ -17,10 +17,8 @@ std::ostream& operator<<(std::ostream& os, const Frame *frame)
     return os;
 }
 
-RxProtocol::RxProtocol(void (*received_callback)(std::vector<uint8_t>))
-{
-    this->on_received_ = received_callback;
-}
+RxProtocol::RxProtocol(void (*mqtt_pub_func)(std::vector<uint8_t>))
+    : mqtt_pub_func_(mqtt_pub_func) { }
 
 void RxProtocol::reset()
 {
@@ -63,10 +61,35 @@ void RxProtocol::receivePacket(const uint8_t *packet)
     if (this->remaining_body_bytes_ == 0)
     {
         // Full message has been received
-        this->on_received_(this->body_);
+        this->parse_mqtt_message();
         this->reset();
     }
 }
+
+mqtt::message_ptr RxProtocol::parse_mqtt_message()
+{
+    auto body_iterator = this->body_.begin();
+
+    const auto qos_retained_bits = *body_iterator++;
+    const auto qos = qos_retained_bits & QOS_MASK;
+    const bool retained = qos_retained_bits & RETAIN_MASK;
+
+    const auto topic_size = *body_iterator++;
+
+    const std::string topic(body_iterator, body_iterator + topic_size);
+    body_iterator += topic_size;
+
+    const std::string payload(body_iterator, this->body_.end());
+
+    std::cout << "Parsed packet!" << std::endl
+        << "\tQoS:      " << qos << std::endl
+        << "\tRetained: " << retained << std::endl
+        << "\tTopic:    " << topic << std::endl
+        << "\tPayload:  " << payload << std::endl;
+
+    return mqtt::make_message(topic, payload, qos, retained);
+}
+
 
 std::vector<Frame> TxProtocol::packPackets(const std::vector<uint8_t> body)
 {
