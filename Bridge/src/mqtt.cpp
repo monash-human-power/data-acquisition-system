@@ -20,6 +20,11 @@ void MqttCallback::connected(const std::string& cause)
     this->client_->subscribe("#", 0);
 }
 
+void MqttCallback::connection_lost(const std::string& cause)
+{
+    std::cout << "MQTT connection lost" << std::endl;
+}
+
 void MqttCallback::message_arrived(mqtt::const_message_ptr msg)
 {
     std::cout << "Received message on topic \"" << msg->get_topic() << "\"" << std::endl
@@ -37,6 +42,7 @@ MqttBridgeClient::MqttBridgeClient()
     mqtt::connect_options conn_opts;
     conn_opts.set_keep_alive_interval(20);
     conn_opts.set_clean_session(true);
+    conn_opts.set_automatic_reconnect(MIN_RECONNECT_INTERVAL, MAX_RECONNECT_INTERVAL);
 
     this->callback_ = std::make_shared<MqttCallback>(this->client_, conn_opts);
     this->client_->set_callback(*callback_);
@@ -45,7 +51,7 @@ MqttBridgeClient::MqttBridgeClient()
     {
         // Connect to client
         std::cout << "Connecting..." << std::endl;
-        this->client_->connect(conn_opts)->wait();
+        this->client_->connect(conn_opts);
     }
     catch (const mqtt::exception& exc)
     {

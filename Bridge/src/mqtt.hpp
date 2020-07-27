@@ -2,6 +2,9 @@
 
 #include "mqtt/async_client.h"
 
+constexpr std::chrono::seconds MIN_RECONNECT_INTERVAL(1);
+constexpr std::chrono::seconds MAX_RECONNECT_INTERVAL(20);
+
 class MqttCallback : public virtual mqtt::callback,
                      public virtual mqtt::iaction_listener
 {
@@ -15,6 +18,7 @@ private:
     void on_success(const mqtt::token& asyncActionToken) override;
 
     void connected(const std::string& cause) override;
+    void connection_lost(const std::string& cause) override;
     void message_arrived(mqtt::const_message_ptr msg) override;
 
 public:
