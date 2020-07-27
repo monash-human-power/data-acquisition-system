@@ -16,6 +16,7 @@ add_subdirectory (libs/paho.mqtt.cpp)
 #file(GLOB_RECURSE CONFIG_SOURCES "src/configs/*.cpp")
 set(SOURCES
     "src/main.cpp"
+    "src/mqtt.cpp"
     "src/protocol.cpp"
 )
 

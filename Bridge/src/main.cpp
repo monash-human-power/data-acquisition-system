@@ -4,6 +4,7 @@
 #include "mqtt/async_client.h"
 
 #include "protocol.hpp"
+#include "mqtt.hpp"
 
 void receive_callback(std::vector<uint8_t> bytes)
 {
@@ -18,10 +19,11 @@ int main() {
     std::cout << "Hello world!" << std::endl;
 
 
-    mqtt::async_client cli("tcp://localhost:1883", "main_cpp");
+    ////////////// MQTT //////////////
 
+    MqttBridgeClient mqttClient;
 
-    ////////////// PROTOCOL ///////////////
+    ////////////// PROTOCOL //////////////
 
     TxProtocol tx;
 
@@ -39,4 +41,9 @@ int main() {
     rx.receivePacket(reinterpret_cast<uint8_t *>(&message2[0]));
     rx.receivePacket(reinterpret_cast<uint8_t *>(&message2[1])); // Valid up to here
     rx.receivePacket(reinterpret_cast<uint8_t *>(&message3[1])); // Skipped a packet
+
+    while (std::cin.get() != 'q')
+        ;
+
+    return 0;
 }
