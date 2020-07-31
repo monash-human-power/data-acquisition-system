@@ -28,6 +28,20 @@ struct __attribute__((packed)) Frame
 
 std::ostream& operator<<(std::ostream& os, const Frame *frame);
 
+struct RxState
+{
+    uint8_t next_frame_count = 0;
+    uint8_t next_part_count = 0;
+
+    std::vector<uint8_t> body;
+    uint16_t remaining_body_bytes = 0;
+};
+
+struct TxState
+{
+    uint8_t next_frame_count = 0;
+};
+
 class RxProtocol
 {
 public:
@@ -39,11 +53,7 @@ private:
     void reset();
     void parse_mqtt_message();
 
-    uint8_t next_frame_count_ = 0;
-    uint8_t next_part_count_ = 0;
-
-    std::vector<uint8_t> body_;
-    uint16_t remaining_body_bytes_ = 0;
+    RxState rxState_;
 
     std::function<void(mqtt::message_ptr)> mqtt_pub_func_;
 };
@@ -54,5 +64,5 @@ public:
     std::vector<Frame> packPackets(const std::vector<uint8_t> body);
 
 private:
-    uint8_t next_frame_count_ = 0;
+    TxState txState_;
 };
