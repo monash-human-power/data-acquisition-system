@@ -36,7 +36,7 @@ int main()
         { 0b0000'0000, 2, 'A', 'B', 'C', 'D' }
     ));
 
-    if (auto message = rx.receivePacket(reinterpret_cast<uint8_t *>(&packets[0])))
+    if (auto message = rx.receivePacket(packets[0]))
         mqttClient.publish(*message);
 
     while (std::cin.get() != 'q')

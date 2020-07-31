@@ -23,25 +23,23 @@ void RxProtocol::reset()
     this->next_part_count_ = 0;
 }
 
-std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const uint8_t *packet)
+std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const Frame packet)
 {
-    const auto frame = reinterpret_cast<const Frame *>(packet);
-
-    if (frame->frame_type != FrameType::Message)
+    if (packet.frame_type != FrameType::Message)
         // Not implemented
         return { };
 
-    if (frame->frame_counter != this->next_frame_count_)
+    if (packet.frame_counter != this->next_frame_count_)
         // We must have skipped a frame, discard everything
         this->reset();
     this->next_frame_count_++;
 
-    if (frame->part_counter == 0)
+    if (packet.part_counter == 0)
     {
         // Starting new message
         this->reset();
-        this->remaining_body_bytes_ = frame->body_length;
-    } else if (frame->part_counter != this->next_part_count_)
+        this->remaining_body_bytes_ = packet.body_length;
+    } else if (packet.part_counter != this->next_part_count_)
     {
         // We're resuming a message but dropped a packet, unrecoverable
         // Reset will occur when we next successfully start a new message
@@ -52,7 +50,7 @@ std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const uint8_t *packet
     // Read frame body
     const auto bytes_to_read = std::min(this->remaining_body_bytes_, BODY_LENGTH);
     for (size_t i = 0; i < bytes_to_read; i++)
-        this->body_.push_back(frame->body[i]);
+        this->body_.push_back(packet.body[i]);
     this->remaining_body_bytes_ -= bytes_to_read;
 
     if (this->remaining_body_bytes_ == 0)

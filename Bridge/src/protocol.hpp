@@ -32,7 +32,7 @@ std::ostream& operator<<(std::ostream& os, const Frame *frame);
 class RxProtocol
 {
 public:
-    std::optional<mqtt::message_ptr> receivePacket(const uint8_t *packet);
+    std::optional<mqtt::message_ptr> receivePacket(const Frame packet);
 
 private:
     void reset();
