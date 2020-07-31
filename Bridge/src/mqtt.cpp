@@ -1,4 +1,5 @@
 #include <iostream>
+#include <thread>
 
 #include "mqtt.hpp"
 
@@ -66,7 +67,16 @@ MqttBridgeClient::~MqttBridgeClient()
     this->client_->disconnect()->wait();
 }
 
-std::string MqttBridgeClient::generate_client_id()
+void MqttBridgeClient::publish(mqtt::const_message_ptr message) const
+{
+    // Wait until a connection is established before publishing
+    // TODO: Add to a send queue instead to avoid blocking
+    while (!this->client_->is_connected())
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    this->client_->publish(message);
+}
+
+std::string MqttBridgeClient::generate_client_id() const
 {
     // Generate client_id identically to paho-mqtt python library
     constexpr size_t LENGTH = 23;

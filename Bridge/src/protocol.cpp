@@ -17,7 +17,7 @@ std::ostream& operator<<(std::ostream& os, const Frame *frame)
     return os;
 }
 
-RxProtocol::RxProtocol(void (*mqtt_pub_func)(mqtt::message_ptr))
+RxProtocol::RxProtocol(std::function<void(mqtt::message_ptr)> mqtt_pub_func)
     : mqtt_pub_func_(mqtt_pub_func) { }
 
 void RxProtocol::reset()

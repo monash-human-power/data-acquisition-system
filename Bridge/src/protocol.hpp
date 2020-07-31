@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <ostream>
 #include <stdint.h>
 #include <vector>
@@ -30,7 +31,7 @@ std::ostream& operator<<(std::ostream& os, const Frame *frame);
 class RxProtocol
 {
 public:
-    RxProtocol(void (*mqtt_pub_func)(mqtt::message_ptr));
+    RxProtocol(std::function<void(mqtt::message_ptr)> mqtt_pub_func_);
 
     void receivePacket(const uint8_t *packet);
 
@@ -44,7 +45,7 @@ private:
     std::vector<uint8_t> body_;
     uint16_t remaining_body_bytes_ = 0;
 
-    void (*mqtt_pub_func_)(mqtt::message_ptr);
+    std::function<void(mqtt::message_ptr)> mqtt_pub_func_;
 };
 
 class TxProtocol

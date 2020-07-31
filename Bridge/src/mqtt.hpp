@@ -33,7 +33,7 @@ private:
     mqtt::async_client_ptr client_;
     MqttCallback_ptr callback_;
 
-    std::string generate_client_id();
+    std::string generate_client_id() const;
 
     // Class is non-copyable
     MqttBridgeClient(const MqttBridgeClient& that) = delete;
@@ -42,4 +42,6 @@ private:
 public:
     MqttBridgeClient();
     ~MqttBridgeClient();
+
+    void publish(mqtt::const_message_ptr message) const;
 };

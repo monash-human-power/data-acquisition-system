@@ -15,7 +15,10 @@ void receive_callback(mqtt::message_ptr message)
         << "\tPayload:  " << message->get_payload() << std::endl;
 }
 
-int main() {
+int main()
+{
+    using namespace std::placeholders; // for `_1`
+
     std::cout << "Hello world!" << std::endl;
 
 
@@ -26,19 +29,14 @@ int main() {
     ////////////// PROTOCOL //////////////
 
     TxProtocol tx;
-    RxProtocol rx(receive_callback);
+    RxProtocol rx(std::bind(&MqttBridgeClient::publish, &mqttClient, _1));
 
-    // QOS: 1, Retain: true, Topic: "AB", Payload: "CD"
-    auto message1 = tx.packPackets(std::vector<uint8_t>(
-        { 0b0000'0101, 2, 'A', 'B', 'C', 'D' }
-    ));
-    // QOS: 3 (INVALID), Retain: false, Topic: "wxyz", Payload: ""
-    auto message2 = tx.packPackets(std::vector<uint8_t>(
-        { 0b0000'0011, 4, 'w', 'x', 'y', 'z' }
+    // QOS: 0, Retain: false, Topic: "AB", Payload: "CD"
+    auto message = tx.packPackets(std::vector<uint8_t>(
+        { 0b0000'0000, 2, 'A', 'B', 'C', 'D' }
     ));
 
-    rx.receivePacket(reinterpret_cast<uint8_t *>(&message1[0]));
-    rx.receivePacket(reinterpret_cast<uint8_t *>(&message2[0]));
+    rx.receivePacket(reinterpret_cast<uint8_t *>(&message[0]));
 
     while (std::cin.get() != 'q')
         ;
