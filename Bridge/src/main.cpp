@@ -29,14 +29,15 @@ int main()
     ////////////// PROTOCOL //////////////
 
     TxProtocol tx;
-    RxProtocol rx(std::bind(&MqttBridgeClient::publish, &mqttClient, _1));
+    RxProtocol rx;
 
     // QOS: 0, Retain: false, Topic: "AB", Payload: "CD"
-    auto message = tx.packPackets(std::vector<uint8_t>(
+    auto packets = tx.packPackets(std::vector<uint8_t>(
         { 0b0000'0000, 2, 'A', 'B', 'C', 'D' }
     ));
 
-    rx.receivePacket(reinterpret_cast<uint8_t *>(&message[0]));
+    if (auto message = rx.receivePacket(reinterpret_cast<uint8_t *>(&packets[0])))
+        mqttClient.publish(*message);
 
     while (std::cin.get() != 'q')
         ;

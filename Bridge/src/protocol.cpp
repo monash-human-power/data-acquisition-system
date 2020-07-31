@@ -17,22 +17,19 @@ std::ostream& operator<<(std::ostream& os, const Frame *frame)
     return os;
 }
 
-RxProtocol::RxProtocol(std::function<void(mqtt::message_ptr)> mqtt_pub_func)
-    : mqtt_pub_func_(mqtt_pub_func) { }
-
 void RxProtocol::reset()
 {
     this->body_.clear();
     this->next_part_count_ = 0;
 }
 
-void RxProtocol::receivePacket(const uint8_t *packet)
+std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const uint8_t *packet)
 {
     const auto frame = reinterpret_cast<const Frame *>(packet);
 
     if (frame->frame_type != FrameType::Message)
         // Not implemented
-        return;
+        return { };
 
     if (frame->frame_counter != this->next_frame_count_)
         // We must have skipped a frame, discard everything
@@ -48,7 +45,7 @@ void RxProtocol::receivePacket(const uint8_t *packet)
     {
         // We're resuming a message but dropped a packet, unrecoverable
         // Reset will occur when we next successfully start a new message
-        return;
+        return { };
     }
     this->next_part_count_++;
 
@@ -61,18 +58,20 @@ void RxProtocol::receivePacket(const uint8_t *packet)
     if (this->remaining_body_bytes_ == 0)
     {
         // Full message has been received
-        this->parse_mqtt_message();
+        auto message = this->parse_mqtt_message();
         this->reset();
+        return { message };
     }
+    return { };
 }
 
-void RxProtocol::parse_mqtt_message()
+std::optional<mqtt::message_ptr> RxProtocol::parse_mqtt_message()
 {
     if (this->body_.size() < 2)
     {
         std::cerr << "Failed to parse packet body: "
                      "Body is too small to contain required data" << std::endl;
-        return;
+        return { };
     }
 
     auto body_iterator = this->body_.begin();
@@ -87,7 +86,7 @@ void RxProtocol::parse_mqtt_message()
     {
         std::cerr << "Failed to pase packet body: "
                      "Topic size is too large to fit in body" << std::endl;
-        return;
+        return { };
     }
 
     const std::string topic(body_iterator, body_iterator + topic_size);
@@ -97,13 +96,13 @@ void RxProtocol::parse_mqtt_message()
 
     try
     {
-        auto message = mqtt::make_message(topic, payload, qos, retained);
-        this->mqtt_pub_func_(message);
+        return { mqtt::make_message(topic, payload, qos, retained) };
     }
     catch(const mqtt::exception& exc)
     {
         std::cerr << "mqtt::exception thrown while sending MQTT message: "
             << exc.what() << std::endl;
+        return { };
     }
 }
 

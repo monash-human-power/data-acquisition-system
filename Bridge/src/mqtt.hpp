@@ -29,6 +29,9 @@ using MqttCallback_ptr = MqttCallback::ptr_t;
 
 class MqttBridgeClient
 {
+public:
+    using ptr_t = std::shared_ptr<MqttBridgeClient>;
+
 private:
     mqtt::async_client_ptr client_;
     MqttCallback_ptr callback_;
@@ -45,3 +48,5 @@ public:
 
     void publish(mqtt::const_message_ptr message) const;
 };
+
+using MqttBridgeClient_ptr = MqttBridgeClient::ptr_t;

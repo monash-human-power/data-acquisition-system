@@ -23,3 +23,4 @@ set(SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 #target_link_libraries(${PROJECT_NAME} zetarf)
 target_link_libraries(${PROJECT_NAME} paho-mqttpp3)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
