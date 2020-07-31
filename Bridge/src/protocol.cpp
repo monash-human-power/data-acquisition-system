@@ -50,8 +50,7 @@ std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const Frame packet)
 
     // Read frame body
     const auto bytes_to_read = std::min(this->remaining_body_bytes_, BODY_LENGTH);
-    for (size_t i = 0; i < bytes_to_read; i++)
-        this->body_.push_back(packet.body[i]);
+    this->body_.insert(this->body_.end(), &packet.body[0], &packet.body[bytes_to_read]);
     this->remaining_body_bytes_ -= bytes_to_read;
 
     if (this->remaining_body_bytes_ == 0)
@@ -133,16 +132,17 @@ std::vector<Frame> TxProtocol::packMessage(mqtt::const_message_ptr message)
 std::vector<uint8_t> TxProtocol::serialiseMessage(mqtt::const_message_ptr message)
 {
     std::vector<uint8_t> bytes;
+    auto inserter = back_inserter(bytes);
 
     uint8_t qos_retained_bits = message->get_qos() | (uint8_t) message->is_retained() << 2;
-    bytes.push_back(qos_retained_bits);
+    inserter = qos_retained_bits; // This operation inserts
 
     auto topic = message->get_topic();
     bytes.push_back(topic.size());
-    std::copy(topic.begin(), topic.end(), back_inserter(bytes));
+    std::copy(topic.begin(), topic.end(), inserter);
 
     auto payload = message->get_payload();
-    std::copy(payload.begin(), payload.end(), back_inserter(bytes));
+    std::copy(payload.begin(), payload.end(), inserter);
 
     return bytes;
 }
