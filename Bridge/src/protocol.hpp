@@ -47,7 +47,7 @@ class Protocol
 public:
     Protocol(std::function<void(mqtt::message_ptr)> mqtt_pub_func_);
 
-    void receivePacket(const uint8_t *packet);
+    void receivePacket(const Frame packet);
 
     std::vector<Frame> packPackets(const std::vector<uint8_t> body);
 

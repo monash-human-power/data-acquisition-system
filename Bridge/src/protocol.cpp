@@ -26,25 +26,23 @@ void Protocol::reset()
     this->rxState_.next_part_count = 0;
 }
 
-void Protocol::receivePacket(const uint8_t *packet)
+void Protocol::receivePacket(const Frame packet)
 {
-    const auto frame = reinterpret_cast<const Frame *>(packet);
-
-    if (frame->frame_type != FrameType::Message)
+    if (packet.frame_type != FrameType::Message)
         // Not implemented
         return;
 
-    if (frame->frame_counter != this->rxState_.next_frame_count)
+    if (packet.frame_counter != this->rxState_.next_frame_count)
         // We must have skipped a frame, discard everything
         this->reset();
     this->rxState_.next_frame_count++;
 
-    if (frame->part_counter == 0)
+    if (packet.part_counter == 0)
     {
         // Starting new message
         this->reset();
-        this->rxState_.remaining_body_bytes = frame->body_length;
-    } else if (frame->part_counter != this->rxState_.next_part_count)
+        this->rxState_.remaining_body_bytes = packet.body_length;
+    } else if (packet.part_counter != this->rxState_.next_part_count)
     {
         // We're resuming a message but dropped a packet, unrecoverable
         // Reset will occur when we next successfully start a new message
@@ -55,7 +53,7 @@ void Protocol::receivePacket(const uint8_t *packet)
     // Read frame body
     const auto bytes_to_read = std::min(this->rxState_.remaining_body_bytes, BODY_LENGTH);
     for (size_t i = 0; i < bytes_to_read; i++)
-        this->rxState_.body.push_back(frame->body[i]);
+        this->rxState_.body.push_back(packet.body[i]);
     this->rxState_.remaining_body_bytes -= bytes_to_read;
 
     if (this->rxState_.remaining_body_bytes == 0)

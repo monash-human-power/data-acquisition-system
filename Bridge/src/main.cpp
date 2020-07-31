@@ -35,7 +35,7 @@ int main()
         { 0b0000'0000, 2, 'A', 'B', 'C', 'D' }
     ));
 
-    protocol.receivePacket(reinterpret_cast<uint8_t *>(&message[0]));
+    protocol.receivePacket(message[0]);
 
     while (std::cin.get() != 'q')
         ;
