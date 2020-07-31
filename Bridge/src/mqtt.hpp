@@ -35,6 +35,10 @@ private:
 
     std::string generate_client_id();
 
+    // Class is non-copyable
+    MqttBridgeClient(const MqttBridgeClient& that) = delete;
+    MqttBridgeClient& operator=(const MqttBridgeClient& that) = delete;
+
 public:
     MqttBridgeClient();
     ~MqttBridgeClient();
