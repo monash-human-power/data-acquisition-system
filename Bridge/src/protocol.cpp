@@ -68,6 +68,13 @@ void RxProtocol::receivePacket(const uint8_t *packet)
 
 void RxProtocol::parse_mqtt_message()
 {
+    if (this->body_.size() < 2)
+    {
+        std::cerr << "Failed to parse packet body: "
+                     "Body is too small to contain required data" << std::endl;
+        return;
+    }
+
     auto body_iterator = this->body_.begin();
 
     const auto qos_retained_bits = *body_iterator++;
@@ -76,13 +83,28 @@ void RxProtocol::parse_mqtt_message()
 
     const auto topic_size = *body_iterator++;
 
+    if (std::distance(body_iterator, this->body_.end()) < topic_size)
+    {
+        std::cerr << "Failed to pase packet body: "
+                     "Topic size is too large to fit in body" << std::endl;
+        return;
+    }
+
     const std::string topic(body_iterator, body_iterator + topic_size);
     body_iterator += topic_size;
 
     const std::string payload(body_iterator, this->body_.end());
 
-    auto message = mqtt::make_message(topic, payload, qos, retained);
-    this->mqtt_pub_func_(message);
+    try
+    {
+        auto message = mqtt::make_message(topic, payload, qos, retained);
+        this->mqtt_pub_func_(message);
+    }
+    catch(const mqtt::exception& exc)
+    {
+        std::cerr << "mqtt::exception thrown while sending MQTT message: "
+            << exc.what() << std::endl;
+    }
 }
 
 
