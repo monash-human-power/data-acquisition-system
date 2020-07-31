@@ -42,27 +42,21 @@ struct TxState
     uint8_t next_frame_count = 0;
 };
 
-class RxProtocol
+class Protocol
 {
 public:
-    RxProtocol(std::function<void(mqtt::message_ptr)> mqtt_pub_func_);
+    Protocol(std::function<void(mqtt::message_ptr)> mqtt_pub_func_);
 
     void receivePacket(const uint8_t *packet);
+
+    std::vector<Frame> packPackets(const std::vector<uint8_t> body);
 
 private:
     void reset();
     void parse_mqtt_message();
 
     RxState rxState_;
+    TxState txState_;
 
     std::function<void(mqtt::message_ptr)> mqtt_pub_func_;
-};
-
-class TxProtocol
-{
-public:
-    std::vector<Frame> packPackets(const std::vector<uint8_t> body);
-
-private:
-    TxState txState_;
 };

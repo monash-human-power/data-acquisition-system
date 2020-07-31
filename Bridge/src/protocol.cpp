@@ -17,16 +17,16 @@ std::ostream& operator<<(std::ostream& os, const Frame *frame)
     return os;
 }
 
-RxProtocol::RxProtocol(std::function<void(mqtt::message_ptr)> mqtt_pub_func)
+Protocol::Protocol(std::function<void(mqtt::message_ptr)> mqtt_pub_func)
     : mqtt_pub_func_(mqtt_pub_func) { }
 
-void RxProtocol::reset()
+void Protocol::reset()
 {
     this->rxState_.body.clear();
     this->rxState_.next_part_count = 0;
 }
 
-void RxProtocol::receivePacket(const uint8_t *packet)
+void Protocol::receivePacket(const uint8_t *packet)
 {
     const auto frame = reinterpret_cast<const Frame *>(packet);
 
@@ -66,7 +66,7 @@ void RxProtocol::receivePacket(const uint8_t *packet)
     }
 }
 
-void RxProtocol::parse_mqtt_message()
+void Protocol::parse_mqtt_message()
 {
     if (this->rxState_.body.size() < 2)
     {
@@ -108,7 +108,7 @@ void RxProtocol::parse_mqtt_message()
 }
 
 
-std::vector<Frame> TxProtocol::packPackets(const std::vector<uint8_t> body)
+std::vector<Frame> Protocol::packPackets(const std::vector<uint8_t> body)
 {
     std::vector<Frame> frames;
     uint8_t next_part_count = 0;
