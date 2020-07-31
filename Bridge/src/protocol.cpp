@@ -17,46 +17,48 @@ std::ostream& operator<<(std::ostream& os, const Frame *frame)
     return os;
 }
 
-Protocol::Protocol(std::function<void(mqtt::message_ptr)> mqtt_pub_func)
+RxProtocol::RxProtocol(std::function<void(mqtt::message_ptr)> mqtt_pub_func)
     : mqtt_pub_func_(mqtt_pub_func) { }
 
-void Protocol::reset()
+void RxProtocol::reset()
 {
-    this->rxState_.body.clear();
-    this->rxState_.next_part_count = 0;
+    this->body_.clear();
+    this->next_part_count_ = 0;
 }
 
-void Protocol::receivePacket(const Frame packet)
+void RxProtocol::receivePacket(const uint8_t *packet)
 {
-    if (packet.frame_type != FrameType::Message)
+    const auto frame = reinterpret_cast<const Frame *>(packet);
+
+    if (frame->frame_type != FrameType::Message)
         // Not implemented
         return;
 
-    if (packet.frame_counter != this->rxState_.next_frame_count)
+    if (frame->frame_counter != this->next_frame_count_)
         // We must have skipped a frame, discard everything
         this->reset();
-    this->rxState_.next_frame_count++;
+    this->next_frame_count_++;
 
-    if (packet.part_counter == 0)
+    if (frame->part_counter == 0)
     {
         // Starting new message
         this->reset();
-        this->rxState_.remaining_body_bytes = packet.body_length;
-    } else if (packet.part_counter != this->rxState_.next_part_count)
+        this->remaining_body_bytes_ = frame->body_length;
+    } else if (frame->part_counter != this->next_part_count_)
     {
         // We're resuming a message but dropped a packet, unrecoverable
         // Reset will occur when we next successfully start a new message
         return;
     }
-    this->rxState_.next_part_count++;
+    this->next_part_count_++;
 
     // Read frame body
-    const auto bytes_to_read = std::min(this->rxState_.remaining_body_bytes, BODY_LENGTH);
+    const auto bytes_to_read = std::min(this->remaining_body_bytes_, BODY_LENGTH);
     for (size_t i = 0; i < bytes_to_read; i++)
-        this->rxState_.body.push_back(packet.body[i]);
-    this->rxState_.remaining_body_bytes -= bytes_to_read;
+        this->body_.push_back(frame->body[i]);
+    this->remaining_body_bytes_ -= bytes_to_read;
 
-    if (this->rxState_.remaining_body_bytes == 0)
+    if (this->remaining_body_bytes_ == 0)
     {
         // Full message has been received
         this->parse_mqtt_message();
@@ -64,16 +66,16 @@ void Protocol::receivePacket(const Frame packet)
     }
 }
 
-void Protocol::parse_mqtt_message()
+void RxProtocol::parse_mqtt_message()
 {
-    if (this->rxState_.body.size() < 2)
+    if (this->body_.size() < 2)
     {
         std::cerr << "Failed to parse packet body: "
                      "Body is too small to contain required data" << std::endl;
         return;
     }
 
-    auto body_iterator = this->rxState_.body.begin();
+    auto body_iterator = this->body_.begin();
 
     const auto qos_retained_bits = *body_iterator++;
     const auto qos = qos_retained_bits & QOS_MASK;
@@ -81,7 +83,7 @@ void Protocol::parse_mqtt_message()
 
     const auto topic_size = *body_iterator++;
 
-    if (std::distance(body_iterator, this->rxState_.body.end()) < topic_size)
+    if (std::distance(body_iterator, this->body_.end()) < topic_size)
     {
         std::cerr << "Failed to pase packet body: "
                      "Topic size is too large to fit in body" << std::endl;
@@ -91,7 +93,7 @@ void Protocol::parse_mqtt_message()
     const std::string topic(body_iterator, body_iterator + topic_size);
     body_iterator += topic_size;
 
-    const std::string payload(body_iterator, this->rxState_.body.end());
+    const std::string payload(body_iterator, this->body_.end());
 
     try
     {
@@ -106,7 +108,7 @@ void Protocol::parse_mqtt_message()
 }
 
 
-std::vector<Frame> Protocol::packPackets(const std::vector<uint8_t> body)
+std::vector<Frame> TxProtocol::packPackets(const std::vector<uint8_t> body)
 {
     std::vector<Frame> frames;
     uint8_t next_part_count = 0;
@@ -116,7 +118,7 @@ std::vector<Frame> Protocol::packPackets(const std::vector<uint8_t> body)
         auto last = std::min(body.size(), i + BODY_LENGTH);
 
         Frame frame;
-        frame.frame_counter = this->txState_.next_frame_count++;
+        frame.frame_counter = this->next_frame_count_++;
         frame.frame_type = FrameType::Message;
         frame.part_counter = next_part_count++;
         frame.body_length = body.size();
