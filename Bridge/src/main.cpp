@@ -6,13 +6,13 @@
 #include "protocol.hpp"
 #include "mqtt.hpp"
 
-void receive_callback(std::vector<uint8_t> bytes)
+void receive_callback(mqtt::message_ptr message)
 {
-    std::cout << "Received a message:" << std::endl << std::hex;
-    for (auto &&byte : bytes)
-        std::cout << std::setfill('0') << std::setw(2) << (int) byte << " ";
-    std::cout << std::dec << std::endl;
-    
+    std::cout << "Parsed packet!" << std::endl
+        << "\tQoS:      " << message->get_qos() << std::endl
+        << "\tRetained: " << message->is_retained() << std::endl
+        << "\tTopic:    " << message->get_topic() << std::endl
+        << "\tPayload:  " << message->get_payload() << std::endl;
 }
 
 int main() {

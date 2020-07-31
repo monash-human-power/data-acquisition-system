@@ -17,7 +17,7 @@ std::ostream& operator<<(std::ostream& os, const Frame *frame)
     return os;
 }
 
-RxProtocol::RxProtocol(void (*mqtt_pub_func)(std::vector<uint8_t>))
+RxProtocol::RxProtocol(void (*mqtt_pub_func)(mqtt::message_ptr))
     : mqtt_pub_func_(mqtt_pub_func) { }
 
 void RxProtocol::reset()
@@ -66,7 +66,7 @@ void RxProtocol::receivePacket(const uint8_t *packet)
     }
 }
 
-mqtt::message_ptr RxProtocol::parse_mqtt_message()
+void RxProtocol::parse_mqtt_message()
 {
     auto body_iterator = this->body_.begin();
 
@@ -81,13 +81,8 @@ mqtt::message_ptr RxProtocol::parse_mqtt_message()
 
     const std::string payload(body_iterator, this->body_.end());
 
-    std::cout << "Parsed packet!" << std::endl
-        << "\tQoS:      " << qos << std::endl
-        << "\tRetained: " << retained << std::endl
-        << "\tTopic:    " << topic << std::endl
-        << "\tPayload:  " << payload << std::endl;
-
-    return mqtt::make_message(topic, payload, qos, retained);
+    auto message = mqtt::make_message(topic, payload, qos, retained);
+    this->mqtt_pub_func_(message);
 }
 
 

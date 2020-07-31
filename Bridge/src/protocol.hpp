@@ -30,13 +30,13 @@ std::ostream& operator<<(std::ostream& os, const Frame *frame);
 class RxProtocol
 {
 public:
-    RxProtocol(void (*mqtt_pub_func)(std::vector<uint8_t>));
+    RxProtocol(void (*mqtt_pub_func)(mqtt::message_ptr));
 
     void receivePacket(const uint8_t *packet);
 
 private:
     void reset();
-    mqtt::message_ptr parse_mqtt_message();
+    void parse_mqtt_message();
 
     uint8_t next_frame_count_ = 0;
     uint8_t next_part_count_ = 0;
@@ -44,7 +44,7 @@ private:
     std::vector<uint8_t> body_;
     uint16_t remaining_body_bytes_ = 0;
 
-    void (*mqtt_pub_func_)(std::vector<uint8_t>);
+    void (*mqtt_pub_func_)(mqtt::message_ptr);
 };
 
 class TxProtocol
