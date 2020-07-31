@@ -2,6 +2,7 @@
 #include <iomanip>
 
 #include "mqtt/async_client.h"
+#include "mqtt/message.h"
 
 #include "protocol.hpp"
 #include "mqtt.hpp"
@@ -31,10 +32,9 @@ int main()
     TxProtocol tx;
     RxProtocol rx;
 
-    // QOS: 0, Retain: false, Topic: "AB", Payload: "CD"
-    auto packets = tx.packPackets(std::vector<uint8_t>(
-        { 0b0000'0000, 2, 'A', 'B', 'C', 'D' }
-    ));
+    auto packets = tx.packMessage(
+        mqtt::make_message("test_topic", "Hello world!", 0, false)
+    );
 
     if (auto message = rx.receivePacket(packets[0]))
         mqttClient.publish(*message);

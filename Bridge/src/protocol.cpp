@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 
 std::ostream& operator<<(std::ostream& os, const Frame *frame)
 {
@@ -56,14 +57,14 @@ std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const Frame packet)
     if (this->remaining_body_bytes_ == 0)
     {
         // Full message has been received
-        auto message = this->parse_mqtt_message();
+        auto message = this->deserialiseMqttMessage();
         this->reset();
-        return { message };
+        return message;
     }
     return { };
 }
 
-std::optional<mqtt::message_ptr> RxProtocol::parse_mqtt_message()
+std::optional<mqtt::message_ptr> RxProtocol::deserialiseMqttMessage()
 {
     if (this->body_.size() < 2)
     {
@@ -105,24 +106,43 @@ std::optional<mqtt::message_ptr> RxProtocol::parse_mqtt_message()
 }
 
 
-std::vector<Frame> TxProtocol::packPackets(const std::vector<uint8_t> body)
+std::vector<Frame> TxProtocol::packMessage(mqtt::const_message_ptr message)
 {
+    auto bytes = this->serialiseMessage(message);
+
     std::vector<Frame> frames;
     uint8_t next_part_count = 0;
 
-    for (size_t i = 0; i < body.size(); i += BODY_LENGTH)
+    for (size_t i = 0; i < bytes.size(); i += BODY_LENGTH)
     {
-        auto last = std::min(body.size(), i + BODY_LENGTH);
+        auto last = std::min(bytes.size(), i + BODY_LENGTH);
 
         Frame frame;
         frame.frame_counter = this->next_frame_count_++;
         frame.frame_type = FrameType::Message;
         frame.part_counter = next_part_count++;
-        frame.body_length = body.size();
-        std::copy(body.begin() + i, body.begin() + last, frame.body);
+        frame.body_length = bytes.size();
+        std::copy(bytes.begin() + i, bytes.begin() + last, frame.body);
 
         frames.push_back(frame);
     }
 
     return frames;
+}
+
+std::vector<uint8_t> TxProtocol::serialiseMessage(mqtt::const_message_ptr message)
+{
+    std::vector<uint8_t> bytes;
+
+    uint8_t qos_retained_bits = message->get_qos() | (uint8_t) message->is_retained() << 2;
+    bytes.push_back(qos_retained_bits);
+
+    auto topic = message->get_topic();
+    bytes.push_back(topic.size());
+    std::copy(topic.begin(), topic.end(), back_inserter(bytes));
+
+    auto payload = message->get_payload();
+    std::copy(payload.begin(), payload.end(), back_inserter(bytes));
+
+    return bytes;
 }

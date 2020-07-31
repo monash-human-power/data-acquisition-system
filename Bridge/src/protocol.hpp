@@ -36,7 +36,7 @@ public:
 
 private:
     void reset();
-    std::optional<mqtt::message_ptr> parse_mqtt_message();
+    std::optional<mqtt::message_ptr> deserialiseMqttMessage();
 
     uint8_t next_frame_count_ = 0;
     uint8_t next_part_count_ = 0;
@@ -48,8 +48,10 @@ private:
 class TxProtocol
 {
 public:
-    std::vector<Frame> packPackets(const std::vector<uint8_t> body);
+    std::vector<Frame> packMessage(mqtt::const_message_ptr message);
 
 private:
     uint8_t next_frame_count_ = 0;
+
+    std::vector<uint8_t> serialiseMessage(mqtt::const_message_ptr message);
 };
