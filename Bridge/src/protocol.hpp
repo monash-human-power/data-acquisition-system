@@ -7,6 +7,8 @@
 
 #include <mqtt/message.h>
 
+#include "mqtt.hpp"
+
 constexpr uint16_t BODY_LENGTH = 75;
 
 constexpr uint8_t QOS_MASK    = 0b0000'0011;
@@ -53,4 +55,18 @@ private:
     uint8_t next_frame_count_ = 0;
 
     std::vector<uint8_t> serialiseMessage(mqtt::const_message_ptr message);
+};
+
+class Protocol
+{
+    RxProtocol rx_;
+    TxProtocol tx_;
+
+    MqttBridgeClient_ptr mqttClient_;
+
+    void mqttMessageReceivedCallback(mqtt::const_message_ptr message);
+    void zetaRfPacketReceivedCallback(const Frame packet);
+
+public:
+    Protocol(MqttBridgeClient_ptr mqttClient);
 };

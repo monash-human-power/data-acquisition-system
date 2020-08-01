@@ -146,3 +146,29 @@ std::vector<uint8_t> TxProtocol::serialiseMessage(mqtt::const_message_ptr messag
 
     return bytes;
 }
+
+Protocol::Protocol(MqttBridgeClient_ptr mqttClient)
+    : mqttClient_(mqttClient)
+{
+    using namespace std::placeholders;
+    this->mqttClient_->set_on_message(std::bind(&Protocol::mqttMessageReceivedCallback, this, _1));
+    //this->zetaRf->set_on_received(std::bind(&Protocol::zetaRfPacketReceivedCallback, this, _1));
+}
+
+void Protocol::mqttMessageReceivedCallback(mqtt::const_message_ptr message)
+{
+    auto packets = this->tx_.packMessage(message);
+    // TODO Send ZetaRF packets here
+    std::cout << "Would send " << packets.size() << " packets:" << std::endl;
+    for (auto &&packet : packets)
+        std::cout << "\t" << &packet << std::endl;
+    
+}
+
+void Protocol::zetaRfPacketReceivedCallback(const Frame packet)
+{
+    if (auto message = this->rx_.receivePacket(packet))
+    {
+        this->mqttClient_->publish(*message);
+    }
+}

@@ -1,8 +1,6 @@
 #include <iostream>
-#include <iomanip>
 
-#include "mqtt/async_client.h"
-#include "mqtt/message.h"
+#include <mqtt/message.h>
 
 #include "protocol.hpp"
 #include "mqtt.hpp"
@@ -18,25 +16,11 @@ void receive_callback(mqtt::const_message_ptr message)
 
 int main()
 {
-    std::cout << "Hello world!" << std::endl;
+    auto mqttClient = std::make_shared<MqttBridgeClient>();
 
-
-    ////////////// MQTT //////////////
-
-    MqttBridgeClient mqttClient;
-    mqttClient.set_on_message(receive_callback);
-
-    ////////////// PROTOCOL //////////////
-
-    TxProtocol tx;
-    RxProtocol rx;
-
-    auto packets = tx.packMessage(
-        mqtt::make_message("test_topic", "Hello world!", 0, false)
-    );
-
-    if (auto message = rx.receivePacket(packets[0]))
-        mqttClient.publish(*message);
+    Protocol protocol(mqttClient);
+    // TODO: this should be ignored by the protocol when we receive it from the # subscription
+    mqttClient->publish(mqtt::make_message("topic", "payload"));
 
     while (std::cin.get() != 'q')
         ;
