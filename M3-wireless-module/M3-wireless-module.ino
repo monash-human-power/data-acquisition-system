@@ -2,11 +2,14 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include "header.h"
-#include "string.h"
+//#include "string.h"
 
 // output json data for publishing
-const char* json = "{\"sensors\":[{\"type\":\"co2\",\"value\":%f},{\"type\":\"reedVelocity\",\"value\":%f},{\"type\":\"gps\",\"value\":{\"speed\":%d,\"satellites\":%d,\"latitude\":%f,\"longitude\":%f,\"altitude\":%f,\"course\":%d}}]}";
-char data[500];
+const char* json_1 = "{\"sensors\":[{\"type\":\"co2\",\"value\":%.1f},{\"type\":\"reedVelocity\",\"value\":%.1f}]}";
+const char* json_2 = "{\"sensors\":[{\"type\":\"gps\",\"value\":{\"latitude\":%.3f,\"longitude\":%.3f,\"altitude\":%.1f}}]}";
+char data_1[110];
+char data_2[110];
+String data_message;
 
 // MQTT variables
 const char* ssid = "Slow Wifi";
@@ -122,7 +125,8 @@ void setup() {
       if (client.connect("ESP32Client", MQTT_USER, MQTT_PASSWORD )) {
   
         Serial.println("..connected..");
-        client.subscribe("/v3/wireless-module/#");
+        client.subscribe("/v3/wireless-module/3/start");
+        client.subscribe("/v3/wireless-module/3/stop");
         Serial.println("Subscribed to topic");  
   
       } else {
@@ -157,10 +161,13 @@ void loop() {
   if (start_stop)
   {
     // create json and publish on /v3/wireless-module/3/data
-    sprintf(data, json, ppm, VELOCITY, 32, 2, gps.location.lat(), gps.location.lng(), gps.altitude.meters(), 2);
-    Serial.println(data);
-
-    boolean err = client.publish("/v3/wireless-module/3/data", data);
+    sprintf(data_1, json_1, ppm, VELOCITY);
+    sprintf(data_2, json_2, 32, 2, gps.location.lat(), gps.location.lng(), gps.altitude.meters(), 2);
+    Serial.println(data_1);
+    Serial.println(data_2);
+    
+    client.publish("/v3/wireless-module/3/data", data_1);
+    client.publish("/v3/wireless-module/3/data", data_2);
   }
 
  client.loop();
