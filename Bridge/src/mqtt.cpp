@@ -6,6 +6,11 @@
 MqttCallback::MqttCallback(mqtt::async_client_ptr client, mqtt::connect_options& conn_opts)
     : client_(client) {}
 
+void MqttCallback::set_on_message(std::function<void(mqtt::const_message_ptr)> callback)
+{
+    this->on_message_ = callback;
+}
+
 void MqttCallback::on_failure(const mqtt::token& asyncActionToken)
 {
     std::cout << "Connection failed" << std::endl;
@@ -26,12 +31,9 @@ void MqttCallback::connection_lost(const std::string& cause)
     std::cout << "MQTT connection lost" << std::endl;
 }
 
-void MqttCallback::message_arrived(mqtt::const_message_ptr msg)
+void MqttCallback::message_arrived(mqtt::const_message_ptr message)
 {
-    std::cout << "Received message on topic \"" << msg->get_topic() << "\"" << std::endl
-        << "Payload:  " << msg->to_string() << std::endl
-        << "QoS:      " << msg->get_qos() << std::endl
-        << "Retained: " << msg->is_retained() << std::endl;
+    this->on_message_(message);
 }
 
 
@@ -65,6 +67,11 @@ MqttBridgeClient::~MqttBridgeClient()
 {
     // Disconnect MQTT client
     this->client_->disconnect()->wait();
+}
+
+void MqttBridgeClient::set_on_message(std::function<void(mqtt::const_message_ptr)> callback)
+{
+    this->callback_->set_on_message(callback);
 }
 
 void MqttBridgeClient::publish(mqtt::const_message_ptr message) const

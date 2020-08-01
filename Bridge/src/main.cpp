@@ -7,7 +7,7 @@
 #include "protocol.hpp"
 #include "mqtt.hpp"
 
-void receive_callback(mqtt::message_ptr message)
+void receive_callback(mqtt::const_message_ptr message)
 {
     std::cout << "Parsed packet!" << std::endl
         << "\tQoS:      " << message->get_qos() << std::endl
@@ -18,14 +18,13 @@ void receive_callback(mqtt::message_ptr message)
 
 int main()
 {
-    using namespace std::placeholders; // for `_1`
-
     std::cout << "Hello world!" << std::endl;
 
 
     ////////////// MQTT //////////////
 
     MqttBridgeClient mqttClient;
+    mqttClient.set_on_message(receive_callback);
 
     ////////////// PROTOCOL //////////////
 
