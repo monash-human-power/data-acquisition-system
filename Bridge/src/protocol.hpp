@@ -8,11 +8,14 @@
 #include <mqtt/message.h>
 
 #include "mqtt.hpp"
+#include "ring_buffer.hpp"
 
 constexpr uint16_t BODY_LENGTH = 75;
 
 constexpr uint8_t QOS_MASK    = 0b0000'0011;
 constexpr uint8_t RETAIN_MASK = 0b0000'0100;
+
+constexpr size_t MESSAGE_HISTORY = 50;
 
 enum class FrameType : uint8_t
 {
@@ -62,10 +65,18 @@ class Protocol
     RxProtocol rx_;
     TxProtocol tx_;
 
-    MqttBridgeClient_ptr mqttClient_;
+    MqttBridgeClient_ptr mqtt_client_;
 
+    RingBuffer<size_t, MESSAGE_HISTORY> recently_sent_messages_;
+
+    static const std::string MQTT_HASH_SEPARATOR;
+
+public: // TODO - only public for dev purposes
     void mqttMessageReceivedCallback(mqtt::const_message_ptr message);
     void zetaRfPacketReceivedCallback(const Frame packet);
+private:
+
+    size_t hashMqttMessage(mqtt::const_message_ptr message) const;
 
 public:
     Protocol(MqttBridgeClient_ptr mqttClient);

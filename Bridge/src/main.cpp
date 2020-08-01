@@ -19,8 +19,10 @@ int main()
     auto mqttClient = std::make_shared<MqttBridgeClient>();
 
     Protocol protocol(mqttClient);
-    // TODO: this should be ignored by the protocol when we receive it from the # subscription
-    mqttClient->publish(mqtt::make_message("topic", "payload"));
+
+    auto message = mqtt::make_message("topic", "payload");
+    auto packets = TxProtocol().packMessage(message);
+    protocol.zetaRfPacketReceivedCallback(packets[0]);
 
     while (std::cin.get() != 'q')
         ;

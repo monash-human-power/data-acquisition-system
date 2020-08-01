@@ -147,16 +147,23 @@ std::vector<uint8_t> TxProtocol::serialiseMessage(mqtt::const_message_ptr messag
     return bytes;
 }
 
+const std::string Protocol::MQTT_HASH_SEPARATOR = "ZetaBridgeSeparator";
+
 Protocol::Protocol(MqttBridgeClient_ptr mqttClient)
-    : mqttClient_(mqttClient)
+    : mqtt_client_(mqttClient)
 {
     using namespace std::placeholders;
-    this->mqttClient_->set_on_message(std::bind(&Protocol::mqttMessageReceivedCallback, this, _1));
-    //this->zetaRf->set_on_received(std::bind(&Protocol::zetaRfPacketReceivedCallback, this, _1));
+    this->mqtt_client_->set_on_message(std::bind(&Protocol::mqttMessageReceivedCallback, this, _1));
+    //this->zeta_rf->set_on_received(std::bind(&Protocol::zetaRfPacketReceivedCallback, this, _1));
 }
 
 void Protocol::mqttMessageReceivedCallback(mqtt::const_message_ptr message)
 {
+    auto hash = this->hashMqttMessage(message);
+    if (this->recently_sent_messages_.contains(hash))
+        // This message was sent from us (the bridge), so discard
+        return;
+
     auto packets = this->tx_.packMessage(message);
     // TODO Send ZetaRF packets here
     std::cout << "Would send " << packets.size() << " packets:" << std::endl;
@@ -169,6 +176,16 @@ void Protocol::zetaRfPacketReceivedCallback(const Frame packet)
 {
     if (auto message = this->rx_.receivePacket(packet))
     {
-        this->mqttClient_->publish(*message);
+        // Store the hash of this message so we know when we receive it back from the broker
+        auto hash = this->hashMqttMessage(*message);
+        this->recently_sent_messages_.put(hash);
+        this->mqtt_client_->publish(*message);
     }
+}
+
+size_t Protocol::hashMqttMessage(mqtt::const_message_ptr message) const
+{
+    std::hash<std::string> str_hash;
+    auto key = message->get_topic() + Protocol::MQTT_HASH_SEPARATOR + message->get_payload();
+    return str_hash(key);
 }
