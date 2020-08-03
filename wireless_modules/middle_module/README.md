@@ -21,7 +21,8 @@ This repository contains all the code related to Monash Human Power's middle wir
 - main.py: Processes MQTT messages and sends sensor data
 - MQTT_Client_class.py: Holds the Client class (used to work with MQTT)
 - test.py: A python file (NOT Micropython) used to run on the local computer to test the main.py and MQTT_Client_class.py files. It basically sends on the /v3/wireless-module/<id>/start topic, to check whether it initiates the main.py file to send through the data on the topic /v3/wireless-module/<id>/data and then send on the topic /v3/wireless-module/<id>/stop to check whether it stops the inflow data. 
-	Note: there's some lag with MQTT and so after the stop topic is used the test.py 	finishes running and so may not print the last few data sent by main.py.
+-- Note: There's some latency with MQTT and so after the stop topic is used the test.py 	finishes running and so may not print the last few data sent by main.py.
+-- Also when running test.py if you do not receive any messages, re-run because most likely main.py was not ready to read the message from the start topic when it was sent by test.py (This may be due to some error and the need for the ESP32 to restart which would take some time)
 
 
 ## Dependencies
