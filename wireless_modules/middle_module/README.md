@@ -27,6 +27,7 @@ This repository contains all the code related to Monash Human Power's middle wir
 ## Dependencies
 - The test.py requires the paho-mqtt library installed for Python
 - The other .py files are Micropython files so needs a board to run on (eg ESP32)
+- Ensure the config.py file is created locally (see the 'Getting Started' section above)
 
 
 ## Contributors ✨
