@@ -1,4 +1,4 @@
-# Monash Human Power Data Acquisition System - Middle wireless module
+# Data Acquisition System - Middle wireless module
 
 [![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors)
 
@@ -17,8 +17,16 @@ This repository contains all the code related to Monash Human Power's middle wir
 - builtin_LED = PIN(2, PIN.OUT)
 
 ## Contents
-- Boot.py: Contains function to connect the micro controller to the internet
+- boot.py: Contains function to connect the micro controller to the internet
+- main.py: Processes MQTT messages and sends sensor data
+- MQTT_Client_class.py: Holds the Client class (used to work with MQTT)
+- test.py: A python file (NOT Micropython) used to run on the local computer to test the main.py and MQTT_Client_class.py files. It basically sends on the /v3/wireless-module/<id>/start topic, to check whether it initiates the main.py file to send through the data on the topic /v3/wireless-module/<id>/data and then send on the topic /v3/wireless-module/<id>/stop to check whether it stops the inflow data. 
+	Note: there's some lag with MQTT and so after the stop topic is used the test.py 	finishes running and so may not print the last few data sent by main.py.
 
+
+## Dependencies
+- The test.py requires the paho-mqtt library installed for Python
+- The other .py files are Micropython files so needs a board to run on (eg ESP32)
 
 
 ## Contributors ✨
