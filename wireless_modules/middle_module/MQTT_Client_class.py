@@ -1,15 +1,13 @@
-# Author: Kunj (most is also borrowed from mqtt_test written by Blake)
-# Last modified: 3/08/2020
 # Note: Can remove all the Print statements once all testing is successful
 
 # Use micro pip to install packages
 import utime
 import upip
-upip.install("micropython-umqtt.simple2")
+upip.install('micropython-umqtt.simple2')
 try:
     from umqtt.simple import MQTTClient
 except FileNotFoundError:
-    print("Error in importing library")
+    print('Error in importing library')
 
 
 class Client:
@@ -79,7 +77,7 @@ class Client:
             # print("MQTT data sent: %s on %s through %s" % (msg, topic, self.mqtt_broker))
 
         except OSError:
-            print("OSError, check line 80 of MQTT_Client_class.py")
+            print('OSError, check line 82 of MQTT_Client_class.py')
             # restart_and_reconnect()
 
     def check_for_message(self):
