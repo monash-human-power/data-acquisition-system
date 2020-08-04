@@ -1,6 +1,5 @@
 # Author: Kunj
 # Last Modified: 3/08/2020
-
 import paho.mqtt.client as mqtt
 import time
 
