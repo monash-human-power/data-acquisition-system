@@ -1,8 +1,6 @@
 # Note: You can remove all the PRINT statements when everything is already tested
 
 import machine
-# from wireless_module import WirelessModule
-# from sensors.dht import DHTSensor
 import ubinascii
 import utime
 
@@ -44,7 +42,7 @@ def sub_cb(topic, msg):
     :param topic: The topic on which the message is received
     :param msg: The message received
     :return: None
-    :changes made: The global variable 'start' is changed to True or False depedning on which topic we receive the
+    :changes made: The global variable 'start' is changed to True or False depending on which topic we receive the
                     message from
     """
     print('Successfully received message: ', msg, 'on:', topic)

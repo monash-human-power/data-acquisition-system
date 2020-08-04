@@ -3,8 +3,8 @@
 
 # Import relevant libraries
 import esp
-import network # To connect to the WIFI
-import config # File in the same path containing WIFI credentials and Pin to in built blue LED
+import network
+import config
 import time
 
 
@@ -16,13 +16,10 @@ def do_connect(essid, password):
     :return: None
     """
 
-    # How many attempts to connect to the WIFI
-    attempts = 5
+    max_wifi_attempts = 5
 
     # Create station interface
     station_interface = network.WLAN(network.STA_IF)
-
-    # Activate the interface
     station_interface.active(True)
 
     if station_interface.isconnected():
@@ -35,13 +32,12 @@ def do_connect(essid, password):
     else:
         print('connecting to network...')
 
-        # Attempt to connect n times where n = attempts variable
-        while not station_interface.isconnected() and attempts > 0:
+        while not station_interface.isconnected() and max_wifi_attempts > 0:
             # Connect to WiFi using the credentials given
             station_interface.connect(essid, password)
 
             if not station_interface.isconnected():
-                print('Could not connect to WIFI, attempts:', attempts)
+                print('Could not connect to WIFI, attempts:', max_wifi_attempts)
             else:
                 print('Connected, network config:', station_interface.ifconfig())
 

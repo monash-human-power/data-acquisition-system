@@ -1,7 +1,6 @@
 # Note: Can remove all the Print statements once all testing is successful
 
 # Use micro pip to install packages
-import utime
 import upip
 upip.install('micropython-umqtt.simple2')
 try:
@@ -30,7 +29,6 @@ class Client:
         :return: True if a connection to the Broker is successfully established, otherwise False
         """
 
-        # Provide the function to run whenever a message is received from the subscribed topics
         self.client.set_callback(callback_func)
         try:
             # Connect to MQTT broker
@@ -65,26 +63,18 @@ class Client:
         :return: Nothing
         """
         try:
-            # convert the data to bytes literal so that MQTT can read it
             msg = self._to_bytes_literal(data)
 
-            # Publish the data on the given topic
             self.client.publish(topic, msg)
 
-            # Check for any pending messages on any of the subscribed topics
             self.check_for_message()
 
-            # print("MQTT data sent: %s on %s through %s" % (msg, topic, self.mqtt_broker))
-
         except OSError:
-            print('OSError, check line 82 of MQTT_Client_class.py')
-            # restart_and_reconnect()
+            print('OSError, check line 73 of MQTT_Client_class.py')
 
     def check_for_message(self):
         """
-        Checks whether an incoming message from the MQTT broker on the subscribed topics is pending. This check is done
-        within the mqtt_pub method as well, but it gives a way to check manually for any
-        message (especially given that the MQTT Client is only held by this class).
+        Checks whether an incoming message from the MQTT broker on the subscribed topics is pending.
         :return: None
         """
         # If there's a message waiting, it will be sent to the callback_func defined in the connect_and_subscribe method
@@ -92,9 +82,8 @@ class Client:
 
     def wait_for_message(self):
         """
-        Waits for a message from one of teh subscribed topics. Note: This function will only finish executing when
+        Waits for a message from one of the subscribed topics. Note: This function will only finish executing when
         a message is received and dealt in the set callback_func.
         :return: None
         """
-        # Keep checking for any incoming message/s until one is read
         self.client.wait_msg()
