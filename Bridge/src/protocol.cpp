@@ -30,10 +30,20 @@ std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const Frame packet)
         // Not implemented
         return { };
 
-    if (packet.frame_counter != this->next_frame_count_)
+    if (!this->next_frame_count_)
+    {
+        // This is the first packet to be received, start the frame counting
+        this->next_frame_count_ = packet.frame_counter + 1;
+    } else if (packet.frame_counter != this->next_frame_count_)
+    {
         // We must have skipped a frame, discard everything
         this->reset();
-    this->next_frame_count_++;
+        this->next_frame_count_ = packet.frame_counter + 1;
+    } else
+    {
+        // Normal case, increment for next frame
+        (*this->next_frame_count_)++;
+    }
 
     if (packet.part_counter == 0)
     {

@@ -42,7 +42,9 @@ private:
     void reset();
     std::optional<mqtt::message_ptr> deserialiseMqttMessage();
 
-    uint8_t next_frame_count_ = 0;
+    // Don't start the frame count from 0, as the other end of the bridge may
+    // have already started sending packets
+    std::optional<uint8_t> next_frame_count_ = std::nullopt;
     uint8_t next_part_count_ = 0;
 
     std::vector<uint8_t> body_;
