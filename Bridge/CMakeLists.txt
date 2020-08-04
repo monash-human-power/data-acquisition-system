@@ -14,6 +14,7 @@ include_directories(libs/paho.mqtt.cpp/src)
 add_subdirectory (libs/paho.mqtt.cpp)
 
 set(SOURCES
+    "src/frame.cpp"
     "src/main.cpp"
     "src/mqtt.cpp"
     "src/protocol.cpp"

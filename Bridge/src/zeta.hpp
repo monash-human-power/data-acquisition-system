@@ -5,7 +5,7 @@
 
 #include <ZetaRf.hpp>
 
-#include "protocol.hpp"
+#include "frame.hpp"
 #include "thread_queue.hpp"
 #include "rf_config/si4455_revb1_bidir_fixed_crc_pre10_sync3MHP_pay8_433mhz_40kbps.hpp"
 
