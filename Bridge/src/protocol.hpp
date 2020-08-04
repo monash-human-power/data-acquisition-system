@@ -11,6 +11,7 @@
 #include "ring_buffer.hpp"
 
 constexpr uint16_t BODY_LENGTH = 75;
+constexpr uint16_t PACKET_LENGTH = 80;
 
 constexpr uint8_t QOS_MASK    = 0b0000'0011;
 constexpr uint8_t RETAIN_MASK = 0b0000'0100;
