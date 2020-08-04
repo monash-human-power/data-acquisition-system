@@ -9,6 +9,7 @@
 #include "frame.hpp"
 #include "mqtt.hpp"
 #include "ring_buffer.hpp"
+#include "zeta.hpp"
 
 constexpr uint8_t QOS_MASK    = 0b0000'0011;
 constexpr uint8_t RETAIN_MASK = 0b0000'0100;
@@ -50,6 +51,7 @@ class Protocol
     TxProtocol tx_;
 
     MqttBridgeClient_ptr mqtt_client_;
+    ZetaRfRadio_ptr zeta_radio_ = std::make_shared<ZetaRfRadio>();
 
     RingBuffer<size_t, MESSAGE_HISTORY> recently_sent_messages_;
 

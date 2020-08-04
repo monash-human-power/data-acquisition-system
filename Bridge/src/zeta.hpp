@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <thread>
 #include <vector>
 
 #include <ZetaRf.hpp>
@@ -11,6 +12,9 @@
 
 class ZetaRfRadio
 {
+public:
+    using ptr_t = std::shared_ptr<ZetaRfRadio>;
+
 private:
     using RadioConfig = Config433_FixedLength_CRC_Preamble10_Sync3MHP_Payload8_40kbps;
 
@@ -25,10 +29,26 @@ private:
         ShutdownPin,
         InteruptRequestPin
     >>> zeta_;
+
+    ThreadQueue<Frame> send_queue_;
+
+    std::function<void(Frame)> on_receive_;
+
+    std::thread worker_;
+    bool should_worker_join_ = false;
+
+    void watch_send_queue();
+
+    // Class is non-copyable
+    ZetaRfRadio(const ZetaRfRadio& that) = delete;
+    ZetaRfRadio& operator=(const ZetaRfRadio& that) = delete;
     
 public:
     ZetaRfRadio();
+    ~ZetaRfRadio();
 
-    void send_packets(std::vector<Frame>);
-    void setOnReceived(std::function<void(Frame)> callback);
+    void set_on_received(std::function<void(Frame)> callback);
+    void send_packets(const std::vector<Frame> frames);
 };
+
+using ZetaRfRadio_ptr = ZetaRfRadio::ptr_t;

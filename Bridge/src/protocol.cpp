@@ -150,7 +150,7 @@ Protocol::Protocol(MqttBridgeClient_ptr mqttClient)
 {
     using namespace std::placeholders;
     this->mqtt_client_->set_on_message(std::bind(&Protocol::mqttMessageReceivedCallback, this, _1));
-    //this->zeta_rf->set_on_received(std::bind(&Protocol::zetaRfPacketReceivedCallback, this, _1));
+    this->zeta_radio_->set_on_received(std::bind(&Protocol::zetaRfPacketReceivedCallback, this, _1));
 }
 
 void Protocol::mqttMessageReceivedCallback(mqtt::const_message_ptr message)
@@ -161,11 +161,7 @@ void Protocol::mqttMessageReceivedCallback(mqtt::const_message_ptr message)
         return;
 
     auto packets = this->tx_.packMessage(message);
-    // TODO Send ZetaRF packets here
-    std::cout << "Would send " << packets.size() << " packets:" << std::endl;
-    for (auto &&packet : packets)
-        std::cout << "\t" << &packet << std::endl;
-    
+    this->zeta_radio_->send_packets(packets);
 }
 
 void Protocol::zetaRfPacketReceivedCallback(const Frame packet)
