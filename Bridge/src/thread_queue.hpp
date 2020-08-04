@@ -37,7 +37,7 @@ template<class T>
 std::optional<T> ThreadQueue<T>::pop()
 {
     std::lock_guard<std::mutex> lock(this->mutex_);
-    if (this->queue_.is_empty())
+    if (this->queue_.empty())
         return { };
     auto item = this->queue_.front();
     this->queue_.pop();
