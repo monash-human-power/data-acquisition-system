@@ -11,10 +11,7 @@ except FileNotFoundError:
     print('Error importing config.py, ensure a local version of config.py exists')
 
 # To get access to the Client class in the MQTT_Client_class file
-try:
-    from MQTT_Client_class import Client
-except:
-    print("Error importing MQTT_Client_class.py, ensure a local version of the file exists")
+from mqtt_client import Client
 
 # Define module number and MQTT topics to publish to
 MODULE_NUM = '2'
@@ -46,11 +43,10 @@ def sub_cb(topic, msg):
                     message from
     """
     print('Successfully received message: ', msg, 'on:', topic)
+    global start_publish
     if topic == SUB_START:
-        global start_publish
         start_publish = True
     elif topic == SUB_STOP:
-        global start_publish
         start_publish = False
 
 

@@ -1,7 +1,4 @@
-# Author: Kunj
-# Last updated: 1/08/2020
 
-# Import relevant libraries
 import esp
 import network
 import config
@@ -22,33 +19,20 @@ def do_connect(essid, password):
     station_interface = network.WLAN(network.STA_IF)
     station_interface.active(True)
 
-    if station_interface.isconnected():
-        print('network config:', station_interface.ifconfig())
+    while not station_interface.isconnected() and max_wifi_attempts > 0:
+        # Connect to WiFi using the credentials given
+        station_interface.connect(essid, password)
 
-        # Turn on the built in LED when booted and connected to WiFi (blue light)
-        config.builtin_LED.on()
-        time.sleep(5)
-        config.builtin_LED.off()
-    else:
-        print('connecting to network...')
+        if not station_interface.isconnected():
+            print('Could not connect to WIFI, attempts:', max_wifi_attempts)
+        else:
+            print('Connected, network config:', station_interface.ifconfig())
+            # Turn on the built in LED when booted and connected to WiFi (blue light)
+            config.builtin_LED.on()
 
-        while not station_interface.isconnected() and max_wifi_attempts > 0:
-            # Connect to WiFi using the credentials given
-            station_interface.connect(essid, password)
-
-            if not station_interface.isconnected():
-                print('Could not connect to WIFI, attempts:', max_wifi_attempts)
-            else:
-                print('Connected, network config:', station_interface.ifconfig())
-
-            attempts = attempts - 1
+        max_wifi_attempts = max_wifi_attempts - 1
 
 
 esp.osdebug(None)
 # connect to WIFI
 do_connect(config.ESSID, config.PASSWORD)
-
-
-
-
-
