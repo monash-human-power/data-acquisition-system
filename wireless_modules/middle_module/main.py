@@ -8,20 +8,20 @@ import utime
 try:
     import config
 except FileNotFoundError:
-    print('Error importing config.py, ensure a local version of config.py exists')
+    print("Error importing config.py, ensure a local version of config.py exists")
 
 # To get access to the Client class in the MQTT_Client_class file
 from mqtt_client import Client
 
 # Define module number and MQTT topics to publish to
-MODULE_NUM = '2'
-PUB_DATA_TOPIC = b'/v3/wireless-module/{}/data'.format(MODULE_NUM)
-PUB_TOPIC_LOW_BATTERY = b'/v3/wireless-module/{}/low-battery'.format(MODULE_NUM)
-PUB_BATTERY_TOPIC = b'/v3/wireless-module/{}/battery'.format(MODULE_NUM)
+MODULE_NUM = "2"
+PUB_DATA_TOPIC = b"/v3/wireless-module/{}/data".format(MODULE_NUM)
+PUB_TOPIC_LOW_BATTERY = b"/v3/wireless-module/{}/low-battery".format(MODULE_NUM)
+PUB_BATTERY_TOPIC = b"/v3/wireless-module/{}/battery".format(MODULE_NUM)
 
 # Topics to subscribe to
-SUB_START = b'/v3/wireless-module/{}/start'.format(MODULE_NUM)
-SUB_STOP = b'/v3/wireless-module/{}/stop'.format(MODULE_NUM)
+SUB_START = b"/v3/wireless-module/{}/start".format(MODULE_NUM)
+SUB_STOP = b"/v3/wireless-module/{}/stop".format(MODULE_NUM)
 SUB_TOPICS = [SUB_START, SUB_STOP]
 
 # Generate a unique client_id to set up MQTT Client
@@ -42,7 +42,7 @@ def sub_cb(topic, msg):
     :changes made: The global variable 'start' is changed to True or False depending on which topic we receive the
                     message from
     """
-    print('Successfully received message: ', msg, 'on:', topic)
+    print("Successfully received message: ", msg, "on:", topic)
     global start_publish
     if topic == SUB_START:
         start_publish = True
@@ -51,7 +51,7 @@ def sub_cb(topic, msg):
 
 
 def restart_and_reconnect():
-    print('Failed to connect to MQTT broker. Reconnecting...')
+    print("Failed to connect to MQTT broker. Reconnecting...")
     utime.sleep(10)
     machine.reset()
 
@@ -69,10 +69,10 @@ my_client.wait_for_message()
 # Keep publishing data till a stop message is received
 test_no = 0
 while start_publish:
-    print('----------publishing-----------')
-    message = 'Message sample ' + str(test_no)
+    print("----------publishing-----------")
+    message = "Message sample " + str(test_no)
     my_client.mqtt_pub(message, PUB_DATA_TOPIC)
-    print('MQTT data sent: %s on %s through %s' % (message, PUB_DATA_TOPIC, config.MQTT_BROKER))
+    print("MQTT data sent: %s on %s through %s" % (message, PUB_DATA_TOPIC, config.MQTT_BROKER))
 
     # Keep checking for an incoming messages (specifically the stop message)
     my_client.check_for_message()
@@ -80,6 +80,6 @@ while start_publish:
     utime.sleep(1)
     test_no = test_no + 1
 
-print('########## Reached end of file successfully #########')
+print("########## Reached end of file successfully #########")
 
 

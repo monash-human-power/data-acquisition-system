@@ -2,7 +2,7 @@
 
 # Use micro pip to install packages
 import upip
-upip.install('micropython-umqtt.simple2')
+upip.install("micropython-umqtt.simple2")
 from umqtt.simple import MQTTClient
 
 
@@ -20,7 +20,7 @@ class Client:
     def connect_and_subscribe(self, topics_to_subscribe, callback_func):
         """
         Connects to the MQTT broker and subscribes to topic in 'topics_to_subscribe' using QoS = 1
-        :param ``topics_to_subscribe``: An array of topics to subscribe to.
+        :param topics_to_subscribe: An array of topics to subscribe to.
                                     Each element must be a string or byte literal (the latter is preferred)
         :param callback_func: The function to be called whenever a message from the subscribed topics is received.
         :return: True if a connection to the Broker is successfully established, otherwise False
@@ -30,14 +30,14 @@ class Client:
         try:
             # Connect to MQTT broker
             self.client.connect()
-            print('Connected to %s MQTT broker' % (self.mqtt_broker))
+            print("Connected to %s MQTT broker" % (self.mqtt_broker))
         except OSError:
             return False
 
         # Subscribe to each topic
         for topic in topics_to_subscribe:
             self.client.subscribe(topic, qos=1)
-            print('Subscribed to %s topic' % (topic))
+            print("Subscribed to %s topic" % (topic))
 
         return True
 

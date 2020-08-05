@@ -2,7 +2,6 @@
 import esp
 import network
 import config
-import time
 
 
 def do_connect(essid, password):
@@ -24,9 +23,9 @@ def do_connect(essid, password):
         station_interface.connect(essid, password)
 
         if not station_interface.isconnected():
-            print('Could not connect to WIFI, attempts:', max_wifi_attempts)
+            print("Could not connect to WIFI, attempts:", max_wifi_attempts)
         else:
-            print('Connected, network config:', station_interface.ifconfig())
+            print("Connected, network config:", station_interface.ifconfig())
             # Turn on the built in LED when booted and connected to WiFi (blue light)
             config.builtin_LED.on()
 
