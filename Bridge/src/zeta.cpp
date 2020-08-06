@@ -44,12 +44,20 @@ void ZetaRfRadio::watch_send_queue()
 {
     while (!this->should_worker_join_)
     {
-        std::cout << "Worker is working..." << std::endl;
+        while (auto packet = this->send_queue_.pop())
+        {
+            std::cout << "Sending packet: " << &*packet << std::endl;
+            if (!this->transmit_packet(*packet))
+                std::cout << "Packet failed to send" << std::endl;
+        }
 
-        if (auto packet = this->send_queue_.pop())
-            std::cout << "Would send packet: " << &*packet << std::endl;
-
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     std::cout << "Worker thread exiting" << std::endl;
+}
+
+bool ZetaRfRadio::transmit_packet(const Frame packet)
+{
+    const auto bytes = reinterpret_cast<const uint8_t *>(&packet);
+    return this->zeta_.sendFixedLengthPacketOnChannel(ZETA_CHANNEL, bytes);
 }
