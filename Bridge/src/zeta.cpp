@@ -111,6 +111,6 @@ void ZetaRfRadio::read_packet()
 void ZetaRfRadio::transmit_packet(const Frame packet)
 {
     const auto bytes = reinterpret_cast<const uint8_t *>(&packet);
-    if (this->zeta_.sendFixedLengthPacketOnChannel(ZETA_CHANNEL, bytes))
+    if (!this->zeta_.sendFixedLengthPacketOnChannel(ZETA_CHANNEL, bytes))
         std::cerr << "Packet failed to send" << std::endl;
 }
