@@ -58,7 +58,7 @@ void ZetaRfRadio::rx_tx_loop()
             this->transmit_packet(*packet);
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
     std::cout << "Worker thread exiting" << std::endl;
 }
