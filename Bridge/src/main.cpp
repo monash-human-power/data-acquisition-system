@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include <mqtt/message.h>
 
 #include "protocol.hpp"
 #include "mqtt.hpp"
@@ -19,10 +18,6 @@ int main()
     auto mqttClient = std::make_shared<MqttBridgeClient>();
 
     Protocol protocol(mqttClient);
-
-    auto message = mqtt::make_message("topic", "payload");
-    auto packets = TxProtocol().packMessage(message);
-    protocol.zetaRfPacketReceivedCallback(packets[0]);
 
     while (std::cin.get() != 'q')
         ;

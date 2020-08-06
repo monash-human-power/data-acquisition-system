@@ -37,8 +37,10 @@ private:
     std::thread worker_;
     bool should_worker_join_ = false;
 
-    void watch_send_queue();
-    bool transmit_packet(const Frame packet);
+    void rx_tx_loop();
+    void process_zeta_events();
+    void read_packet();
+    void transmit_packet(const Frame packet);
 
     // Class is non-copyable
     ZetaRfRadio(const ZetaRfRadio& that) = delete;

@@ -16,7 +16,7 @@ ZetaRfRadio::ZetaRfRadio()
     std::cout << "Init done." << std::endl;
 
     std::cout << "Starting worker..." << std::endl;
-    this->worker_ = std::thread(&ZetaRfRadio::watch_send_queue, this);
+    this->worker_ = std::thread(&ZetaRfRadio::rx_tx_loop, this);
 }
 
 ZetaRfRadio::~ZetaRfRadio()
@@ -40,15 +40,22 @@ void ZetaRfRadio::send_packets(const std::vector<Frame> frames)
     this->send_queue_.push(frames);
 }
 
-void ZetaRfRadio::watch_send_queue()
+void ZetaRfRadio::rx_tx_loop()
 {
     while (!this->should_worker_join_)
     {
-        while (auto packet = this->send_queue_.pop())
+        // Receive packet
+        this->process_zeta_events();
+        if (this->zeta_.hasDataAvailable())
+            this->read_packet();
+
+        // Transmit next queued packet.
+        // We could send all queue packets, but we don't want to overwhelm the
+        // receiver's rx fifo if it is also transmitting.
+        if (auto packet = this->send_queue_.pop())
         {
             std::cout << "Sending packet: " << &*packet << std::endl;
-            if (!this->transmit_packet(*packet))
-                std::cout << "Packet failed to send" << std::endl;
+            this->transmit_packet(*packet);
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
@@ -56,8 +63,54 @@ void ZetaRfRadio::watch_send_queue()
     std::cout << "Worker thread exiting" << std::endl;
 }
 
-bool ZetaRfRadio::transmit_packet(const Frame packet)
+void ZetaRfRadio::process_zeta_events()
+{
+    const auto event = this->zeta_.checkForEvent();
+    if (event & ZetaRf::Event::DeviceBusy)
+    {
+        // DeviceBusy error usually means the radio module is unresponsive and
+        // needs a reset.
+        std::cout << "Error: Device Busy! Restarting..." << std::endl;
+
+        if (!this->zeta_.beginWithPacketLengthOf(PACKET_LENGTH))
+            std::cout << "ZetaRf begin failed after comm error." << std::endl;
+        this->zeta_.restartListeningSinglePacket();
+    }
+    if (event & ZetaRf::Event::PacketReceived)
+    {
+        // We'll read data later
+        // Get RSSI (only valid in single packet RX, before going back to RX)
+        // See https://www.silabs.com/documents/public/data-sheets/Si4455.pdf
+        const auto rssi = (float) this->zeta_.latchedRssiValue() / 2 - 130;
+
+        // Restart listening on the same channel
+        this->zeta_.restartListeningSinglePacket();
+
+        std::cout << "Packet received with RSSI: " << rssi << " dBm" << std::endl;
+    }
+}
+
+void ZetaRfRadio::read_packet()
+{
+    uint8_t packet_bytes[PACKET_LENGTH];
+    const auto read_result = this->zeta_.readPacketTo(packet_bytes);
+
+    if (read_result)
+    {
+        auto packet = reinterpret_cast<const Frame *>(packet_bytes);
+        std::cout << "Packet received: " << &*packet << std::endl;
+        this->on_receive_(*packet);
+    }
+    else
+    {
+        std::cerr << "read_packet failed with code ["
+                  << read_result.value() << "]" << std::endl;
+    }
+}
+
+void ZetaRfRadio::transmit_packet(const Frame packet)
 {
     const auto bytes = reinterpret_cast<const uint8_t *>(&packet);
-    return this->zeta_.sendFixedLengthPacketOnChannel(ZETA_CHANNEL, bytes);
+    if (this->zeta_.sendFixedLengthPacketOnChannel(ZETA_CHANNEL, bytes))
+        std::cerr << "Packet failed to send" << std::endl;
 }
