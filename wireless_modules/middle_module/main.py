@@ -3,15 +3,14 @@
 import machine
 import ubinascii
 import utime
+from mqtt_client import Client
 
-# To get access to the 'MQTT_BROKER' variable in config.py
+
 try:
     import config
 except FileNotFoundError:
     print("Error importing config.py, ensure a local version of config.py exists")
 
-# To get access to the Client class in the MQTT_Client_class file
-from mqtt_client import Client
 
 # Define module number and MQTT topics to publish to
 MODULE_NUM = "2"
@@ -38,7 +37,6 @@ def sub_cb(topic, msg):
     client.check_msg() or client.wait_msg()
     :param topic: The topic on which the message is received
     :param msg: The message received
-    :return: None
     :changes made: The global variable 'start' is changed to True or False depending on which topic we receive the
                     message from
     """
@@ -56,30 +54,38 @@ def restart_and_reconnect():
     machine.reset()
 
 
-# Create Client class instance
-my_client = Client(client_id, config.MQTT_BROKER)
+def publish_test_messages(client, topic):
+    """
+    Keeps publishing data till a stop message is received
+    :param client: A instance of the Client class
+    :param topic: Topic to publish on
+    """
+    test_no = 0
+    while start_publish:
+        message = "Message sample " + str(test_no)
+        client.mqtt_pub(message, topic)
+        print("MQTT data sent: %s on %s through %s" % (message, PUB_DATA_TOPIC, config.MQTT_BROKER))
 
-if not my_client.connect_and_subscribe(SUB_TOPICS, sub_cb):
-    # If the connect_and_subscribe returns False, a connection to the broker could not be established
-    restart_and_reconnect()
+        client.check_for_message()
 
-# Wait for the start message
-my_client.wait_for_message()
+        utime.sleep(1)
+        test_no = test_no + 1
 
-# Keep publishing data till a stop message is received
-test_no = 0
-while start_publish:
-    print("----------publishing-----------")
-    message = "Message sample " + str(test_no)
-    my_client.mqtt_pub(message, PUB_DATA_TOPIC)
-    print("MQTT data sent: %s on %s through %s" % (message, PUB_DATA_TOPIC, config.MQTT_BROKER))
 
-    # Keep checking for an incoming messages (specifically the stop message)
-    my_client.check_for_message()
+def run_module():
+    """
+    Connects and publishes data using MQTT
+    """
+    # Create Client class instance
+    my_client = Client(client_id, config.MQTT_BROKER)
 
-    utime.sleep(1)
-    test_no = test_no + 1
+    my_client.connect_and_subscribe(SUB_TOPICS, sub_cb)
 
+    # Wait for the start message
+    my_client.wait_for_message()
+
+    publish_test_messages(my_client, PUB_DATA_TOPIC)
+
+
+run_module()
 print("########## Reached end of file successfully #########")
-
-

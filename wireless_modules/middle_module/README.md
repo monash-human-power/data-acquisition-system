@@ -8,12 +8,8 @@ This repository contains all the code related to Monash Human Power's middle wir
 
 ## Getting Started
 
-1. Create a `config.py` file in the same directory as the contents of this folder (refer below).
-2. The `config.py` file should hold the following variables (ensure the name matches):
-- `ESSID` : Should be assigned to a string containing the SSID of the network to connect to
-- `PASSWORD`: Should be assigned to a string containing password of the network
-- `MQTT_BROKER`: A string containing either the web server name or IP address which acts like the Mqtt broker
-- `builtin_LED = PIN(2, PIN.OUT)`
+1. Create a local version of `config.py` in the same directory as the contents of this folder.
+2. Your `config.py` should be similar to `config.example.py`. You'll need to replace the placeholders by the appropriate values.
 
 ## Contents
 - `boot.py`: Contains functions to connect the microcontroller to the internet
