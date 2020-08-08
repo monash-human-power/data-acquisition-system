@@ -1,4 +1,3 @@
-# Note: Can remove all the Print statements once all testing is successful
 
 # Use micro pip to install packages
 import upip
@@ -23,16 +22,13 @@ class Client:
         :param topics_to_subscribe: An array of topics to subscribe to.
                                     Each element must be a string or byte literal (the latter is preferred)
         :param callback_func: The function to be called whenever a message from the subscribed topics is received.
-        :return: True if a connection to the Broker is successfully established, otherwise False
         """
 
         self.client.set_callback(callback_func)
-        try:
-            # Connect to MQTT broker
-            self.client.connect()
-            print("Connected to %s MQTT broker" % (self.mqtt_broker))
-        except OSError:
-            return False
+
+        # Connect to MQTT broker
+        self.client.connect()
+        print("Connected to %s MQTT broker" % (self.mqtt_broker))
 
         # Subscribe to each topic
         for topic in topics_to_subscribe:
@@ -43,7 +39,7 @@ class Client:
 
     def _to_bytes_literal(self, data):
         """
-        Converts ```data``` into a form MQTT can read
+        Converts data into a form MQTT can read
         :param data: A string of data to convert to bytes literal
         :return: The bytes literal version of the ```data```
         """
@@ -52,12 +48,9 @@ class Client:
 
     def mqtt_pub(self, data, topic):
         """
-        This function takes care of all of the formatting and publishes 'data' on the given 'topic'. It also checks for
-        any pending message, but this should not be relied upon solely - use the check_for_message() method externally
-        when an incoming message is to be checked for/read.
+        This function takes care of all of the formatting and publishes 'data' on the given topic. Also checks for any incomming messages
         :param data: A string of data to be sent
         :param topic: A string representing the topic to send 'data' to.
-        :return: Nothing
         """
         msg = self._to_bytes_literal(data)
 
@@ -68,14 +61,11 @@ class Client:
     def check_for_message(self):
         """
         Checks whether an incoming message from the MQTT broker on the subscribed topics is pending.
-        :return: None
         """
-        # If there's a message waiting, it will be sent to the callback_func defined in the connect_and_subscribe method
         self.client.check_msg()
 
     def wait_for_message(self):
         """
-        This function blocks until a message is received
-        :return: None
+        This function blocks until a message is received on one of the subsrcibed topics
         """
         self.client.wait_msg()
