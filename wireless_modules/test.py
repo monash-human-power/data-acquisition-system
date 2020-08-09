@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 import time
 import argparse
-
+# Note: Change to local host at the end
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless module test script with dummy payloads',
@@ -11,9 +11,14 @@ parser.add_argument(
     default=2, help="""The module number to determine the publish and subscription topics. 
     If nothing is selected it will send on module number 2 topics.""")
 parser.add_argument(
-    '--host', action='store', type=str, default="5.196.95.208",
+    '--host', action='store', type=str, default="localhost",
     help="""Address of the MQTT broker. If nothing is selected it will
     default to 5.196.95.208 - a test server by mosquito.""")
+
+
+def on_connect(client, data, message):
+    print('Received: ', str(message.payload.decode('utf-8')))
+    return True
 
 
 if __name__ == "__main__":
@@ -28,11 +33,6 @@ if __name__ == "__main__":
 
     # Broker domain name or IP address
     BROKER = args.host
-
-    def on_connect(client, data, message):
-        print('Received: ', str(message.payload.decode('utf-8')))
-        return True
-
     client.connect(BROKER)
 
     # Calls the function on_connect whenever a message is received
@@ -41,21 +41,17 @@ if __name__ == "__main__":
 
     # The start loop starts scanning for incoming messages and the stop loop stops this process.
     client.loop_start()
-    for i in range(1):
-        client.subscribe(SUB_DATA_TOPIC)
-        # Wait more than 10 seconds in case, main.py could not connect to the broker and takes 10 seconds to restart
-        time.sleep(11)
-        # Send repeatedly to make sure it's received
-        print('Sending first start message')
-        for j in range(4):
-            client.publish(START_TOPIC, qos=1)
-            time.sleep(1)
-        print('Sent all start messages')
 
-        # Wait for data to receive
-        time.sleep(10)
+    # Give some time for ESP32 to "set-up"
+    time.sleep(2)
 
-        client.publish(STOP_TOPIC)
-        client.publish(STOP_TOPIC)
-        print('Sent stop message')
+    print('Sending start message')
+    # QOS=1 ensures the message is received at least once
+    client.publish(START_TOPIC, qos=1)
+
+    # Wait for data to receive
+    time.sleep(5)
+
+    client.publish(STOP_TOPIC, qos=1)
+    print('Sent stop message')
     client.loop_stop()
