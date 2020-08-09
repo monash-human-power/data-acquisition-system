@@ -21,11 +21,12 @@ std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const Frame packet)
     if (!this->next_frame_count_)
     {
         // This is the first packet to be received, start the frame counting
-        this->next_frame_count_ = packet.frame_counter + 1;
-    } else if (packet.frame_counter != this->next_frame_count_)
+        this->next_frame_count_ = packet.frame_count + 1;
+    } else if (packet.frame_count != this->next_frame_count_)
     {
         // We must have skipped a frame, discard everything
         this->reset();
+        this->next_frame_count_ = packet.frame_count + 1;
         debug << "Frame skipped" << std::endl;
     } else
     {
@@ -33,12 +34,12 @@ std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const Frame packet)
         (*this->next_frame_count_)++;
     }
 
-    if (packet.part_counter == 0)
+    if (packet.part_count == 0)
     {
         // Starting new message
         this->reset();
         this->remaining_body_bytes_ = packet.body_length;
-    } else if (packet.part_counter != this->next_part_count_)
+    } else if (packet.part_count != this->next_part_count_)
     {
         // We're resuming a message but dropped a packet, unrecoverable
         // Reset will occur when we next successfully start a new message
@@ -116,9 +117,9 @@ std::vector<Frame> TxProtocol::packMessage(mqtt::const_message_ptr message)
         auto last = std::min(bytes.size(), i + BODY_LENGTH);
 
         Frame frame;
-        frame.frame_counter = this->next_frame_count_++;
+        frame.frame_count = this->next_frame_count_++;
         frame.frame_type = FrameType::Message;
-        frame.part_counter = next_part_count++;
+        frame.part_count = next_part_count++;
         frame.body_length = bytes.size();
         std::copy(bytes.begin() + i, bytes.begin() + last, frame.body);
 
