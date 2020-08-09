@@ -6,9 +6,9 @@ import config
 
 def do_connect(essid, password):
     """
-    Countinously tries to connect to the WIFI
-    :param essid: The WIFI name to connect to, ensure it's not in double quotes but single ones
-    :param password: The WIFI password to connect
+    Continuously tries to connect to the WIFI
+    :param essid: The WIFI name to connect to, in string format
+    :param password: The WIFI password to connect, inn strung format
     :return: Nothing
     """
 
@@ -24,9 +24,11 @@ def do_connect(essid, password):
         pass
     
     print("Connected, network config:", station_interface.ifconfig())
-    # Turn on the built in LED when booted and connected to WiFi (blue light)
-    config.builtin_LED.on()
 
 
+# Allows the code to be uploaded with tools such as rshell / ampy
 esp.osdebug(None)
 do_connect(config.ESSID, config.PASSWORD)
+
+# Turn on the built in LED when booted and connected to WiFi (blue light)
+config.builtin_LED.on()
