@@ -21,6 +21,11 @@ On the other end of the bridge, the reverse process would happen.
 
 Details on the protocol used for converting an MQTT message into bytes, and then into packets may be found on Notion.
 
+### Radio configuration
+
+Radio configurations are stored in `src/rf_config`.
+The `.xml` file is for use in Silicon Labs' [EZRadio Wireless Development Suite](https://www.silabs.com/products/development-tools/software/wireless-development-suite), which outputs a header file which is easily modified into the existing `.h` and `.cpp` files in the same directory.
+
 ## Installation
 
 1. If you did not clone submodules when cloning, run
