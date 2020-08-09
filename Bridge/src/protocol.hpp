@@ -31,7 +31,7 @@ public:
      * @return An MQTT message if the frame successfully completed the end of a
      *         message, otherwise std::nullopt.
      */
-    std::optional<mqtt::message_ptr> receivePacket(const Frame packet);
+    std::optional<mqtt::message_ptr> receive_packet(const Frame packet);
 
 private:
     /** Prepare to process a new message */
@@ -40,7 +40,7 @@ private:
      * Parse the received bytes in this->body_ into an MQTT message.
      * @return The parsed MQTT message if successful, otherwise std::nullopt.
      */
-    std::optional<mqtt::message_ptr> deserialiseMqttMessage();
+    std::optional<mqtt::message_ptr> deserialise_mqtt_message();
 
     /**
      * The frame count we expect the next received packet to contain.
@@ -71,7 +71,7 @@ public:
      * @return A vector containing the corresponding packets. The first element
      *         should be the first to be sent by radio.
      */
-    std::vector<Frame> packMessage(mqtt::const_message_ptr message);
+    std::vector<Frame> pack_message(mqtt::const_message_ptr message);
 
 private:
     /** The frame count for the next packet to be created. */
@@ -83,5 +83,5 @@ private:
      * @param message The MQTT message to be processed.
      * @return The message serialised as a vector of bytes.
      */
-    std::vector<uint8_t> serialiseMessage(mqtt::const_message_ptr message);
+    std::vector<uint8_t> serialise_message(mqtt::const_message_ptr message);
 };

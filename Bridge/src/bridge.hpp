@@ -34,14 +34,14 @@ class Bridge
 
     /**
      * Separates the topic from the payload when hashing mqtt messages.
-     * @see hashMqttMessage.
+     * @see hash_mqtt_message.
      */
     static const std::string MQTT_HASH_SEPARATOR;
 
     /** Transmit an MQTT message by radio (if it is not one we published). */
-    void mqttMessageReceivedCallback(mqtt::const_message_ptr message);
+    void mqtt_message_received_callback(mqtt::const_message_ptr message);
     /** Process a received radio packet for publishing. */
-    void zetaRfPacketReceivedCallback(const Frame packet);
+    void zetarf_packet_received_callback(const Frame packet);
 
     /**
      * Compute a hash of an MQTT message which will be unique for a unique
@@ -49,7 +49,7 @@ class Bridge
      * @param message The MQTT message to hash.
      * @return The hash of the MQTT message.
      */
-    size_t hashMqttMessage(mqtt::const_message_ptr message) const;
+    size_t hash_mqtt_message(mqtt::const_message_ptr message) const;
 
 public:
     /**

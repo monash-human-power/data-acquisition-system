@@ -6,35 +6,35 @@ Bridge::Bridge(MqttBridgeClient_ptr mqttClient)
     : mqtt_client_(mqttClient)
 {
     using namespace std::placeholders;
-    this->mqtt_client_->set_on_message(std::bind(&Bridge::mqttMessageReceivedCallback, this, _1));
-    this->zeta_radio_->set_on_received(std::bind(&Bridge::zetaRfPacketReceivedCallback, this, _1));
+    this->mqtt_client_->set_on_message(std::bind(&Bridge::mqtt_message_received_callback, this, _1));
+    this->zeta_radio_->set_on_received(std::bind(&Bridge::zetarf_packet_received_callback, this, _1));
 }
 
-void Bridge::mqttMessageReceivedCallback(mqtt::const_message_ptr message)
+void Bridge::mqtt_message_received_callback(mqtt::const_message_ptr message)
 {
-    auto hash = this->hashMqttMessage(message);
+    auto hash = this->hash_mqtt_message(message);
     if (this->recently_sent_messages_.contains(hash))
         // This message was sent from us (the bridge), so discard
         return;
 
-    const auto packets = this->tx_.packMessage(message);
+    const auto packets = this->tx_.pack_message(message);
     this->zeta_radio_->send_packets(packets);
 }
 
-void Bridge::zetaRfPacketReceivedCallback(const Frame packet)
+void Bridge::zetarf_packet_received_callback(const Frame packet)
 {
-    if (auto message = this->rx_.receivePacket(packet))
+    if (auto message = this->rx_.receive_packet(packet))
     {
         // Store the hash of this message so we know to discard it when receive
         // it back from the broker
-        const auto hash = this->hashMqttMessage(*message);
+        const auto hash = this->hash_mqtt_message(*message);
         this->recently_sent_messages_.put(hash);
 
         this->mqtt_client_->publish(*message);
     }
 }
 
-size_t Bridge::hashMqttMessage(mqtt::const_message_ptr message) const
+size_t Bridge::hash_mqtt_message(mqtt::const_message_ptr message) const
 {
     static const std::hash<std::string> str_hash;
     // Separate the topic from the payload so that topic=AB and message=C has

@@ -12,7 +12,7 @@ void RxProtocol::reset()
     this->next_part_count_ = 0;
 }
 
-std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const Frame packet)
+std::optional<mqtt::message_ptr> RxProtocol::receive_packet(const Frame packet)
 {
     if (packet.frame_type != FrameType::Message)
         // Not implemented
@@ -56,14 +56,14 @@ std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const Frame packet)
     if (this->remaining_body_bytes_ == 0)
     {
         // Full message has been received
-        auto message = this->deserialiseMqttMessage();
+        auto message = this->deserialise_mqtt_message();
         this->reset();
         return message;
     }
     return { };
 }
 
-std::optional<mqtt::message_ptr> RxProtocol::deserialiseMqttMessage()
+std::optional<mqtt::message_ptr> RxProtocol::deserialise_mqtt_message()
 {
     // The minimum body size is 2 bytes - one byte for QoS/retain and one more
     // to specify a zero topic length.
@@ -110,10 +110,10 @@ std::optional<mqtt::message_ptr> RxProtocol::deserialiseMqttMessage()
 }
 
 
-std::vector<Frame> TxProtocol::packMessage(mqtt::const_message_ptr message)
+std::vector<Frame> TxProtocol::pack_message(mqtt::const_message_ptr message)
 {
     // Convert the message to a collection of bytes
-    const auto bytes = this->serialiseMessage(message);
+    const auto bytes = this->serialise_message(message);
 
     std::vector<Frame> frames;
     uint8_t next_part_count = 0;
@@ -140,7 +140,7 @@ std::vector<Frame> TxProtocol::packMessage(mqtt::const_message_ptr message)
     return frames;
 }
 
-std::vector<uint8_t> TxProtocol::serialiseMessage(mqtt::const_message_ptr message)
+std::vector<uint8_t> TxProtocol::serialise_message(mqtt::const_message_ptr message)
 {
     std::vector<uint8_t> bytes;
     auto inserter = back_inserter(bytes);
