@@ -82,6 +82,8 @@ def run_module():
     # Wait for the start message
     my_client.wait_for_message()
 
+    # FIXME: Need to make this a continous process (to keep checking for start message once a stop 
+    # message is recieved) in future PR
     publish_test_messages(my_client, PUB_DATA_TOPIC)
 
 
