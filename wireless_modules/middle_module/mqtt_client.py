@@ -3,12 +3,6 @@
 import upip
 upip.install("micropython-umqtt.simple2")
 from umqtt.simple import MQTTClient
-# def main(server="localhost"):
-#     c = MQTTClient("umqtt_client", server)
-#     c.connect()
-#     c.publish(b"foo_topic", b"hello")
-#     c.disconnect()
-# main()
 
 
 class Client:
@@ -47,7 +41,7 @@ class Client:
         """
         Converts data into a form MQTT can read
         :param data: A string of data to convert to bytes literal
-        :return: The bytes literal version of the ```data```
+        :return: The bytes literal version of the 'data'
         """
         str_data = str(data)
         return str.encode(str_data)
