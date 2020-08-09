@@ -1,12 +1,12 @@
 #include <iostream>
 
+#include "bridge.hpp"
 #include "mqtt.hpp"
-#include "protocol.hpp"
 
 int main()
 {
     auto mqttClient = std::make_shared<MqttBridgeClient>();
-    Protocol protocol(mqttClient);
+    Bridge bridge(mqttClient);
 
     while (std::cin.get() != 'q')
         ;
