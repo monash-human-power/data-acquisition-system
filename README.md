@@ -8,7 +8,7 @@ This repository contains all the code related to Monash Human Power's Data Acqui
 
 ## Getting Started
 
-Type `git clone https://github.com/Monash-Human-Power/MHP_DAS.git --recurse submodules` on the command line to download the whole repository and submodules.
+Type `git clone https://github.com/Monash-Human-Power/MHP_DAS.git --recurse-submodules` on the command line to download the whole repository and submodules.
 
 ## Contents
 
