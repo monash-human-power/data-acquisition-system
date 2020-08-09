@@ -1,7 +1,6 @@
 import paho.mqtt.client as mqtt
 import time
 import argparse
-# Note: Change to local host at the end
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless module test script with dummy payloads',
@@ -12,11 +11,10 @@ parser.add_argument(
     If nothing is selected it will send on module number 2 topics.""")
 parser.add_argument(
     '--host', action='store', type=str, default="localhost",
-    help="""Address of the MQTT broker. If nothing is selected it will
-    default to 5.196.95.208 - a test server by mosquito.""")
+    help="""Address of the MQTT broker.""")
 
 
-def on_connect(client, data, message):
+def on_msg_receive(client, data, message):
     print('Received: ', str(message.payload.decode('utf-8')))
     return True
 
@@ -35,8 +33,8 @@ if __name__ == "__main__":
     BROKER = args.host
     client.connect(BROKER)
 
-    # Calls the function on_connect whenever a message is received
-    client.on_message = on_connect
+    # Set function to call when a message from the subscribed topic is received
+    client.on_message = on_msg_receive
     client.subscribe(SUB_DATA_TOPIC)
 
     # The start loop starts scanning for incoming messages and the stop loop stops this process.

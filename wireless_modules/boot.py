@@ -8,10 +8,10 @@ def do_connect(essid, password):
     """
     Continuously tries to connect to the WIFI
     :param essid: The WIFI name to connect to, in string format
-    :param password: The WIFI password to connect, inn strung format
+    :param password: The WIFI password to connect, in string format
     :return: Nothing
     """
-
+    print("Attempting to connect to WIFI")
     # Create station interface
     station_interface = network.WLAN(network.STA_IF)
     station_interface.active(True)
