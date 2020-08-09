@@ -91,8 +91,10 @@ public:
     /**
      * Create a new MqttBrideClient. Will attempt to connect to the localhost
      * MQTT broker on creation.
+     * @param broker_address The address of the broker to connect to, including
+     *                       protocol, IP, and port.
      */
-    MqttBridgeClient();
+    MqttBridgeClient(std::string broker_address = "tcp://localhost:1883");
     /**
      * Disconnect from the MQTT client.
      */

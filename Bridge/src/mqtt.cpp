@@ -37,10 +37,10 @@ void MqttCallback::message_arrived(mqtt::const_message_ptr message)
 }
 
 
-MqttBridgeClient::MqttBridgeClient()
+MqttBridgeClient::MqttBridgeClient(std::string broker_address)
 {
     const auto client_id = this->generate_client_id();
-    this->client_ = std::make_shared<mqtt::async_client>("tcp://localhost:1883", client_id);
+    this->client_ = std::make_shared<mqtt::async_client>(broker_address, client_id);
 
     mqtt::connect_options conn_opts;
     conn_opts.set_keep_alive_interval(20);
