@@ -1,6 +1,8 @@
 #pragma once
 
 #include "protocol.hpp"
+#include "ring_buffer.hpp"
+#include "zeta.hpp"
 
 /**
  * Manages and runs the MQTT Bridge.

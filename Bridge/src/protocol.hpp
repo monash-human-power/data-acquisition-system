@@ -8,8 +8,6 @@
 
 #include "frame.hpp"
 #include "mqtt.hpp"
-#include "ring_buffer.hpp"
-#include "zeta.hpp"
 
 /** The bits used by QOS in the qos/retain byte. */
 constexpr uint8_t QOS_MASK    = 0b0000'0011;
