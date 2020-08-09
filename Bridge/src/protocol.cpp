@@ -65,6 +65,8 @@ std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const Frame packet)
 
 std::optional<mqtt::message_ptr> RxProtocol::deserialiseMqttMessage()
 {
+    // The minimum body size is 2 bytes - one byte for QoS/retain and one more
+    // to specify a zero topic length.
     if (this->body_.size() < 2)
     {
         std::cerr << "Failed to parse packet body: "
@@ -74,12 +76,13 @@ std::optional<mqtt::message_ptr> RxProtocol::deserialiseMqttMessage()
 
     auto body_iterator = this->body_.begin();
 
+    // Get QoS level and retained boolean
     const auto qos_retained_bits = *body_iterator++;
     const auto qos = qos_retained_bits & QOS_MASK;
     const bool retained = qos_retained_bits & RETAIN_MASK;
 
+    // Get the length of the topic and check that it will fit in the body
     const auto topic_size = *body_iterator++;
-
     if (std::distance(body_iterator, this->body_.end()) < topic_size)
     {
         std::cerr << "Failed to parse packet body: "
@@ -87,9 +90,11 @@ std::optional<mqtt::message_ptr> RxProtocol::deserialiseMqttMessage()
         return { };
     }
 
+    // Get the topic
     const std::string topic(body_iterator, body_iterator + topic_size);
     body_iterator += topic_size;
 
+    // Get the message payload
     const std::string payload(body_iterator, this->body_.end());
 
     try
@@ -107,15 +112,21 @@ std::optional<mqtt::message_ptr> RxProtocol::deserialiseMqttMessage()
 
 std::vector<Frame> TxProtocol::packMessage(mqtt::const_message_ptr message)
 {
-    auto bytes = this->serialiseMessage(message);
+    // Convert the message to a collection of bytes
+    const auto bytes = this->serialiseMessage(message);
 
     std::vector<Frame> frames;
     uint8_t next_part_count = 0;
 
+    // Iterate through all the bytes of the message, but in chunks of however
+    // many we are able to fit into the body of a single frame.
     for (size_t i = 0; i < bytes.size(); i += BODY_LENGTH)
     {
+        // Last byte of the body to be included in this frame.
+        // Fit up to BODY_LENGTH bytes but don't copy beyond the end of bytes.
         auto last = std::min(bytes.size(), i + BODY_LENGTH);
 
+        // Create and populate frame
         Frame frame;
         frame.frame_count = this->next_frame_count_++;
         frame.frame_type = FrameType::Message;
@@ -134,14 +145,17 @@ std::vector<uint8_t> TxProtocol::serialiseMessage(mqtt::const_message_ptr messag
     std::vector<uint8_t> bytes;
     auto inserter = back_inserter(bytes);
 
+    // Construct the byte containing the QoS and retain flag.
     uint8_t qos_retained_bits = message->get_qos() | (uint8_t) message->is_retained() << 2;
-    inserter = qos_retained_bits; // This operation inserts
+    bytes.push_back(qos_retained_bits);
 
-    auto topic = message->get_topic();
+    // Add topic size and content
+    const auto topic = message->get_topic();
     bytes.push_back(topic.size());
     std::copy(topic.begin(), topic.end(), inserter);
 
-    auto payload = message->get_payload();
+    // Add message payload
+    const auto payload = message->get_payload();
     std::copy(payload.begin(), payload.end(), inserter);
 
     return bytes;
@@ -164,7 +178,7 @@ void Protocol::mqttMessageReceivedCallback(mqtt::const_message_ptr message)
         // This message was sent from us (the bridge), so discard
         return;
 
-    auto packets = this->tx_.packMessage(message);
+    const auto packets = this->tx_.packMessage(message);
     this->zeta_radio_->send_packets(packets);
 }
 
@@ -172,16 +186,20 @@ void Protocol::zetaRfPacketReceivedCallback(const Frame packet)
 {
     if (auto message = this->rx_.receivePacket(packet))
     {
-        // Store the hash of this message so we know when we receive it back from the broker
-        auto hash = this->hashMqttMessage(*message);
+        // Store the hash of this message so we know to discard it when receive
+        // it back from the broker
+        const auto hash = this->hashMqttMessage(*message);
         this->recently_sent_messages_.put(hash);
+
         this->mqtt_client_->publish(*message);
     }
 }
 
 size_t Protocol::hashMqttMessage(mqtt::const_message_ptr message) const
 {
-    std::hash<std::string> str_hash;
-    auto key = message->get_topic() + Protocol::MQTT_HASH_SEPARATOR + message->get_payload();
+    static const std::hash<std::string> str_hash;
+    // Separate the topic from the payload so that topic=AB and message=C has
+    // a different hash to topic=A message=BC.
+    const auto key = message->get_topic() + Protocol::MQTT_HASH_SEPARATOR + message->get_payload();
     return str_hash(key);
 }
