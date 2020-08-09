@@ -45,8 +45,10 @@ The `.xml` file is for use in Silicon Labs' [EZRadio Wireless Development Suite]
 3. `cd` back to this `Bridge` directory, and run the following to configure and build.
     ```bash
     cmake .
-    make
+    cmake --build . --config Release
     ```
+    If lots of debug messages are desired, then `Release` may be relpaced with `Debug`.
+    This will, amongst other things, print the bytes of every message sent or received.
 
 ## Usage
 
