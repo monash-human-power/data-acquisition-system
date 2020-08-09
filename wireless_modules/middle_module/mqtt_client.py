@@ -10,8 +10,8 @@ class Client:
         """
         Initialises the MQTT Client
         :param client_id: The unique client id used to initiate an MQTTClient class
-        :param broker_address: A string holding domain name or IP address of the broker to connect to, to send and receive
-                            data.
+        :param broker_address: A string holding domain name or IP address of the broker to connect to, to send and
+                            receive data.
         """
         self.client = MQTTClient(client_id, broker_address)
         self.mqtt_broker = broker_address
@@ -21,14 +21,14 @@ class Client:
         Connects to the MQTT broker and subscribes to topic in 'topics_to_subscribe' using QoS = 1
         :param topics_to_subscribe: An array of topics to subscribe to.
                                     Each element must be a string or byte literal (the latter is preferred)
-        :param callback_func: The function to be called whenever a message from the subscribed topics is received.
+        :param callback_func: The function to be called whenever a message from the subscribed topic is received.
         """
 
         self.client.set_callback(callback_func)
 
         # Connect to MQTT broker
         self.client.connect()
-        print("Connected to %s MQTT broker" % self.mqtt_broker)
+        print("Connected to %s" % self.mqtt_broker)
 
         # Subscribe to each topic
         for topic in topics_to_subscribe:
@@ -46,11 +46,12 @@ class Client:
         str_data = str(data)
         return str.encode(str_data)
 
-    def mqtt_pub(self, data, topic):
+    def mqtt_pub(self, topic, data=""):
         """
-        This function takes care of all of the formatting and publishes 'data' on the given topic. Also checks for any incomming messages
-        :param data: A string of data to be sent
+        This function takes care of all of the formatting and publishes 'data' on the given topic. Also checks for any
+        incoming messages
         :param topic: A string representing the topic to send 'data' to.
+        :param data: A string of data to be sent
         """
         msg = self._to_bytes_literal(data)
 
@@ -66,6 +67,6 @@ class Client:
 
     def wait_for_message(self):
         """
-        This function blocks until a message is received on one of the subsrcibed topics
+        This function blocks until a message is received on one of the subscribed topics
         """
         self.client.wait_msg()

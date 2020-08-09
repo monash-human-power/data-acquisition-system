@@ -1,5 +1,3 @@
-# Note: You can remove all the PRINT statements when everything is already tested
-
 import machine
 import ubinascii
 import utime
@@ -9,7 +7,7 @@ from mqtt_client import Client
 try:
     import config
 except FileNotFoundError:
-    print("Error importing config.py, ensure a local version of config.py exists")
+    print('Error importing config.py, ensure a local version of config.py exists')
 
 
 # Define module number and MQTT topics to publish to
@@ -56,14 +54,14 @@ def restart_and_reconnect():
 
 def publish_test_messages(client, topic):
     """
-    Keeps publishing data till a stop message is received
+    Keeps publishing data until a stop message is received
     :param client: A instance of the Client class
     :param topic: Topic to publish on
     """
     test_no = 0
     while start_publish:
         message = "Message sample " + str(test_no)
-        client.mqtt_pub(message, topic)
+        client.mqtt_pub(topic, message)
         print("MQTT data sent: %s on %s through %s" % (message, PUB_DATA_TOPIC, config.MQTT_BROKER))
 
         client.check_for_message()
