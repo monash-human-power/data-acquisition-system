@@ -3,6 +3,12 @@
 import upip
 upip.install("micropython-umqtt.simple2")
 from umqtt.simple import MQTTClient
+# def main(server="localhost"):
+#     c = MQTTClient("umqtt_client", server)
+#     c.connect()
+#     c.publish(b"foo_topic", b"hello")
+#     c.disconnect()
+# main()
 
 
 class Client:
@@ -28,7 +34,7 @@ class Client:
 
         # Connect to MQTT broker
         self.client.connect()
-        print("Connected to %s MQTT broker" % (self.mqtt_broker))
+        print("Connected to %s MQTT broker" % self.mqtt_broker)
 
         # Subscribe to each topic
         for topic in topics_to_subscribe:
