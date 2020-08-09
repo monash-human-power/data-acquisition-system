@@ -48,3 +48,7 @@ Details on the protocol used for converting an MQTT message into bytes, and then
 You will need to have this repo installed on two Raspberry Pis.
 
 On both Pis, once built (see above), start the executable with `./build/ZetaBridge`.
+
+Note: Currently, there are no configuration options for this project.
+If you wish to change the MQTT broker IP address, you must do so manually inside `mqtt.cpp`.
+By default, the client will connect to `tcp://localhost:1883`.
