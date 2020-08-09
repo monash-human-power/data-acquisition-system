@@ -3,6 +3,8 @@
 #include <chrono>
 #include <iostream>
 
+#include "debug.hpp"
+
 ZetaRfRadio::ZetaRfRadio()
 {
     std::cout << "Starting Zeta Radio..." << std::endl;
@@ -13,20 +15,18 @@ ZetaRfRadio::ZetaRfRadio()
     if (!this->zeta_.startListeningSinglePacketOnChannel(ZetaRfRadio::ZETA_CHANNEL))
         throw "ZetaRf startListening failed.";
 
-    std::cout << "Init done." << std::endl;
-
-    std::cout << "Starting worker..." << std::endl;
+    debug << "Starting ZetaRf worker thread..." << std::endl;
     this->worker_ = std::thread(&ZetaRfRadio::rx_tx_loop, this);
+
+    std::cout << "ZetaRf init done." << std::endl;
 }
 
 ZetaRfRadio::~ZetaRfRadio()
 {
     if (this->worker_.joinable())
     {
-        std::cout << "Attempting to join worker..." << std::endl;
         this->should_worker_join_ = true;
         this->worker_.join();
-        std::cout << "Joined!" << std::endl;
     }
 }
 
@@ -54,13 +54,13 @@ void ZetaRfRadio::rx_tx_loop()
         // receiver's rx fifo if it is also transmitting.
         if (auto packet = this->send_queue_.pop())
         {
-            std::cout << "Sending packet: " << &*packet << std::endl;
+            debug << "Sending packet: " << &*packet << std::endl;
             this->transmit_packet(*packet);
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
-    std::cout << "Worker thread exiting" << std::endl;
+    debug << "ZetaRf worker thread exiting..." << std::endl;
 }
 
 void ZetaRfRadio::process_zeta_events()
@@ -86,7 +86,7 @@ void ZetaRfRadio::process_zeta_events()
         // Restart listening on the same channel
         this->zeta_.restartListeningSinglePacket();
 
-        std::cout << "Packet received with RSSI: " << rssi << " dBm" << std::endl;
+        debug << "Packet received with RSSI: " << rssi << " dBm" << std::endl;
     }
 }
 
@@ -98,7 +98,7 @@ void ZetaRfRadio::read_packet()
     if (read_result)
     {
         auto packet = reinterpret_cast<const Frame *>(packet_bytes);
-        std::cout << "Packet received: " << &*packet << std::endl;
+        debug << "Packet received: " << &*packet << std::endl;
         this->on_receive_(*packet);
     }
     else

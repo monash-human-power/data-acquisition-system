@@ -4,6 +4,8 @@
 #include <iostream>
 #include <iterator>
 
+#include "debug.hpp"
+
 void RxProtocol::reset()
 {
     this->body_.clear();
@@ -24,7 +26,7 @@ std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const Frame packet)
     {
         // We must have skipped a frame, discard everything
         this->reset();
-        this->next_frame_count_ = packet.frame_counter + 1;
+        debug << "Frame skipped" << std::endl;
     } else
     {
         // Normal case, increment for next frame
@@ -40,6 +42,7 @@ std::optional<mqtt::message_ptr> RxProtocol::receivePacket(const Frame packet)
     {
         // We're resuming a message but dropped a packet, unrecoverable
         // Reset will occur when we next successfully start a new message
+        debug << "Part discarded due to previous skipped frame" << std::endl;
         return { };
     }
     this->next_part_count_++;
@@ -78,7 +81,7 @@ std::optional<mqtt::message_ptr> RxProtocol::deserialiseMqttMessage()
 
     if (std::distance(body_iterator, this->body_.end()) < topic_size)
     {
-        std::cerr << "Failed to pase packet body: "
+        std::cerr << "Failed to parse packet body: "
                      "Topic size is too large to fit in body" << std::endl;
         return { };
     }
