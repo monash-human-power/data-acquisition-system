@@ -13,10 +13,14 @@ Type `git clone https://github.com/Monash-Human-Power/MHP_DAS.git --recurse subm
 ## Contents
 
 ### DAS
-Stores the scripts for the DAS 
+Stores the scripts for the DAS.
 
 ### ant_plus_sensor
-Stores the scripts for the ant plus sensors
+Stores the scripts for the ant plus sensors.
+
+### Bridge
+
+The MQTT radio bridge, for connecting the MQTT brokers of the bike and chase car.
 
 ## Contributors ✨
 
