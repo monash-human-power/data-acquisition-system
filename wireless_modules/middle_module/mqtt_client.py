@@ -18,7 +18,7 @@ class Client:
 
     def connect_and_subscribe(self, topics_to_subscribe, callback_func):
         """
-        Connects to the MQTT broker and subscribes to topic in 'topics_to_subscribe' using QoS = 1
+        Connects to the MQTT broker and subscribes to each topic in 'topics_to_subscribe' using QoS = 1
         :param topics_to_subscribe: An array of topics to subscribe to.
                                     Each element must be a string or byte literal (the latter is preferred)
         :param callback_func: The function to be called whenever a message from the subscribed topic is received.
@@ -51,7 +51,7 @@ class Client:
         This function takes care of all of the formatting and publishes 'data' on the given topic. Also checks for any
         incoming messages
         :param topic: A string representing the topic to send 'data' to.
-        :param data: A string of data to be sent
+        :param data: A string of data to send/publish
         """
         msg = self._to_bytes_literal(data)
 

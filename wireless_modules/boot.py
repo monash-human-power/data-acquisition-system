@@ -16,7 +16,7 @@ def do_connect(essid, password):
     station_interface = network.WLAN(network.STA_IF)
     station_interface.active(True)
 
-    # Connect to WiFi using the credentials given
+    # Connect to WiFi
     station_interface.connect(essid, password)
 
     # Wait for the module to connect

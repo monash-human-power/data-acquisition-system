@@ -31,8 +31,7 @@ start_publish = False
 # MQTT callback function
 def sub_cb(topic, msg):
     """
-    This function is called whenever a subscribed topic sends a message and we read it through either calling
-    client.check_msg() or client.wait_msg()
+    This function is called whenever we receive a message from one of the subscribed topics
     :param topic: The topic on which the message is received
     :param msg: The message received
     :changes made: The global variable 'start' is changed to True or False depending on which topic we receive the
@@ -55,7 +54,7 @@ def restart_and_reconnect():
 def publish_test_messages(client, topic):
     """
     Keeps publishing data until a stop message is received
-    :param client: A instance of the Client class
+    :param client: An instance of the Client class
     :param topic: Topic to publish on
     """
     test_no = 0
@@ -82,8 +81,7 @@ def run_module():
     # Wait for the start message
     my_client.wait_for_message()
 
-    # FIXME: Need to make this a continous process (to keep checking for start message once a stop 
-    # message is recieved) in future PR
+    # FIXME: Need to make this a continuous process (i.e keep checking for start message once a stop message is recieved)
     publish_test_messages(my_client, PUB_DATA_TOPIC)
 
 
