@@ -29,7 +29,7 @@ class Logger:
         for filename in os.listdir(csv_folder_path):
             try:
                 if int(filename[0:4]) > previous_log_num:
-                    previous_log_num = int(filename[0:4])
+                    previous_log_num = abs(int(filename[0:4]))
             except ValueError:
                 print(
                     f"WARNING: {filename} should not be in {csv_folder_path}")
@@ -81,7 +81,7 @@ class Logger:
         try:
             self._LOG_FILE.write(f"{time_delta}, {mqtt_topic}, {message} \n")
             if self._VERBOSE:
-                # TODO: don't hardcode topic length when printing
+                # TODO: don't hardcode topic length when printing (<50)
                 print(f"{time_delta} | {mqtt_topic: <50} | {message}")
         except Exception as e:
             print(f"ERROR: {e}")
