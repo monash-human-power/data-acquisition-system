@@ -5,7 +5,7 @@
 
 import argparse
 import os
-from logger import Logger
+import logger
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless logger',
@@ -20,4 +20,5 @@ if __name__ == "__main__":
     CURRENT_FILEPATH = os.path.dirname(__file__)
     CSV_FILEPATH = os.path.join(CURRENT_FILEPATH, "csv_data")
 
-    Logger(CSV_FILEPATH, "test/#", "tes/#")
+    logger.Logger(CSV_FILEPATH, "test/#", "tes/#")
+    # logger.Playback(os.path.join(CSV_FILEPATH, "0021_log.csv"))
