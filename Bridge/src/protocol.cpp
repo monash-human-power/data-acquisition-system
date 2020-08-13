@@ -18,6 +18,8 @@ std::optional<mqtt::message_ptr> RxProtocol::receive_packet(const Frame packet)
         // Not implemented
         return { };
 
+    // Compare the packet's frame count to what we expect, in order to detect
+    // dropped packets.
     if (!this->next_frame_count_)
     {
         // This is the first packet to be received, start the frame counting
@@ -34,6 +36,9 @@ std::optional<mqtt::message_ptr> RxProtocol::receive_packet(const Frame packet)
         (*this->next_frame_count_)++;
     }
 
+
+    // Compare the part count to what we expect so that we don't try to
+    // construct a message when one of its earlier packets are dropped.
     if (packet.part_count == 0)
     {
         // Starting new message
