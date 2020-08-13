@@ -53,7 +53,7 @@ MqttBridgeClient::MqttBridgeClient(std::string broker_address)
     try
     {
         // Connect to client
-        std::cout << "Connecting to MQTT broker..." << std::endl;
+        std::cout << "Connecting to MQTT broker at " << broker_address << std::endl;
         this->client_->connect(conn_opts);
     }
     catch (const mqtt::exception& exc)
