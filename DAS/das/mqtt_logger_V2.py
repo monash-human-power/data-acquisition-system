@@ -8,21 +8,7 @@ from datetime import datetime
 from pathlib import Path
 import argparse
 import os
-
-# Set current file path and csv_data directory
-CURRENT_FILEPATH = os.path.dirname(__file__)
-CSV_FILEPATH = os.path.join(CURRENT_FILEPATH, "csv_data")
-
-# Create csv_data folder if none exists
-Path(CSV_FILEPATH).mkdir(parents=True, exist_ok=True)
-
-# Name the csv log file (APPEND ONLY)
-FILENAME = "log.csv"
-LOG_FILEPATH = os.path.join(CSV_FILEPATH, FILENAME)
-LOG_FILE = open(LOG_FILEPATH, "a")
-
-# Record current datetime to produce time deltas
-DATETIME_START = datetime.now()
+from logger import Logger
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless logger',
@@ -42,7 +28,7 @@ def on_connect(client, userdata, flags, rc):
         print("Something went wrong! Result code: " + str(rc))
 
     # Subscribe to all of the topics
-    try: 
+    try:
         client.subscribe("#")
     except Exception as e:
         print(e)
@@ -65,13 +51,18 @@ def log(mqtt_topic, message) -> None:
 
 
 if __name__ == "__main__":
-    args = parser.parse_args()
-    broker_address = args.host
-    client = mqtt.Client()
+    print("hello")
+    CURRENT_FILEPATH = os.path.dirname(__file__)
+    CSV_FILEPATH = os.path.join(CURRENT_FILEPATH, "csv_data")
 
-    client.on_connect = on_connect
-    client.on_message = on_message
+    Logger(CSV_FILEPATH)
+    # args = parser.parse_args()
+    # broker_address = args.host
+    # client = mqtt.Client()
 
-    client.connect(broker_address)
+    # client.on_connect = on_connect
+    # client.on_message = on_message
 
-    client.loop_forever()
+    # client.connect(broker_address)
+
+    # client.loop_forever()
