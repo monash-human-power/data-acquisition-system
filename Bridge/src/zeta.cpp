@@ -66,6 +66,10 @@ void ZetaRfRadio::rx_tx_loop()
 void ZetaRfRadio::process_zeta_events()
 {
     const auto event = this->zeta_.checkForEvent();
+
+    if (!event)
+        return;
+
     if (event & ZetaRf::Event::DeviceBusy)
     {
         // DeviceBusy error usually means the radio module is unresponsive and
