@@ -7,17 +7,17 @@ This program is used to join (or "bridge") the two MQTT brokers on the bike and 
 
 At a high level, this works by making a subscription to all MQTT topics (`#`), and then for each received message:
 
-- Check the message was not one that was sent by the bridge itself (performed in the `Bridge` class),
-- Serialise the message into a series of bytes (performed in the `TxProtocol` class),
-- Pack the bytes into one or more `Frame`s, or radio packets (also `TxProtocol`),
-- Send each of the `Frame`s over the radio (using `ZetaRfRadio`).
+1. Check the message was not one that was sent by the bridge itself (performed in the `Bridge` class),
+2. Serialise the message into a series of bytes (performed in the `TxProtocol` class),
+3. Pack the bytes into one or more `Frame`s, or radio packets (also `TxProtocol`),
+4. Send each of the `Frame`s over the radio (using `ZetaRfRadio`).
 
 On the other end of the bridge, the reverse process would happen.
 
-- A packet is received by `ZetaRfRadio`,
-- It is processed by `RxProtocol`, which will emit create a MQTT message when enough packets have arrived,
-- `Bridge` will register the message as one sent by the MQTT radio bridge, before finally,
-- The MQTT message is published using `MqttBridgeClient`.
+5. A packet is received by `ZetaRfRadio`,
+6. It is processed by `RxProtocol`, which will emit create a MQTT message when enough packets have arrived,
+7. `Bridge` will register the message as one sent by the MQTT radio bridge, before finally,
+8. The MQTT message is published using `MqttBridgeClient`.
 
 Details on the protocol used for converting an MQTT message into bytes, and then into packets may be found on Notion.
 
