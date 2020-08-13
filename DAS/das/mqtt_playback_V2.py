@@ -20,6 +20,7 @@ if __name__ == "__main__":
     CURRENT_FILEPATH = os.path.dirname(__file__)
     CSV_FILEPATH = os.path.join(CURRENT_FILEPATH, "csv_data")
 
-    args = parser.parse_args()
-
-    logger.Logger(CSV_FILEPATH, "test/#", broker_address=args.host)
+    # x = logger.Playback(os.path.join(CSV_FILEPATH, "0022_log.csv"))
+    x = logger.Playback(os.path.join(
+        CSV_FILEPATH, "0028_log.csv"), broker_address=args.host)
+    x.play()

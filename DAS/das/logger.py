@@ -3,6 +3,7 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import csv
 import time
+# from tqdm import tqdm maybe
 import os
 
 
@@ -93,40 +94,27 @@ class Logger:
 class Playback:
     def __init__(self, filepath: str, broker_address: str = "localhost", verbose: bool = True) -> None:
         self._VERBOSE = verbose
-
-        # Connect to MQTT broker
-        self._client = mqtt.Client()
-        self._client.on_connect = self._on_connect
-        self._client.connect(broker_address)
-        self._client.loop_start()  # Threaded
-        # self._client.loop_forever()
+        self._BROKER = broker_address
 
         # Read in make an array of functions
         log_file = open(filepath, "r")
         csv_reader = csv.DictReader(log_file, skipinitialspace=True)
-        self.publish_arr = []
+        self._log_data = []
+        simple_q = [0, 0]
         for row in csv_reader:
-            print(row)
-            print(row["mqtt_topic"], row["message"])
-            time.sleep(float(row["time_delta"]))
+            row["time_delta"] = float(row["time_delta"])
 
-            try:
-                publish.single(row["mqtt_topic"], row["message"],
-                               hostname=broker_address)
-            except Exception as e:
-                print(f"ERROR: {e}")
+            # Move the queue along one
+            simple_q = [row["time_delta"], simple_q[0]]
 
-            # [time_delta, topic, data] = row
-            # print(float(time_delta))
-            # print(time_delta, type(str(row[2])), type(row[2]))
-            # time.sleep(float(time_delta))
+            # The amount of sleep time is the difference between the two time_deltas
+            row["sleep_time"] = abs(simple_q[0] - simple_q[1])
+            self._log_data.append(row)
 
-    def _on_connect(self, client, userdata, flags, rc):
-        if rc == 0:
-            print("Connection Successful!")
-        else:
-            print("ERROR: Something went wrong!")
-
-    def play(self, speed: float = 1):
-        # "publish message"
-        pass
+    def play(self, speed: float = 1) -> None:
+        for row in self._log_data:
+            time.sleep(row["sleep_time"])
+            publish.single(row["mqtt_topic"], row["message"],
+                           hostname=self._BROKER)
+            print(
+                f"{round(row['time_delta'], 5): <10} | {round(row['sleep_time'], 5): <10} | {row['mqtt_topic']: <50} | {row['message']}")
