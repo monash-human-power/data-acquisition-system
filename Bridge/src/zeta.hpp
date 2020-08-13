@@ -8,6 +8,11 @@
 
 #include "frame.hpp"
 #include "thread_queue.hpp"
+
+// This can be replaced with any other config, but you must ensure both ends of
+// the bridge use the same config. The configurations built in to the ZetaRf
+// library will all work, or new configs may be made using the Silicon Labs
+// WDS. (they will need minor modifications into the structs used by ZetaRf.)
 #include "rf_config/si4455_revb1_bidir_fixed_crc_pre10_sync3MHP_pay8_433mhz_40kbps.hpp"
 
 /**
