@@ -42,8 +42,15 @@ class Logger:
         # fstring :0>4 used to ensure that the number will always be 4 long
         filename = f"{previous_log_num + 1:0>4}_log.csv"
         self._LOG_FILE = open(os.path.join(csv_folder_path, filename), "a")
+        self._LOG_FILE_WRITER = csv.DictWriter(
+            self._LOG_FILE,
+            delimiter=',',
+            quotechar='`',
+            quoting=csv.QUOTE_ALL,
+            fieldnames=["time_delta", "mqtt_topic", "message"])
+
         # Add headers for csv
-        self._LOG_FILE.write("time_delta, mqtt_topic, message\n")
+        self._LOG_FILE_WRITER.writeheader()
 
         # Connect to MQTT broker
         self._client = mqtt.Client()
@@ -82,9 +89,12 @@ class Logger:
 
         # Write data to csv file
         try:
-            self._LOG_FILE.write(f"{time_delta}, {mqtt_topic}, {message} \n")
+            self._LOG_FILE_WRITER.writerow(
+                {'time_delta': time_delta,
+                 'mqtt_topic': mqtt_topic,
+                 'message': message})
             if self._VERBOSE:
-                # TODO: don't hardcode topic length when printing (<50)
+                # TODO: Don't hardcode topic length when printing (<50)
                 print(
                     f"{round(time_delta, 5): <10} | {mqtt_topic: <50} | {message}")
         except Exception as e:
@@ -98,7 +108,12 @@ class Playback:
 
         # Read in make an array of functions
         log_file = open(filepath, "r")
-        csv_reader = csv.DictReader(log_file, skipinitialspace=True)
+        csv_reader = csv.DictReader(
+            log_file,
+            delimiter=',',
+            quotechar='`',
+            quoting=csv.QUOTE_ALL,
+            skipinitialspace=True)
         self._log_data = []
         simple_q = [0, 0]
         for row in csv_reader:
@@ -113,7 +128,7 @@ class Playback:
 
     def play(self, speed: float = 1) -> None:
         for row in self._log_data:
-            time.sleep(row["sleep_time"])
+            time.sleep(row["sleep_time"] * (1/speed))
             publish.single(row["mqtt_topic"], row["message"],
                            hostname=self._BROKER)
             print(

@@ -21,5 +21,4 @@ if __name__ == "__main__":
     CSV_FILEPATH = os.path.join(CURRENT_FILEPATH, "csv_data")
 
     args = parser.parse_args()
-
     logger.Logger(CSV_FILEPATH, "test/#", broker_address=args.host)
