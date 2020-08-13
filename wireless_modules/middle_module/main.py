@@ -60,7 +60,7 @@ def publish_test_messages(client, topic):
     test_no = 0
     while start_publish:
         message = "Message sample " + str(test_no)
-        client.mqtt_pub(topic, message)
+        client.publish(topic, message)
         print("MQTT data sent: %s on %s through %s" % (message, PUB_DATA_TOPIC, config.MQTT_BROKER))
 
         client.check_for_message()
