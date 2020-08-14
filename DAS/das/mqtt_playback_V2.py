@@ -20,7 +20,7 @@ parser.add_argument(
     default to localhost.""")
 
 parser.add_argument(
-    '--speed', action='store', type=float, default=1,
+    '-s', '--speed', action='store', type=float, default=1,
     help="""Playback speed up. Default is 1x""")
 
 parser.add_argument(
