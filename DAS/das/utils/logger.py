@@ -4,12 +4,13 @@ import paho.mqtt.publish as publish
 import csv
 import time
 import os
+import asyncio
 
 
 class Logger:
     """ This class logs MQTT data """
 
-    def __init__(self, csv_folder_path: str, topics: list = ["#"], broker_address: str = "localhost", verbose: bool = True) -> None:
+    def __init__(self, csv_folder_path: str, topics: list = ["#"], broker_address: str = "localhost", verbose: bool = False) -> None:
         # The logger object can subscribe to many topics (if none are selected then it will subscrive to all)
         self.TOPICS = topics
 
@@ -19,7 +20,7 @@ class Logger:
         # Record current time to produce time deltas
         self._TIME_START = time.monotonic()
 
-        # Create csv_data folder if none exists
+        # Create csv_folder_path folder if none exists
         Path(csv_folder_path).mkdir(parents=True, exist_ok=True)
 
         # Name the csv log file xxxx_log.csv where xxxx is a number
@@ -56,8 +57,7 @@ class Logger:
         self._client.on_message = self._on_message
 
         self._client.connect(broker_address)
-        # self._client.loop_start()  # Threaded
-        self._client.loop_forever()
+        self._client.loop_start()  # Threaded execution loop
 
     def _on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -97,6 +97,10 @@ class Logger:
         except Exception as e:
             print(f"ERROR: {e}")
 
+    def stop(self) -> None:
+        self._client.loop_stop()
+        self._LOG_FILE.close()
+
 
 class Playback:
     def __init__(self, filepath: str, broker_address: str = "localhost", verbose: bool = True) -> None:
@@ -129,11 +133,26 @@ class Playback:
         if self._VERBOSE:
             print(f"⚡ Playback initiated at {speed}x speed ⚡")
 
+        asyncio.run(self._gather_publish(speed))
+
+        # for row in self._log_data:
+        #     scaled_sleep = row["sleep_time"] * (1/speed)
+        #     time.sleep(scaled_sleep)
+        #     publish.single(row["mqtt_topic"], row["message"],
+        #                    hostname=self._BROKER)
+        #     if self._VERBOSE:
+        #         print(
+        #             f"{round(row['time_delta'], 5): <10} | {round(scaled_sleep, 5): <10} | {row['mqtt_topic']: <50} | {row['message']}")
+
+    async def _publish(self, row, speed):
+        await asyncio.sleep(row["time_delta"]/speed)
+        print(row)
+        publish.single(row["mqtt_topic"], row["message"],
+                       hostname=self._BROKER)
+
+    async def _gather_publish(self, speed):
+        x = []
         for row in self._log_data:
-            scaled_sleep = row["sleep_time"] * (1/speed)
-            time.sleep(scaled_sleep)
-            publish.single(row["mqtt_topic"], row["message"],
-                           hostname=self._BROKER)
-            if self._VERBOSE:
-                print(
-                    f"{round(row['time_delta'], 5): <10} | {round(scaled_sleep, 5): <10} | {row['mqtt_topic']: <50} | {row['message']}")
+            x.append(self._publish(row, speed))
+
+        await asyncio.gather(*x, return_exceptions=True)

@@ -33,3 +33,7 @@ if __name__ == "__main__":
         topics=args.topics,
         broker_address=args.host,
         verbose=args.verbose)
+
+    # So that the logger can run forever until interupted with CTR-C
+    while True:
+        pass
