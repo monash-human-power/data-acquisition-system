@@ -5,7 +5,7 @@
 
 import argparse
 import os
-import logger
+from das.utils import logger
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless logger',
