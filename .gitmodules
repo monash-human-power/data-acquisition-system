@@ -1,0 +1,8 @@
+[submodule "Bridge/libs/ZetaRF"]
+	path = Bridge/libs/ZetaRF
+	url = https://github.com/GIPdA/ZetaRF
+	branch = v2
+[submodule "Bridge/libs/paho.mqtt.cpp"]
+	path = Bridge/libs/paho.mqtt.cpp
+	url = https://github.com/eclipse/paho.mqtt.cpp.git
+	ignore = untracked
