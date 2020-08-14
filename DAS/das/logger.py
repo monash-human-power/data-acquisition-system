@@ -3,7 +3,7 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import csv
 import time
-# from tqdm import tqdm maybe
+from tqdm import tqdm
 import os
 
 
@@ -131,5 +131,6 @@ class Playback:
             time.sleep(row["sleep_time"] * (1/speed))
             publish.single(row["mqtt_topic"], row["message"],
                            hostname=self._BROKER)
-            print(
-                f"{round(row['time_delta'], 5): <10} | {round(row['sleep_time'], 5): <10} | {row['mqtt_topic']: <50} | {row['message']}")
+            if self._VERBOSE:
+                print(
+                    f"{round(row['time_delta'], 5): <10} | {round(row['sleep_time'], 5): <10} | {row['mqtt_topic']: <50} | {row['message']}")
