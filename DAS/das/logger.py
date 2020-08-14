@@ -114,6 +114,8 @@ class Playback:
             quotechar='`',
             quoting=csv.QUOTE_ALL,
             skipinitialspace=True)
+
+        # Place each row in
         self._log_data = []
         simple_q = [0, 0]
         for row in csv_reader:
@@ -127,10 +129,14 @@ class Playback:
             self._log_data.append(row)
 
     def play(self, speed: float = 1) -> None:
+        if self._VERBOSE:
+            print(f"⚡ Playback initiated at {speed}x speed ⚡")
+
         for row in self._log_data:
-            time.sleep(row["sleep_time"] * (1/speed))
+            scaled_sleep = row["sleep_time"] * (1/speed)
+            time.sleep(scaled_sleep)
             publish.single(row["mqtt_topic"], row["message"],
                            hostname=self._BROKER)
             if self._VERBOSE:
                 print(
-                    f"{round(row['time_delta'], 5): <10} | {round(row['sleep_time'], 5): <10} | {row['mqtt_topic']: <50} | {row['message']}")
+                    f"{round(row['time_delta'], 5): <10} | {round(scaled_sleep, 5): <10} | {row['mqtt_topic']: <50} | {row['message']}")
