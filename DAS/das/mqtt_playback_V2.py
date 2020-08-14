@@ -2,7 +2,7 @@ import argparse
 from das.utils import logger
 
 parser = argparse.ArgumentParser(
-    description='MQTT wireless logger',
+    description='MQTT playback',
     add_help=True)
 
 parser.add_argument(
@@ -20,8 +20,8 @@ parser.add_argument(
 
 parser.add_argument(
     '-v', '--verbose', action='store_true', default=False,
-    help="""Verbose logging output"""
-)
+    help="""Verbose logging output""")
+
 if __name__ == "__main__":
     # Read command line arguments
     args = parser.parse_args()

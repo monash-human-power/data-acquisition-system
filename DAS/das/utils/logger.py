@@ -9,12 +9,9 @@ import os
 class Logger:
     """ This class logs MQTT data """
 
-    def __init__(self, csv_folder_path: str, *topics: str, broker_address: str = "localhost", verbose: bool = True) -> None:
+    def __init__(self, csv_folder_path: str, topics: list = ["#"], broker_address: str = "localhost", verbose: bool = True) -> None:
         # The logger object can subscribe to many topics (if none are selected then it will subscrive to all)
-        if len(topics) != 0:
-            self.TOPICS = topics
-        else:
-            self.TOPICS = ("#")
+        self.TOPICS = topics
 
         # Whether or not it prints out as it records
         self._VERBOSE = verbose
@@ -33,8 +30,9 @@ class Logger:
                 if int(filename[0:4]) > previous_log_num:
                     previous_log_num = abs(int(filename[0:4]))
             except ValueError:
-                print(
-                    f"WARNING: {filename} should not be in {csv_folder_path}")
+                if self._VERBOSE:
+                    print(
+                        f"WARNING: {filename} should not be in {csv_folder_path}")
             except Exception as e:
                 print(f"ERROR: {e}")
 
