@@ -1,8 +1,8 @@
 
 # Use micro pip to install packages
 import upip
-upip.install("micropython-umqtt.simple2")
-from umqtt.simple import MQTTClient
+upip.install("micropython-umqtt.robust2")
+from umqtt.robust import MQTTClient
 
 
 class Client:
@@ -28,12 +28,12 @@ class Client:
 
         # Connect to MQTT broker
         self.client.connect()
-        print("Connected to %s" % self.mqtt_broker)
+        print("Connected to {}".format(self.mqtt_broker))
 
         # Subscribe to each topic
         for topic in topics_to_subscribe:
             self.client.subscribe(topic, qos=1)
-            print("Subscribed to %s topic" % (topic))
+            print("Subscribed to {} topic".format(topic))
 
         return True
 
@@ -70,3 +70,9 @@ class Client:
         This function blocks until a message is received on one of the subscribed topics
         """
         self.client.wait_msg()
+
+    def disconnect(self):
+        """
+        Disconnect from the broker
+        """
+        self.client.disconnect()
