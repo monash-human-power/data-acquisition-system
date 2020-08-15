@@ -11,16 +11,21 @@ This repository contains all the code related to Monash Human Power's middle wir
 1. Create a local version of `config.py` in the same directory as the contents of this folder.
 2. Your `config.py` should be similar to `config.example.py`. You'll need to replace the placeholders by the appropriate values.
 
+
+## Uploading Code
+
+```
+# Change the first argument to the serial port of the ESP32, the second argument is the baud rate, which can be kept as it is.
+./upload.sh /dev/ttyUSB0 115200
+```
+
 ## Contents
-- `main.py`: Processes MQTT messages and sends sensor data
-- `mqtt_client.py`: Holds the Client class (used to work with MQTT)
+- `main.py`: Processes messages and sends sensor data through MQTT
 
 
 ## Dependencies
 - Ensure the `config.py` file is created locally (see the 'Getting Started' section above)
 - The `test.py` requires the `paho-mqtt` library installed for Python
-- The other `.py` files are Micropython files so needs a board to run on (eg ESP32)
-
 
 
 ## Steps to test
