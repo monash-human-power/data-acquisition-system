@@ -1,6 +1,7 @@
 import argparse
 import os
 import time
+import sys
 from das.utils import logger
 
 parser = argparse.ArgumentParser(
@@ -40,10 +41,15 @@ if __name__ == "__main__":
         verbose=args.verbose)
 
     # So that the logger can run forever or for a specific time
-    if args.time is not float('Inf'):
+    if args.time != float('Inf'):
         time.sleep(args.time)
     else:
         while True:
-            pass
+            try:
+                pass
+            except KeyboardInterrupt:
+                # Graceful exit
+                main_recorder.stop()
+                sys.exit()
 
     main_recorder.stop()
