@@ -7,7 +7,7 @@ import os
 import asyncio
 
 
-class Logger:
+class Record:
     """ This class logs MQTT data """
 
     def __init__(self, csv_folder_path: str, topics: list = ["#"], broker_address: str = "localhost", verbose: bool = False) -> None:

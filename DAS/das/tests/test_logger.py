@@ -11,7 +11,7 @@ TEST_FOLDER = os.path.join(CURRENT_FILEPATH, "csv_data")
 
 
 def test_Logger_make_csv_folder():
-    main_logger = logger.Logger(TEST_FOLDER)
+    main_logger = logger.Record(TEST_FOLDER)
     main_logger.stop()
 
     # Check that a directory called csv_data has been created and 0001_log.csv has been created
@@ -28,9 +28,9 @@ def test_Logger_make_csv_folder():
 
 def test_Playback_time_diff():
 
-    main_logger = logger.Logger(TEST_FOLDER)
+    main_logger = logger.Record(TEST_FOLDER)
     main_playback = logger.Playback(
         os.path.join(DATA_FOLDER, "test_log_1.csv"))
 
-    main_playback.play()
+    main_playback.play(100)
     main_logger.stop()

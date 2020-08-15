@@ -28,7 +28,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Make logger object and initiate logging
-    logger.Logger(
+    logger.Record(
         CSV_FILEPATH,
         topics=args.topics,
         broker_address=args.host,
