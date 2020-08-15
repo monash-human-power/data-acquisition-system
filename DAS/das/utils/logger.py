@@ -18,7 +18,7 @@ class Logger:
         self._VERBOSE = verbose
 
         # Record current time to produce time deltas
-        self._TIME_START = time.monotonic()
+        self._START_TIME = time.monotonic()
 
         # Create csv_folder_path folder if none exists
         Path(csv_folder_path).mkdir(parents=True, exist_ok=True)
@@ -63,6 +63,7 @@ class Logger:
         if rc == 0:
             print("Connection Successful!")
         else:
+            # raise error here
             print("ERROR: Something went wrong!")
 
         # Subscribe to all of the topics
@@ -82,7 +83,7 @@ class Logger:
             print(f"ERROR: {e}")
 
     def log(self, mqtt_topic: str, message: str) -> None:
-        time_delta = time.monotonic() - self._TIME_START
+        time_delta = time.monotonic() - self._START_TIME
 
         # Write data to csv file
         try:
@@ -133,26 +134,26 @@ class Playback:
         if self._VERBOSE:
             print(f"⚡ Playback initiated at {speed}x speed ⚡")
 
-        asyncio.run(self._gather_publish(speed))
+        # Run the event loop to issue out all of the MQTT publishes
+        asyncio.run(self._publish(speed))
 
-        # for row in self._log_data:
-        #     scaled_sleep = row["sleep_time"] * (1/speed)
-        #     time.sleep(scaled_sleep)
-        #     publish.single(row["mqtt_topic"], row["message"],
-        #                    hostname=self._BROKER)
-        #     if self._VERBOSE:
-        #         print(
-        #             f"{round(row['time_delta'], 5): <10} | {round(scaled_sleep, 5): <10} | {row['mqtt_topic']: <50} | {row['message']}")
+    async def _publish(self, speed):
 
-    async def _publish(self, row, speed):
-        await asyncio.sleep(row["time_delta"]/speed)
-        print(row)
-        publish.single(row["mqtt_topic"], row["message"],
-                       hostname=self._BROKER)
+        async def _publish_aux(row):
+            scaled_sleep = row["time_delta"]/speed
+            await asyncio.sleep(scaled_sleep)
 
-    async def _gather_publish(self, speed):
-        x = []
+            if self._VERBOSE:
+                print(
+                    f"{round(row['time_delta'], 5): <10} | {round(scaled_sleep, 5): <10} | {row['mqtt_topic']: <50} | {row['message']}")
+
+            publish.single(
+                row["mqtt_topic"],
+                row["message"],
+                hostname=self._BROKER)
+
+        publish_queue = []
         for row in self._log_data:
-            x.append(self._publish(row, speed))
+            publish_queue.append(_publish_aux(row))
 
-        await asyncio.gather(*x, return_exceptions=True)
+        await asyncio.gather(*publish_queue, return_exceptions=True)
