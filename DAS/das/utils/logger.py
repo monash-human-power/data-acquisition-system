@@ -187,6 +187,14 @@ class Playback:
             self._log_data.append(row)
 
     def play(self, speed: float = 1) -> None:
+        """Play the logged data at a certain speed using an async function.
+
+        Parameters
+        ----------
+        speed : float
+            Speed multiplier to determine how fast to send out the data. A higher value means faster.
+        """
+
         if self._VERBOSE:
             print(f"⚡ Playback initiated at {speed}x speed ⚡")
 
@@ -194,6 +202,14 @@ class Playback:
         asyncio.run(self._publish(speed))
 
     async def _publish(self, speed):
+        """Async function that collects all the necessary publish functions and gathers them to then be run by the
+        event loop.
+
+        Parameters
+        ----------
+        speed : float
+            Speed multiplier to determine how fast to send out the data. A higher value means faster.
+        """
 
         async def _publish_aux(row):
             scaled_sleep = row["time_delta"]/speed
