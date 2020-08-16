@@ -15,8 +15,8 @@ This repository contains all the code related to Monash Human Power's middle wir
 ## Uploading Code
 
 ```
-# Change the first argument to the serial port of the ESP32, the second argument is the baud rate, which can be kept as it is.
-./upload.sh /dev/ttyUSB0 115200
+# Change the first argument to the serial port of the ESP32.
+./upload.sh /dev/ttyUSB0 
 ```
 
 ## Contents
