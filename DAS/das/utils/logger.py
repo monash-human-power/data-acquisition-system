@@ -7,6 +7,15 @@ import os
 import asyncio
 
 
+CsvConfig = {
+    "delimiter": ',',
+    "quotechar": '`',
+    "quoting": csv.QUOTE_ALL,
+    "skipinitialspace": True,
+    "fieldnames": ["time_delta", "mqtt_topic", "message"],
+}
+
+
 class Record:
     """Record incoming MQTT messages on selected topics.
 
@@ -64,10 +73,11 @@ class Record:
         self._LOG_FILE = open(os.path.join(csv_folder_path, filename), "a")
         self._LOG_FILE_WRITER = csv.DictWriter(
             self._LOG_FILE,
-            delimiter=',',
-            quotechar='`',
-            quoting=csv.QUOTE_ALL,
-            fieldnames=["time_delta", "mqtt_topic", "message"])
+            delimiter=CsvConfig["delimiter"],
+            quotechar=CsvConfig["quotechar"],
+            quoting=CsvConfig["quoting"],
+            fieldnames=CsvConfig["fieldnames"],
+        )
 
         # Add headers for csv
         self._LOG_FILE_WRITER.writeheader()
@@ -144,10 +154,10 @@ class Playback:
         log_file = open(filepath, "r")
         csv_reader = csv.DictReader(
             log_file,
-            delimiter=',',
-            quotechar='`',
-            quoting=csv.QUOTE_ALL,
-            skipinitialspace=True)
+            delimiter=CsvConfig["delimiter"],
+            quotechar=CsvConfig["quotechar"],
+            quoting=CsvConfig["quoting"],
+            skipinitialspace=CsvConfig["skipinitialspace"])
 
         # Place each row in
         self._log_data = []
@@ -188,4 +198,5 @@ class Playback:
         for row in self._log_data:
             publish_queue.append(_publish_aux(row))
 
+        # Load all async operation at the start using gather
         await asyncio.gather(*publish_queue, return_exceptions=True)

@@ -49,6 +49,7 @@ if __name__ == "__main__":
                 pass
             except KeyboardInterrupt:
                 # Graceful exit
+                print(f"\nData saved in {CSV_FILEPATH}")
                 main_recorder.stop()
                 sys.exit()
 
