@@ -8,23 +8,45 @@ import asyncio
 
 
 class Record:
-    """ This class logs MQTT data """
+    """Record incoming MQTT messages on selected topics.
+
+    Parameters
+    ----------
+    csv_folder_path : str
+        Filepath of the folder where the logs are to be stored
+    topics : List(str)
+        A list containing the topic strings that are to be subscribed to
+    broker_address : str
+        The IP address that the MQTT lives on
+    verbose : bool
+        Specifies whether the incoming MQTT data and warnings are printed
+
+    Attributes
+    ----------
+    TOPICS: List(str)
+        List of topic names
+    _VERBOSE: bool
+        Specifies whether the incoming MQTT data and warnings are printed
+    _START_TIME: `time`
+        The current time used to produce time deltas
+    _LOG_FILE: `File`
+        Open log file object that can be written to
+    _LOG_FILE_WRITER: `csv.DictWriter`
+        Csv writter object that is used to write the data to the _LOG_FILE file
+    _client: `paho.mqtt.client`
+        MQTT client that connects to the broker and recives the messages
+    """
 
     def __init__(self, csv_folder_path: str, topics: list = ["#"], broker_address: str = "localhost", verbose: bool = False) -> None:
         # The logger object can subscribe to many topics (if none are selected then it will subscrive to all)
         self.TOPICS = topics
-
-        # Whether or not it prints out as it records
         self._VERBOSE = verbose
-
-        # Record current time to produce time deltas
         self._START_TIME = time.monotonic()
 
         # Create csv_folder_path folder if none exists
         Path(csv_folder_path).mkdir(parents=True, exist_ok=True)
 
         # Name the csv log file xxxx_log.csv where xxxx is a number
-        # APPEND ONLY to stop accidentally recording over data
         previous_log_num = 0
         for filename in os.listdir(csv_folder_path):
             try:
@@ -52,19 +74,19 @@ class Record:
 
         # Connect to MQTT broker
         self._client = mqtt.Client()
-
         self._client.on_connect = self._on_connect
         self._client.on_message = self._on_message
-
         self._client.connect(broker_address)
         self._client.loop_start()  # Threaded execution loop
 
     def _on_connect(self, client, userdata, flags, rc):
+        """Callback function for MQTT broker on connection."""
+
         if rc == 0:
             print("Connection Successful!")
         else:
-            # raise error here
-            print("ERROR: Something went wrong!")
+            raise ConnectionError(
+                "Connection was unsuccessful, check that the broker IP is corrrect")
 
         # Subscribe to all of the topics
         try:
@@ -76,13 +98,23 @@ class Record:
             print(f"ERROR: {e}")
 
     def _on_message(self, client, userdata, msg):
-        # Log the incoming MQTT message
+        """Callback function for MQTT broker on message that logs the incoming MQTT message."""
+
         try:
             self.log(msg.topic, msg.payload.decode('utf-8'))
         except Exception as e:
             print(f"ERROR: {e}")
 
     def log(self, mqtt_topic: str, message: str) -> None:
+        """Logs the time delta and message data to self._LOG_FILE in the csv format.
+
+        Parameters
+        ----------
+        mqtt_topic : str
+            Incoming topic to be recorded
+        message : str
+            Corresponding message to be recorded
+        """
         time_delta = time.monotonic() - self._START_TIME
 
         # Write data to csv file
@@ -92,13 +124,13 @@ class Record:
                  'mqtt_topic': mqtt_topic,
                  'message': message})
             if self._VERBOSE:
-                # TODO: Don't hardcode topic length when printing (<50)
                 print(
                     f"{round(time_delta, 5): <10} | {mqtt_topic: <50} | {message}")
         except Exception as e:
             print(f"ERROR: {e}")
 
     def stop(self) -> None:
+        """Graceful exit for closing the file and stopping the MQTT client."""
         self._client.loop_stop()
         self._LOG_FILE.close()
 

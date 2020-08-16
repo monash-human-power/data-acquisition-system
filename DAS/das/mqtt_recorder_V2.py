@@ -40,7 +40,7 @@ if __name__ == "__main__":
         broker_address=args.host,
         verbose=args.verbose)
 
-    # So that the logger can run forever or for a specific time
+    # Logger can run forever or for a specific time
     if args.time != float('Inf'):
         time.sleep(args.time)
     else:
