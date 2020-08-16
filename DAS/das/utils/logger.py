@@ -171,7 +171,7 @@ class Playback:
         self._VERBOSE = verbose
         self._BROKER_ADDRESS = broker_address
 
-        # Read in make an array of functions
+        # Read in data from log file and save each row in _log_data list
         log_file = open(filepath, "r")
         csv_reader = csv.DictReader(
             log_file,
@@ -180,7 +180,6 @@ class Playback:
             quoting=CsvConfig["quoting"],
             skipinitialspace=CsvConfig["skipinitialspace"])
 
-        # Place each row in _log_data list
         self._log_data = []
         for row in csv_reader:
             # Convert time delta to float
