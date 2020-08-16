@@ -26,7 +26,7 @@ class Record:
     topics : List(str)
         A list containing the topic strings that are to be subscribed to
     broker_address : str
-        The IP address that the MQTT lives on
+        The IP address that the MQTT broker lives on
     verbose : bool
         Specifies whether the incoming MQTT data and warnings are printed
 
@@ -146,9 +146,30 @@ class Record:
 
 
 class Playback:
+    """Playback MQTT messages from log files in realtime or faster.
+
+    Parameters
+    ----------
+    filepath : str
+        Filepath of the log file for playback
+    broker_address : str
+        The IP address that the MQTT broker lives on
+    verbose : bool
+        Specifies whether the outgoing MQTT data and warnings are printed
+
+    Attributes
+    ----------
+    _VERBOSE: bool
+        Specifies whether the incoming MQTT data and warnings are printed
+    _BROKER_ADDRESS: bool
+        The IP address of the MQTT broker
+    _log_data: list(dict)
+        A list of all of the rows in the log file stored in dict format
+    """
+
     def __init__(self, filepath: str, broker_address: str = "localhost", verbose: bool = True) -> None:
         self._VERBOSE = verbose
-        self._BROKER = broker_address
+        self._BROKER_ADDRESS = broker_address
 
         # Read in make an array of functions
         log_file = open(filepath, "r")
@@ -159,17 +180,11 @@ class Playback:
             quoting=CsvConfig["quoting"],
             skipinitialspace=CsvConfig["skipinitialspace"])
 
-        # Place each row in
+        # Place each row in _log_data list
         self._log_data = []
-        simple_q = [0, 0]
         for row in csv_reader:
+            # Convert time delta to float
             row["time_delta"] = float(row["time_delta"])
-
-            # Move the queue along one
-            simple_q = [row["time_delta"], simple_q[0]]
-
-            # The amount of sleep time is the difference between the two time_deltas
-            row["sleep_time"] = abs(simple_q[0] - simple_q[1])
             self._log_data.append(row)
 
     def play(self, speed: float = 1) -> None:
@@ -189,10 +204,13 @@ class Playback:
                 print(
                     f"{round(row['time_delta'], 5): <10} | {round(scaled_sleep, 5): <10} | {row['mqtt_topic']: <50} | {row['message']}")
 
-            publish.single(
-                row["mqtt_topic"],
-                row["message"],
-                hostname=self._BROKER)
+            try:
+                publish.single(
+                    row["mqtt_topic"],
+                    row["message"],
+                    hostname=self._BROKER_ADDRESS)
+            except Exception as e:
+                print(f"ERROR: {e}")
 
         publish_queue = []
         for row in self._log_data:
