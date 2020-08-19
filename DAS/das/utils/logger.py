@@ -144,10 +144,10 @@ class Record:
 
     def stop(self) -> None:
         """Graceful exit for closing the file and stopping the MQTT client."""
-        if self._VERBOSE:
-            logging.info(f"Data saved in {self._LOG_FILE.name}")
         self._client.loop_stop()
         self._LOG_FILE.close()
+        if self._VERBOSE:
+            logging.info(f"Data saved in {self._LOG_FILE.name}")
 
 
 class Playback:
