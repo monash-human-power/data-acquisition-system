@@ -6,6 +6,7 @@ import time
 import os
 import asyncio
 import logging
+import re
 
 CsvConfig = {
     "delimiter": ',',
@@ -62,9 +63,12 @@ class Record:
         previous_log_num = 0
         for filename in os.listdir(csv_folder_path):
             try:
-                if int(filename[0:4]) > previous_log_num:
-                    previous_log_num = abs(int(filename[0:4]))
-            except ValueError:
+                # Regular expression that extracts the decimal log number (group 1)
+                current_log_num = int(
+                    re.search("(\d*)_log.csv", filename).group(1))
+                if current_log_num > previous_log_num:
+                    previous_log_num = current_log_num
+            except AttributeError:
                 if self._VERBOSE:
                     logging.warning(
                         f"{filename} should not be in {csv_folder_path}")
@@ -72,7 +76,7 @@ class Record:
                 logging.error(e)
 
         # fstring :0>4 used to ensure that the number will always be 4 long
-        filename = f"{previous_log_num + 1:0>4}_log.csv"
+        filename = f"{previous_log_num + 1}_log.csv"
         self._LOG_FILE = open(os.path.join(csv_folder_path, filename), "a")
         self._LOG_FILE_WRITER = csv.DictWriter(
             self._LOG_FILE,
