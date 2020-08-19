@@ -72,6 +72,8 @@ class Record:
         self._client.connect(broker_address)
         self._client.loop_start()  # Threaded execution loop
 
+        logging.info(f"Logging started!")
+
     def _create_log_file(self, csv_folder_path):
         """Is used to open a log file and csv obj during the object init
 
@@ -121,8 +123,7 @@ class Record:
         try:
             for topic in self.TOPICS:
                 self._client.subscribe(topic)
-                if self._VERBOSE:
-                    logging.info(f"Subscribed to: {topic}")
+                logging.info(f"Subscribed to: {topic}")
         except Exception as e:
             logging.error(e)
 
@@ -162,8 +163,7 @@ class Record:
         """Graceful exit for closing the file and stopping the MQTT client."""
         self._client.loop_stop()
         self._LOG_FILE.close()
-        if self._VERBOSE:
-            logging.info(f"Data saved in {self._LOG_FILE.name}")
+        logging.info(f"Data saved in {self._LOG_FILE.name}")
 
 
 class Playback:
@@ -216,8 +216,7 @@ class Playback:
             Speed multiplier to determine how fast to send out the data. A higher value means faster.
         """
 
-        if self._VERBOSE:
-            logging.info(f"⚡ Playback initiated at {speed}x speed ⚡")
+        logging.info(f"⚡ Playback initiated at {speed}x speed ⚡")
 
         # Run the event loop to issue out all of the MQTT publishes
         asyncio.run(self._publish(speed))
