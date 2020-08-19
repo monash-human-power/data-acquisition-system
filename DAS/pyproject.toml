@@ -10,8 +10,6 @@ paho-mqtt = "^1.5.0"
 urllib3 = "^1.25.9"
 pandas = "^1.0.3"
 argparse = "^1.4.0"
-pathlib = "^1.0.1"
-asyncio = "^3.4.3"
 
 [tool.poetry.dev-dependencies]
 
