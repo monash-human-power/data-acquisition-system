@@ -5,7 +5,7 @@ import csv
 import time
 import os
 import asyncio
-
+import logging
 
 CsvConfig = {
     "delimiter": ',',
@@ -14,6 +14,9 @@ CsvConfig = {
     "skipinitialspace": True,
     "fieldnames": ["time_delta", "mqtt_topic", "message"],
 }
+
+# Set logging to output all info by default (with a space for clarity)
+logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 
 
 class Record:
@@ -63,10 +66,10 @@ class Record:
                     previous_log_num = abs(int(filename[0:4]))
             except ValueError:
                 if self._VERBOSE:
-                    print(
-                        f"WARNING: {filename} should not be in {csv_folder_path}")
+                    logging.warning(
+                        f" {filename} should not be in {csv_folder_path}")
             except Exception as e:
-                print(f"ERROR: {e}")
+                logging.error(e)
 
         # fstring :0>4 used to ensure that the number will always be 4 long
         filename = f"{previous_log_num + 1:0>4}_log.csv"
@@ -93,7 +96,7 @@ class Record:
         """Callback function for MQTT broker on connection."""
 
         if rc == 0:
-            print("Connection Successful!")
+            logging.info("Connection Successful!")
         else:
             raise ConnectionError(
                 "Connection was unsuccessful, check that the broker IP is corrrect")
@@ -103,9 +106,9 @@ class Record:
             for topic in self.TOPICS:
                 self._client.subscribe(topic)
                 if self._VERBOSE:
-                    print(f"Subscribed to: {topic}")
+                    logging.info(f"Subscribed to: {topic}")
         except Exception as e:
-            print(f"ERROR: {e}")
+            logging.error(e)
 
     def _on_message(self, client, userdata, msg):
         """Callback function for MQTT broker on message that logs the incoming MQTT message."""
@@ -113,7 +116,7 @@ class Record:
         try:
             self.log(msg.topic, msg.payload.decode('utf-8'))
         except Exception as e:
-            print(f"ERROR: {e}")
+            logging.error(e)
 
     def log(self, mqtt_topic: str, message: str) -> None:
         """Logs the time delta and message data to self._LOG_FILE in the csv format.
@@ -134,10 +137,10 @@ class Record:
                  'mqtt_topic': mqtt_topic,
                  'message': message})
             if self._VERBOSE:
-                print(
+                logging.info(
                     f"{round(time_delta, 5): <10} | {mqtt_topic: <50} | {message}")
         except Exception as e:
-            print(f"ERROR: {e}")
+            logging.error(e)
 
     def stop(self) -> None:
         """Graceful exit for closing the file and stopping the MQTT client."""
@@ -196,7 +199,7 @@ class Playback:
         """
 
         if self._VERBOSE:
-            print(f"⚡ Playback initiated at {speed}x speed ⚡")
+            logging.info(f"⚡ Playback initiated at {speed}x speed ⚡")
 
         # Run the event loop to issue out all of the MQTT publishes
         asyncio.run(self._publish(speed))
@@ -216,7 +219,7 @@ class Playback:
             await asyncio.sleep(scaled_sleep)
 
             if self._VERBOSE:
-                print(
+                logging.info(
                     f"{round(row['time_delta'], 5): <10} | {round(scaled_sleep, 5): <10} | {row['mqtt_topic']: <50} | {row['message']}")
 
             try:
@@ -225,7 +228,7 @@ class Playback:
                     row["message"],
                     hostname=self._BROKER_ADDRESS)
             except Exception as e:
-                print(f"ERROR: {e}")
+                logging.error(e)
 
         publish_queue = []
         for row in self._log_data:
