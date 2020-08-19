@@ -75,7 +75,7 @@ class Record:
             except Exception as e:
                 logging.error(e)
 
-        # fstring :0>4 used to ensure that the number will always be 4 long
+        # Create the new log file and name it one more than the previous
         filename = f"{previous_log_num + 1}_log.csv"
         self._LOG_FILE = open(os.path.join(csv_folder_path, filename), "a")
         self._LOG_FILE_WRITER = csv.DictWriter(
