@@ -59,6 +59,28 @@ class Record:
         # Create csv_folder_path folder if none exists
         Path(csv_folder_path).mkdir(parents=True, exist_ok=True)
 
+        # Create the csv log and csv writter
+        self._create_log_file(csv_folder_path)
+
+        # Add headers for csv
+        self._LOG_FILE_WRITER.writeheader()
+
+        # Connect to MQTT broker
+        self._client = mqtt.Client()
+        self._client.on_connect = self._on_connect
+        self._client.on_message = self._on_message
+        self._client.connect(broker_address)
+        self._client.loop_start()  # Threaded execution loop
+
+    def _create_log_file(self, csv_folder_path):
+        """Is used to open a log file and csv obj during the object init
+
+        Parameters
+        ----------
+        csv_folder_path : str
+            Filepath of the folder where the logs are to be stored
+        """
+
         # Name the csv log file xxxx_log.csv where xxxx is a number
         previous_log_num = 0
         for filename in os.listdir(csv_folder_path):
@@ -86,17 +108,7 @@ class Record:
             fieldnames=CsvConfig["fieldnames"],
         )
 
-        # Add headers for csv
-        self._LOG_FILE_WRITER.writeheader()
-
-        # Connect to MQTT broker
-        self._client = mqtt.Client()
-        self._client.on_connect = self._on_connect
-        self._client.on_message = self._on_message
-        self._client.connect(broker_address)
-        self._client.loop_start()  # Threaded execution loop
-
-    def _on_connect(self, client, userdata, flags, rc):
+    def _on_connect(self, client, userdata, flags, rc) -> None:
         """Callback function for MQTT broker on connection."""
 
         if rc == 0:
@@ -114,7 +126,7 @@ class Record:
         except Exception as e:
             logging.error(e)
 
-    def _on_message(self, client, userdata, msg):
+    def _on_message(self, client, userdata, msg) -> None:
         """Callback function for MQTT broker on message that logs the incoming MQTT message."""
 
         try:
