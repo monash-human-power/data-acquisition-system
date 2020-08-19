@@ -11,7 +11,7 @@ parser.add_argument(
 
 parser.add_argument(
     '--host', action='store', type=str, default="localhost",
-    help="""Address of the MQTT broker. If nothing is selected it will
+    help="""Address of the MQTT broker. If no broker is specified it will
     default to localhost.""")
 
 parser.add_argument(
