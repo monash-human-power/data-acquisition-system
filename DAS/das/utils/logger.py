@@ -51,7 +51,7 @@ class Record:
     """
 
     def __init__(self, csv_folder_path: str, topics: list = ["#"], broker_address: str = "localhost", verbose: bool = False) -> None:
-        # The logger object can subscribe to many topics (if none are selected then it will subscrive to all)
+        # The logger object can subscribe to many topics (if none are selected then it will subscribe to all)
         self.TOPICS = topics
         self._VERBOSE = verbose
         self._START_TIME = time.monotonic()
