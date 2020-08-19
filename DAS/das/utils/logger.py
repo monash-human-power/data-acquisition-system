@@ -67,7 +67,7 @@ class Record:
             except ValueError:
                 if self._VERBOSE:
                     logging.warning(
-                        f" {filename} should not be in {csv_folder_path}")
+                        f"{filename} should not be in {csv_folder_path}")
             except Exception as e:
                 logging.error(e)
 
@@ -144,6 +144,8 @@ class Record:
 
     def stop(self) -> None:
         """Graceful exit for closing the file and stopping the MQTT client."""
+        if self._VERBOSE:
+            logging.info(f"Data saved in {self._LOG_FILE.name}")
         self._client.loop_stop()
         self._LOG_FILE.close()
 

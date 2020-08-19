@@ -40,17 +40,18 @@ if __name__ == "__main__":
         broker_address=args.host,
         verbose=args.verbose)
 
+    # Nicely quits the recorder to ensure the data is saved
+    def graceful_exit(recorder):
+        recorder.stop()
+        sys.exit()
+
     # Logger can run forever or for a specific time
     if args.time != float('Inf'):
         time.sleep(args.time)
+        graceful_exit(main_recorder)
     else:
         while True:
             try:
                 pass
             except KeyboardInterrupt:
-                # Graceful exit
-                print(f"\nData saved in {CSV_FILEPATH}")
-                main_recorder.stop()
-                sys.exit()
-
-    main_recorder.stop()
+                graceful_exit(main_recorder)
