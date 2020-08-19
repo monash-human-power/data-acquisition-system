@@ -3,7 +3,9 @@ from das.utils import logger
 
 parser = argparse.ArgumentParser(
     description='MQTT playback',
-    add_help=True)
+    add_help=True,
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+)
 
 parser.add_argument(
     'filepath', action='store', type=str,
@@ -11,8 +13,7 @@ parser.add_argument(
 
 parser.add_argument(
     '--host', action='store', type=str, default="localhost",
-    help="""Address of the MQTT broker. If no broker is specified it will
-    default to localhost.""")
+    help="""Address of the MQTT broker.""")
 
 parser.add_argument(
     '-s', '--speed', action='store', type=float, default=1,

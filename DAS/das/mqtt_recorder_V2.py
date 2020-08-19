@@ -6,7 +6,9 @@ from das.utils import logger
 
 parser = argparse.ArgumentParser(
     description='MQTT logger',
-    add_help=True)
+    add_help=True,
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+)
 
 parser.add_argument(
     'topics', nargs='*', action='store', default=["#"],
@@ -14,8 +16,7 @@ parser.add_argument(
 
 parser.add_argument(
     '--host', action='store', type=str, default="localhost",
-    help="""Address of the MQTT broker. If nothing is selected it will
-    default to localhost.""")
+    help="""Address of the MQTT broker""")
 
 parser.add_argument(
     '-v', '--verbose', action='store_true', default=False,
