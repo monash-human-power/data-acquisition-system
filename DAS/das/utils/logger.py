@@ -74,7 +74,7 @@ class Record:
 
         logging.info(f"Logging started!")
 
-    def _create_log_file(self, csv_folder_path):
+    def _create_log_file(self, csv_folder_path: str):
         """Is used to open a log file and csv obj during the object init
 
         Parameters
@@ -188,7 +188,7 @@ class Playback:
         A list of all of the rows in the log file stored in dict format
     """
 
-    def __init__(self, filepath: str, broker_address: str = "localhost", verbose: bool = True) -> None:
+    def __init__(self, filepath: str, broker_address: str = "localhost", verbose: bool = False) -> None:
         self._VERBOSE = verbose
         self._BROKER_ADDRESS = broker_address
 
