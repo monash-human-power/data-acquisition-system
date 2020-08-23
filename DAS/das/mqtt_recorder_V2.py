@@ -5,27 +5,44 @@ import sys
 from das.utils import logger
 
 parser = argparse.ArgumentParser(
-    description='MQTT logger',
+    description="MQTT logger",
     add_help=True,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 )
 
 parser.add_argument(
-    'topics', nargs='*', action='store', default=["#"],
-    help="""Verbose logging output""")
+    "topics",
+    nargs="*",
+    action="store",
+    default=["#"],
+    help="""Verbose logging output""",
+)
 
 parser.add_argument(
-    '--host', action='store', type=str, default="localhost",
-    help="""Address of the MQTT broker""")
+    "--host",
+    action="store",
+    type=str,
+    default="localhost",
+    help="""Address of the MQTT broker""",
+)
 
 parser.add_argument(
-    '-v', '--verbose', action='store_true', default=False,
-    help="""Verbose logging output""")
+    "-v",
+    "--verbose",
+    action="store_true",
+    default=False,
+    help="""Verbose logging output""",
+)
 
 parser.add_argument(
-    '-t', '--time', action='store', type=float,
-    default=float('Inf'), help="""Length of time to record data
-    (duration). If nothing is selected it will continuously record data.""")
+    "-t",
+    "--time",
+    action="store",
+    type=float,
+    default=float("Inf"),
+    help="""Length of time to record data
+    (duration). If nothing is selected it will continuously record data.""",
+)
 
 if __name__ == "__main__":
     CURRENT_FILEPATH = os.path.dirname(__file__)
@@ -36,10 +53,8 @@ if __name__ == "__main__":
 
     # Make logger object and initiate logging
     main_recorder = logger.Record(
-        CSV_FILEPATH,
-        topics=args.topics,
-        broker_address=args.host,
-        verbose=args.verbose)
+        CSV_FILEPATH, topics=args.topics, broker_address=args.host, verbose=args.verbose
+    )
 
     # Nicely quits the recorder to ensure the data is saved
     def graceful_exit(recorder):
@@ -47,7 +62,7 @@ if __name__ == "__main__":
         sys.exit()
 
     # Logger can run forever or for a specific time
-    if args.time != float('Inf'):
+    if args.time != float("Inf"):
         time.sleep(args.time)
         graceful_exit(main_recorder)
     else:

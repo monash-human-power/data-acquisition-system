@@ -9,15 +9,15 @@ import logging
 import re
 
 CsvConfig = {
-    "delimiter": ',',
-    "quotechar": '`',
+    "delimiter": ",",
+    "quotechar": "`",
     "quoting": csv.QUOTE_ALL,
     "skipinitialspace": True,
     "fieldnames": ["time_delta", "mqtt_topic", "message"],
 }
 
 # Set logging to output all info by default (with a space for clarity)
-logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
+logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
 
 
 class Record:
@@ -50,7 +50,13 @@ class Record:
         MQTT client that connects to the broker and recives the messages
     """
 
-    def __init__(self, csv_folder_path: str, topics: list = ["#"], broker_address: str = "localhost", verbose: bool = False) -> None:
+    def __init__(
+        self,
+        csv_folder_path: str,
+        topics: list = ["#"],
+        broker_address: str = "localhost",
+        verbose: bool = False,
+    ) -> None:
         # The logger object can subscribe to many topics (if none are selected then it will subscribe to all)
         self.TOPICS = topics
         self._VERBOSE = verbose
@@ -88,14 +94,12 @@ class Record:
         for filename in os.listdir(csv_folder_path):
             try:
                 # Regular expression that extracts the decimal log number (group 1)
-                current_log_num = int(
-                    re.search("(\d*)_log.csv", filename).group(1))
+                current_log_num = int(re.search("(\d*)_log.csv", filename).group(1))
                 if current_log_num > previous_log_num:
                     previous_log_num = current_log_num
             except AttributeError:
                 if self._VERBOSE:
-                    logging.warning(
-                        f"{filename} should not be in {csv_folder_path}")
+                    logging.warning(f"{filename} should not be in {csv_folder_path}")
             except Exception as e:
                 logging.error(e)
 
@@ -117,7 +121,8 @@ class Record:
             logging.info("Connection Successful!")
         else:
             raise ConnectionError(
-                "Connection was unsuccessful, check that the broker IP is corrrect")
+                "Connection was unsuccessful, check that the broker IP is corrrect"
+            )
 
         # Subscribe to all of the topics
         try:
@@ -131,7 +136,7 @@ class Record:
         """Callback function for MQTT broker on message that logs the incoming MQTT message."""
 
         try:
-            self.log(msg.topic, msg.payload.decode('utf-8'))
+            self.log(msg.topic, msg.payload.decode("utf-8"))
         except Exception as e:
             logging.error(e)
 
@@ -150,12 +155,12 @@ class Record:
         # Write data to csv file
         try:
             self._LOG_FILE_WRITER.writerow(
-                {'time_delta': time_delta,
-                 'mqtt_topic': mqtt_topic,
-                 'message': message})
+                {"time_delta": time_delta, "mqtt_topic": mqtt_topic, "message": message}
+            )
             if self._VERBOSE:
                 logging.info(
-                    f"{round(time_delta, 5): <10} | {mqtt_topic: <50} | {message}")
+                    f"{round(time_delta, 5): <10} | {mqtt_topic: <50} | {message}"
+                )
         except Exception as e:
             logging.error(e)
 
@@ -188,7 +193,9 @@ class Playback:
         A list of all of the rows in the log file stored in dict format
     """
 
-    def __init__(self, filepath: str, broker_address: str = "localhost", verbose: bool = False) -> None:
+    def __init__(
+        self, filepath: str, broker_address: str = "localhost", verbose: bool = False
+    ) -> None:
         self._VERBOSE = verbose
         self._BROKER_ADDRESS = broker_address
 
@@ -199,7 +206,8 @@ class Playback:
             delimiter=CsvConfig["delimiter"],
             quotechar=CsvConfig["quotechar"],
             quoting=CsvConfig["quoting"],
-            skipinitialspace=CsvConfig["skipinitialspace"])
+            skipinitialspace=CsvConfig["skipinitialspace"],
+        )
 
         self._log_data = []
         for row in csv_reader:
@@ -232,18 +240,18 @@ class Playback:
         """
 
         async def _publish_aux(row):
-            scaled_sleep = row["time_delta"]/speed
+            scaled_sleep = row["time_delta"] / speed
             await asyncio.sleep(scaled_sleep)
 
             if self._VERBOSE:
                 logging.info(
-                    f"{round(row['time_delta'], 5): <10} | {round(scaled_sleep, 5): <10} | {row['mqtt_topic']: <50} | {row['message']}")
+                    f"{round(row['time_delta'], 5): <10} | {round(scaled_sleep, 5): <10} | {row['mqtt_topic']: <50} | {row['message']}"
+                )
 
             try:
                 publish.single(
-                    row["mqtt_topic"],
-                    row["message"],
-                    hostname=self._BROKER_ADDRESS)
+                    row["mqtt_topic"], row["message"], hostname=self._BROKER_ADDRESS
+                )
             except Exception as e:
                 logging.error(e)
 

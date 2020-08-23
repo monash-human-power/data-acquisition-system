@@ -7,8 +7,8 @@ import csv
 import pandas as pd
 
 CsvConfig = {
-    "delimiter": ',',
-    "quotechar": '`',
+    "delimiter": ",",
+    "quotechar": "`",
     "quoting": csv.QUOTE_ALL,
     "skipinitialspace": True,
     "fieldnames": ["time_delta", "mqtt_topic", "message"],
@@ -36,9 +36,8 @@ class TestSingleRecorder(LoggerBaseTestTearDown):
     def setUp(self):
         # Start and stop logger immediately
         logger.Record(
-            csv_folder_path=TEST_FOLDER,
-            topics=["sensor/#"],
-            broker_address=MQTT_BROKER).stop()
+            csv_folder_path=TEST_FOLDER, topics=["sensor/#"], broker_address=MQTT_BROKER
+        ).stop()
 
     def test_make_csv_folder(self):
         # Check that a directory called csv_data has been created and 1_log.csv has been created
@@ -59,19 +58,22 @@ class TestMultipleRecorders(LoggerBaseTestTearDown):
         recorder_1 = logger.Record(
             csv_folder_path=TEST_FOLDER,
             topics=[f"{self.log_to_topic['1_log.csv']}/#"],
-            broker_address=MQTT_BROKER)
+            broker_address=MQTT_BROKER,
+        )
 
         # Start logger 2 for test/#
         recorder_2 = logger.Record(
             csv_folder_path=TEST_FOLDER,
             topics=[f"{self.log_to_topic['2_log.csv']}/#"],
-            broker_address=MQTT_BROKER)
+            broker_address=MQTT_BROKER,
+        )
 
         # Start logger 3 for data/#
         recorder_3 = logger.Record(
             csv_folder_path=TEST_FOLDER,
             topics=[f"{self.log_to_topic['3_log.csv']}/#"],
-            broker_address=MQTT_BROKER)
+            broker_address=MQTT_BROKER,
+        )
 
         # Wait for a short amount of time
         time.sleep(5)
@@ -97,15 +99,15 @@ class TestMultipleRecorders(LoggerBaseTestTearDown):
                 delimiter=CsvConfig["delimiter"],
                 quotechar=CsvConfig["quotechar"],
                 quoting=CsvConfig["quoting"],
-                skipinitialspace=CsvConfig["skipinitialspace"])
+                skipinitialspace=CsvConfig["skipinitialspace"],
+            )
 
             for row in csv_reader:
                 # Assert that the rows contain data and are not null
                 assert row["time_delta"]
 
                 # The correct log should contain the correct data
-                assert row["mqtt_topic"].startswith(
-                    self.log_to_topic[filepath])
+                assert row["mqtt_topic"].startswith(self.log_to_topic[filepath])
                 assert row["message"]
 
             log_file.close()
@@ -114,9 +116,8 @@ class TestMultipleRecorders(LoggerBaseTestTearDown):
 class TestPlayback(LoggerBaseTestTearDown):
     def setUp(self):
         main_recorder = logger.Record(
-            csv_folder_path=TEST_FOLDER,
-            topics=["sensor/#"],
-            broker_address=MQTT_BROKER)
+            csv_folder_path=TEST_FOLDER, topics=["sensor/#"], broker_address=MQTT_BROKER
+        )
 
         # Wait for a short amount of time
         time.sleep(5)
@@ -124,22 +125,25 @@ class TestPlayback(LoggerBaseTestTearDown):
 
     def test_accurate_playback(self):
         main_recorder = logger.Record(TEST_FOLDER)
-        main_playback = logger.Playback(
-            os.path.join(TEST_FOLDER, "1_log.csv"))
+        main_playback = logger.Playback(os.path.join(TEST_FOLDER, "1_log.csv"))
 
         main_playback.play(speed=10)
         main_recorder.stop()
 
         log_file1 = os.path.join(TEST_FOLDER, "1_log.csv")
-        original_df = pd.read_csv(log_file1,
-                                  quotechar=CsvConfig["quotechar"],
-                                  quoting=CsvConfig["quoting"],
-                                  skipinitialspace=CsvConfig["skipinitialspace"])
+        original_df = pd.read_csv(
+            log_file1,
+            quotechar=CsvConfig["quotechar"],
+            quoting=CsvConfig["quoting"],
+            skipinitialspace=CsvConfig["skipinitialspace"],
+        )
 
         log_file2 = os.path.join(TEST_FOLDER, "2_log.csv")
-        playback_df = pd.read_csv(log_file2,
-                                  quotechar=CsvConfig["quotechar"],
-                                  quoting=CsvConfig["quoting"],
-                                  skipinitialspace=CsvConfig["skipinitialspace"])
+        playback_df = pd.read_csv(
+            log_file2,
+            quotechar=CsvConfig["quotechar"],
+            quoting=CsvConfig["quoting"],
+            skipinitialspace=CsvConfig["skipinitialspace"],
+        )
 
         assert playback_df["message"].equals(original_df["message"])
