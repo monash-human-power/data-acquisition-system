@@ -1,8 +1,4 @@
-
-# Use micro pip to install packages
-import upip
-upip.install("micropython-umqtt.robust2")
-from umqtt.robust import MQTTClient
+from umqtt.simple import MQTTClient
 
 
 class Client:
@@ -23,7 +19,6 @@ class Client:
                                     Each element must be a string or byte literal (the latter is preferred)
         :param callback_func: The function to be called whenever a message from the subscribed topic is received.
         """
-
         self.client.set_callback(callback_func)
 
         # Connect to MQTT broker
@@ -54,7 +49,6 @@ class Client:
         :param data: A string of data to send/publish
         """
         msg = self._to_bytes_literal(data)
-
         self.client.publish(topic, msg)
 
         self.check_for_message()
