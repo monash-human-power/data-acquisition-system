@@ -2,6 +2,7 @@
 import esp
 import network
 import config
+from machine import Pin
 
 
 def do_connect(essid, password):
@@ -31,4 +32,5 @@ esp.osdebug(None)
 do_connect(config.ESSID, config.PASSWORD)
 
 # Turn on the built in LED when booted and connected to WiFi (blue light)
-config.builtin_LED.on()
+builtin_LED = Pin(config.led_pin, Pin.OUT)
+builtin_LED.on()
