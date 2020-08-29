@@ -1,5 +1,5 @@
 """
-A class structure to read and format/collate data from different sensors into a dictionary
+A class structure to read and collate data from different sensors into a dictionary and send through MQTT
 """
 # Note: May need to add a restart() method
 import ujson
@@ -8,7 +8,7 @@ from mqtt_client import Client
 
 
 class WirelessModule:
-    def __init__(self, id, broker, start_topic, stop_topic, pub_topic):
+    def __init__(self, id, broker):
         """
         Initialises the wireless module
         :param id: A string representing the mqtt client id
@@ -20,8 +20,29 @@ class WirelessModule:
         self.sensors = []
         self.mqtt = Client(id, broker)
         self.start_publish = False
-        self.sub_topics = [start_topic, stop_topic]
-        self.pub_topic = pub_topic
+        self.sub_topics = []
+        self.pub_topics = []
+
+    def set_sub_topics(self, start_topic, stop_topic):
+        """
+        Set the MQTT topics to subscribe to. Ensure the order of input is correct.
+        :param start_topic: A byte literal of the topic to wait for the start message
+        :param stop_topic: A byte literal of the topic to check for the stop message
+        """
+        self.sub_topics.append(start_topic)
+        self.sub_topics.append(stop_topic)
+
+    def set_pub_topics(self, data_topic, battery_topic, low_battery_topic):
+        """
+        Set the MQTT Topics to publish to. Order of input is very important.
+        :param data_topic: A byte literal representing the topic to publish sensor data to
+        :param battery_topic: A byte literal representing the topic to publish battery percentage to
+        :param low_battery_topic: A byte literal representing the topic to publish to when battery is low
+        :return:
+        """
+        self.pub_topics.append(data_topic)
+        self.pub_topics.append(battery_topic)
+        self.pub_topics.append(low_battery_topic)
 
     def add(self, sensor_obj):
         """
@@ -72,8 +93,8 @@ class WirelessModule:
             while self.start_publish:
                 data = self._read_sensors()
                 print("-------Publishing--------")
-                self.mqtt.publish(self.pub_topic, ujson.dumps(data))
-                print("MQTT data sent: {} on {}".format(data, self.pub_topic))
+                self.mqtt.publish(self.pub_topics[0], ujson.dumps(data))
+                print("MQTT data sent: {} on {}".format(data, self.pub_topics[0]))
 
                 self.mqtt.check_for_message()
                 utime.sleep(data_rate)
