@@ -26,8 +26,7 @@ class DhtSensor:
             self.readings = [{
                                 "type": "temperature",
                                 "value": self.sensor.temperature()
-                             },
-                            {
+                             }, {
                                 "type": "humidity",
                                 "value": self.sensor.humidity()
                             }]
@@ -35,3 +34,7 @@ class DhtSensor:
 
         return self.readings
 
+    def get_data(self):
+        if len(self.readings) == 0:
+            self.read()
+        return self.readings
