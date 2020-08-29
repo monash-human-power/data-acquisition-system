@@ -1,7 +1,7 @@
 """
 A class structure to read and collate data from different sensors into a dictionary and send through MQTT
 """
-# Note: May need to add a restart() method
+# Note: May need to add a restart() method later on
 import ujson
 import utime
 from mqtt_client import Client
@@ -44,7 +44,7 @@ class WirelessModule:
         self.pub_topics.append(battery_topic)
         self.pub_topics.append(low_battery_topic)
 
-    def add(self, sensor_obj):
+    def add_sensor(self, sensor_obj):
         """
         Store an instance of a sensor class
         :param sensor_obj: An instance of the sensor class, must have a .read() method to read data
