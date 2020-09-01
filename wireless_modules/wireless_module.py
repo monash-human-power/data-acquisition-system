@@ -13,15 +13,13 @@ class WirelessModule:
         Initialises the wireless module
         :param id: A string representing the mqtt client id
         :param broker: A string representing the IP address or web domain of the mqtt broker
-        :param start_topic: A byte literal string of the topic to subscribe, to receive start message
-        :param stop_topic: A byte literal string of the topic to subscribe, to receive stop message
-        :param pub_topic: A byte literal string of the topic to publish to
         """
-        self.sensors = []
-        self.mqtt = Client(id, broker)
+        self.sensors = None
         self.start_publish = False
         self.sub_topics = []
         self.pub_topics = []
+
+        self.mqtt = Client(id, broker)
 
     def set_sub_topics(self, start_topic, stop_topic):
         """
@@ -34,7 +32,7 @@ class WirelessModule:
 
     def set_pub_topics(self, data_topic, battery_topic, low_battery_topic):
         """
-        Set the MQTT Topics to publish to. Order of input is very important.
+        Set the MQTT Topics to publish to. Order of input is important.
         :param data_topic: A byte literal representing the topic to publish sensor data to
         :param battery_topic: A byte literal representing the topic to publish battery percentage to
         :param low_battery_topic: A byte literal representing the topic to publish to when battery is low
@@ -44,12 +42,12 @@ class WirelessModule:
         self.pub_topics.append(battery_topic)
         self.pub_topics.append(low_battery_topic)
 
-    def add_sensor(self, sensor_obj):
+    def add_sensors(self, sensor_arr):
         """
         Store an instance of a sensor class
-        :param sensor_obj: An instance of the sensor class, must have a .read() method to read data
+        :param sensor_arr: An array of sensor class instances, each class have a .read() method to read data
         """
-        self.sensors.append(sensor_obj)
+        self.sensors = sensor_arr
 
     def _read_sensors(self):
         """
@@ -80,8 +78,8 @@ class WirelessModule:
 
     def run(self, data_rate=1):
         """
-        Starts the wireless module process of waiting for a start message, publishing sensor data when start message
-        received and checking for a stop message - after which the process is repeated
+        Starts the wireless module process: Waits for a start message, publishes sensor data when start message is
+        received and continuously checks for a stop message - after which the process is repeated
         :param data_rate: Integer representing number of seconds to wait before reading and sending data
         """
         self.mqtt.connect_and_subscribe(self.sub_topics, self.sub_cb)
