@@ -27,6 +27,8 @@ class WirelessModule:
         :param start_topic: A byte literal of the topic to wait for the start message
         :param stop_topic: A byte literal of the topic to check for the stop message
         """
+        if not isinstance(start_topic, bytes) and not isinstance(stop_topic, bytes):
+            raise Exception("Ensure the subscribe topics specified are byte literals")
         self.sub_topics.append(start_topic)
         self.sub_topics.append(stop_topic)
 
