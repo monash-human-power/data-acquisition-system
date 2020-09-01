@@ -4,6 +4,10 @@ from MQ135 import MQ135
 
 class co2:
     def __init__(self, pin):
+        """
+        A MQ135 sensor class to read co2 concentration levels
+        :param pin: An object of the machine.Pin class
+        """
         self.mq135 = MQ135(pin)
         self.dht = None
         self.temperature = None
@@ -14,7 +18,7 @@ class co2:
         """
         Provides the dht sensor to automatically read the temperature and humidity values to get a more accurate co2
         concentration reading.
-        :param dht_instance: An instance of the dht class
+        :param dht_instance: An instance of the dht class (Must contain a .read() method)
         """
         self.dht = dht_instance
         self.dht_sensor_provided = True
@@ -29,20 +33,44 @@ class co2:
         self.temperature = temp
         self.humidity = humidity
 
-    def read(self):
-        # NOTE: Can create separate code for when temp and humidity are given and when not given
+    def _read_temp_humidity(self):
         """
-        Reads the co2 concentration level. It uses the given temperature and humidity data to get a  more correct
-        reading.
+        To read temperature and humidity data from the dht sensor if provided
+        :return:
+        """
+        if self.dht_sensor_provided:
+            data = self.dht.read()
+            self.temperature = data[0]["value"]
+            self.humidity = data[1]["value"]
+
+    def get_rzero(self):
+        """
+        Reads the rzero value from the library
+        :return: An integer representing the Calibration resistance at atmospheric CO2 level
+        """
+        self._read_temp_humidity()
+
+        if self.temperature is not None:
+            return self.mq135.get_corrected_rzero(self.temperature, self.humidity)
+        else:
+            return self.mq135.get_rzero()
+
+    def set_rzero(self, rzero):
+        """
+        Sets the Rzero value in the library code used for the MQ135 sensor
+        :param rzero: An integer representing the Calibration resistance at atmospheric CO2 level
+        :return:
+        """
+        self.mq135.RZERO = rzero
+
+    def read(self):
+        """
+        Reads the co2 concentration level. It uses the temperature and humidity data to get a more 'correct' reading, if
+        provided.
         Assumes only co2 in the air.
         :return: An array of length 1 containing a dictionary with the sensor type (string) and sensor value (int)
         """
-        if self.dht_sensor_provided:
-            data = self.dht.get_data()
-            self.temperature = data[0]["value"]
-            self.humidity = data[0]["value"]
-
-            print("DHT22 Temperature: " + str(self.temperature) + "\t Humidity: " + str(self.humidity))
+        self._read_temp_humidity()
 
         if self.temperature is not None:
             corrected_rzero = self.mq135.get_corrected_rzero(self.temperature, self.humidity)
