@@ -6,8 +6,8 @@ class Mpu:
     def __init__(self, scl_pin, sda_pin):
         """
         Initialises the MPU6050 sensor
-        :param scl_pin: A Pin object connected to SCL
-        :param sda_pin: A Pin object connected to SDA
+        :param scl_pin: A Pin object connected to SCL on the sensor
+        :param sda_pin: A Pin object connected to SDA on the sensor
         """
         i2c = I2C(scl=scl_pin, sda=sda_pin)
         self.accelerometer = accel(i2c)
@@ -15,6 +15,7 @@ class Mpu:
 
     def get_smoothed_values(self, n_samples=10, calibration=None):
         """
+        code from: https://www.twobitarcade.net/article/3-axis-gyro-micropython/
         Get smoothed values from the sensor by sampling
         the sensor `n_samples` times and returning the mean.
 
@@ -43,6 +44,7 @@ class Mpu:
 
     def calibrate(self, threshold=50, n_samples=10):
         """
+        code from: https://www.twobitarcade.net/article/3-axis-gyro-micropython/
         Get calibration data for the sensor, by repeatedly measuring while the sensor is stable. The resulting
         calibration dictionary contains offsets for this sensor in its current position.
         :param threshold: The accuracy of the calibration
@@ -62,11 +64,11 @@ class Mpu:
 
     def read(self):
         """
-        Read averaged and calibrated sensor readings for the accelerometer and gyroscope
+        Read averaged and calibrated sensor data for the accelerometer and gyroscope
         :return: An array of length 2 containing a dictionary for acceleration values and a dictionary for
                 gyroscope values
         """
-        all_data = self.get_smoothed_values(n_samples=100, calibration=self.calibrated_values)
+        all_data = self.get_smoothed_values(n_samples=10, calibration=self.calibrated_values)
         accel_values = {
             "x": all_data["AcX"],
             "y": all_data["AcY"],
