@@ -36,7 +36,7 @@ adc.width(machine.ADC.WIDTH_10BIT)
 
 # Instantiate sensor objects
 my_mpu = Mpu(scl_pin, sda_pin)
-my_dht = DhtSensor(dht_pin)
+my_dht = DhtSensor(dht_pin, 2)
 my_mpu.calibrate()
 my_mq135 = co2(mq135_pin)
 my_mq135.set_rzero(8.62)

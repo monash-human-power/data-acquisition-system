@@ -2,7 +2,7 @@ import dht
 
 
 class DhtSensor:
-    def __init__(self, pin, queries=2):
+    def __init__(self, pin, queries=1):
         """
         Initialise the DHT sensor
         :param pin: A Pin object

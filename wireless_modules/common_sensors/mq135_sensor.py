@@ -26,7 +26,7 @@ class co2:
     def set_temp_humidity(self, temp, humidity):
         """
         Sets the temperature and humidity measurement manually, used to get a more accurate co2 concentration reading.
-        If a dht class instance is also provided, that class be used instead to get the temperature and humidity data.
+        If a dht class instance is also provided, that class be used instead to get the temperature and humidity.
         :param temp: An integer representing temperature in degree Celsius
         :param humidity: An integer representing humidity
         """
@@ -35,8 +35,7 @@ class co2:
 
     def _read_temp_humidity(self):
         """
-        To read temperature and humidity data from the dht sensor if provided
-        :return:
+        To read temperature and humidity data from the dht sensor if provided.
         """
         if self.dht_sensor_provided:
             data = self.dht.read()
@@ -46,7 +45,7 @@ class co2:
     def get_rzero(self):
         """
         Reads the rzero value from the library
-        :return: An integer representing the Calibration resistance at atmospheric CO2 level
+        :return: An integer representing the calibration resistance at atmospheric CO2 level
         """
         self._read_temp_humidity()
 
