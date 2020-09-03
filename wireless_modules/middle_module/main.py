@@ -30,11 +30,16 @@ sda_pin = machine.Pin(21)
 dht_pin = machine.Pin(4)
 mq135_pin = machine.Pin(34)
 
+# Change ADC resolution
+adc = machine.ADC(mq135_pin)
+adc.width(machine.ADC.WIDTH_10BIT)
+
 # Instantiate sensor objects
 my_mpu = Mpu(scl_pin, sda_pin)
 my_dht = DhtSensor(dht_pin)
 my_mpu.calibrate()
 my_mq135 = co2(mq135_pin)
+my_mq135.set_rzero(8.62)
 
 # Set up the wireless module
 middle_module = WirelessModule(CLIENT_ID, config.MQTT_BROKER)
