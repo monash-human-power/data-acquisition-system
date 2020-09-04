@@ -9,3 +9,6 @@
 	path = Bridge/libs/paho.mqtt.cpp
 	url = https://github.com/eclipse/paho.mqtt.cpp.git
 	ignore = untracked
+[submodule "wireless_modules/middle_module/MPU6050-ESP8266-MicroPython"]
+	path = wireless_modules/middle_module/MPU6050-ESP8266-MicroPython
+	url = https://github.com/adamjezek98/MPU6050-ESP8266-MicroPython
