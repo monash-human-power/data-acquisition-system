@@ -1,17 +1,16 @@
 """
 A class structure to read and collate data from different sensors into a dictionary and send through MQTT
 """
-# Note: May need to add a restart() method later on
 import ujson
 import utime
 from mqtt_client import Client
 
 
 class WirelessModule:
-    def __init__(self, id, broker):
+    def __init__(self, client_id, broker):
         """
         Initialises the wireless module
-        :param id: A string representing the mqtt client id
+        :param client_id: A string representing the mqtt client id
         :param broker: A string representing the IP address or web domain of the mqtt broker
         """
         self.sensors = None
@@ -19,11 +18,11 @@ class WirelessModule:
         self.sub_topics = []
         self.pub_topics = []
 
-        self.mqtt = Client(id, broker)
+        self.mqtt = Client(client_id, broker)
 
     def set_sub_topics(self, start_topic, stop_topic):
         """
-        Set the MQTT topics to subscribe to. Ensure the order of input is correct.
+        Set the MQTT topics to subscribe to.
         :param start_topic: A byte literal of the topic to wait for the start message
         :param stop_topic: A byte literal of the topic to check for the stop message
         """
@@ -34,11 +33,10 @@ class WirelessModule:
 
     def set_pub_topics(self, data_topic, battery_topic, low_battery_topic):
         """
-        Set the MQTT Topics to publish to. Order of input is important.
+        Set the MQTT Topics to publish to.
         :param data_topic: A byte literal representing the topic to publish sensor data to
-        :param battery_topic: A byte literal representing the topic to publish battery percentage to
+        :param battery_topic: A byte literal representing the topic to publish battery percentage level to
         :param low_battery_topic: A byte literal representing the topic to publish to when battery is low
-        :return:
         """
         self.pub_topics.append(data_topic)
         self.pub_topics.append(battery_topic)
@@ -46,8 +44,9 @@ class WirelessModule:
 
     def add_sensors(self, sensor_arr):
         """
-        Store an instance of a sensor class
-        :param sensor_arr: An array of sensor class instances, each class have a .read() method to read data
+        Store instances of sensor class
+        :param sensor_arr: An array of sensor class instances.
+        :pre-requisites: Each class must have a .read() method to read data through
         """
         self.sensors = sensor_arr
 

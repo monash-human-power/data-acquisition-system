@@ -24,22 +24,25 @@ SUB_STOP = b"/v3/wireless-module/{}/stop".format(MODULE_NUM)
 # Generate a unique client_id used to set up MQTT Client
 CLIENT_ID = ubinascii.hexlify(machine.unique_id())
 
+# RZERO (for calibration of MQ135) found when the sensor was first 'activated'
+RZERO = 8.62
+
 # Define all the Pin objects for each sensor
 scl_pin = machine.Pin(22)
 sda_pin = machine.Pin(21)
 dht_pin = machine.Pin(4)
 mq135_pin = machine.Pin(34)
 
-# Change ADC resolution
+# Change ADC resolution to 10 bits consistent with the ESP8266 in order to use the MQ135 library
 adc = machine.ADC(mq135_pin)
 adc.width(machine.ADC.WIDTH_10BIT)
 
 # Instantiate sensor objects
-my_mpu = Mpu(scl_pin, sda_pin)
-my_dht = DhtSensor(dht_pin, 2)
+my_mpu = Mpu(scl_pin, sda_pin, 100)
 my_mpu.calibrate()
+my_dht = DhtSensor(dht_pin, 2)
 my_mq135 = co2(mq135_pin)
-my_mq135.set_rzero(8.62)
+my_mq135.set_rzero(RZERO)
 
 # Set up the wireless module
 middle_module = WirelessModule(CLIENT_ID, config.MQTT_BROKER)

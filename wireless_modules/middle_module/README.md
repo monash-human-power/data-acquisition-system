@@ -32,8 +32,8 @@ This repository contains all the code related to Monash Human Power's middle wir
 
 ## Steps to test
 1. Run the `boot.py` file to get your ESP32 connected to the WIFI (Find this in the `wireless_module` folder)
-2. Run the `main.py` file
-3. Either run `test.py` file on your local computer to view the data received in a nicely formatted output or use the
+2. Run the `main.py` file (Note: it would fail if the sensors are not connected and the script is run as it is)
+3. Either run `test.py` file on your local computer to view the data received in a nicely formatted display or use the
     terminal on your system to send and receive data through `mosquitto`.
 4. If using `mosquitto`, use 
     - `mosquitto_pub -h <broker name> -t /v3/wireless-module/2/start -m ""` to inform the module to start sending data

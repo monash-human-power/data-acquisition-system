@@ -3,15 +3,17 @@ from mpu6050 import accel
 
 
 class Mpu:
-    def __init__(self, scl_pin, sda_pin):
+    def __init__(self, scl_pin, sda_pin, samples=10):
         """
-        Initialises the MPU6050 sensor
+        Initialises the MPU6050 sensor to read accelerometer and gyroscope data
         :param scl_pin: A Pin object connected to SCL on the sensor
         :param sda_pin: A Pin object connected to SDA on the sensor
+        :param samples: An integer representing number of readings to take the average of
         """
         i2c = I2C(scl=scl_pin, sda=sda_pin)
         self.accelerometer = accel(i2c)
         self.calibrated_values = []
+        self.samples = samples
 
     def get_smoothed_values(self, n_samples=10, calibration=None):
         """
@@ -65,10 +67,12 @@ class Mpu:
     def read(self):
         """
         Read averaged and calibrated sensor data for the accelerometer and gyroscope
-        :return: An array of length 2 containing a dictionary for acceleration values and a dictionary for
-                gyroscope values
+        :return: An array of length 2 containing a dictionary of acceleration values and a dictionary for
+                gyroscope values. Each contains a `type` key associated with a string of the measurement type and a
+                `value` key associated with another dictionary containing (key, value) pair of the axis and it's
+                relevant data.
         """
-        all_data = self.get_smoothed_values(n_samples=10, calibration=self.calibrated_values)
+        all_data = self.get_smoothed_values(n_samples=self.samples, calibration=self.calibrated_values)
         accel_values = {
             "x": all_data["AcX"],
             "y": all_data["AcY"],

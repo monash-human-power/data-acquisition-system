@@ -1,4 +1,3 @@
-
 from MQ135 import MQ135
 
 
@@ -16,8 +15,8 @@ class co2:
 
     def set_dht(self, dht_instance):
         """
-        Provides the dht sensor to automatically read the temperature and humidity values to get a more accurate co2
-        concentration reading.
+        Provide the dht sensor to automatically read the temperature and humidity values to get a more accurate co2
+        concentration reading when the read() method is called.
         :param dht_instance: An instance of the dht class (Must contain a .read() method)
         """
         self.dht = dht_instance
@@ -26,7 +25,7 @@ class co2:
     def set_temp_humidity(self, temp, humidity):
         """
         Sets the temperature and humidity measurement manually, used to get a more accurate co2 concentration reading.
-        If a dht class instance is also provided, that class be used instead to get the temperature and humidity.
+        If a dht class instance is also provided, that class will be used instead to get temperature and humidity.
         :param temp: An integer representing temperature in degree Celsius
         :param humidity: An integer representing humidity
         """
@@ -35,7 +34,7 @@ class co2:
 
     def _read_temp_humidity(self):
         """
-        To read temperature and humidity data from the dht sensor if provided.
+        Read temperature and humidity data from the dht sensor if provided.
         """
         if self.dht_sensor_provided:
             data = self.dht.read()
@@ -44,7 +43,7 @@ class co2:
 
     def get_rzero(self):
         """
-        Reads the rzero value from the library
+        Reads the RZERO value from the MQ135 library
         :return: An integer representing the calibration resistance at atmospheric CO2 level
         """
         self._read_temp_humidity()
@@ -56,9 +55,8 @@ class co2:
 
     def set_rzero(self, rzero):
         """
-        Sets the Rzero value in the library code used for the MQ135 sensor
+        Sets the RZERO value in the MQ135 library
         :param rzero: An integer representing the Calibration resistance at atmospheric CO2 level
-        :return:
         """
         self.mq135.RZERO = rzero
 
@@ -72,19 +70,16 @@ class co2:
         self._read_temp_humidity()
 
         if self.temperature is not None:
-            corrected_rzero = self.mq135.get_corrected_rzero(self.temperature, self.humidity)
             ppm = self.mq135.get_corrected_ppm(self.temperature, self.humidity)
 
-            print("MQ135 Corrected RZero: " + str(corrected_rzero) + "\t Corrected PPM: " + str(ppm) + "ppm")
+            print("\t MQ135 Corrected PPM: " + str(ppm))
 
         else:
-            rzero = self.mq135.get_rzero()
             ppm = self.mq135.get_ppm()
 
-            print("MQ135 RZero: " + str(rzero) + "\t PPM: " + str(ppm))
+            print("\t MQ135 PPM: " + str(ppm) + "\t rzero: " + str(self.mq135.get_rzero()))
 
         return [{
             "type": "co2",
             "value": ppm
         }]
-
