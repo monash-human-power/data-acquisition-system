@@ -9,7 +9,7 @@ ampy -p $1 -b 115200 put ../mqtt_client.py
 echo "mqtt_client.py loaded"
 ampy -p $1 -b 115200 put ../wireless_module.py
 echo "wireless_module.py loaded"
-ampy -p $1 -b 115200 put mpu6050.py
+ampy -p $1 -b 115200 put MPU6050-ESP8266-MicroPython/mpu6050.py
 echo "mpu6050.py loaded"
 ampy -p $1 -b 115200 put mpu.py
 echo "mpu.py loaded"
