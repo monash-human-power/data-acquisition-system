@@ -1,7 +1,7 @@
 from MQ135 import MQ135
 
 
-class co2:
+class CO2:
     def __init__(self, pin):
         """
         A MQ135 sensor class to read co2 concentration levels

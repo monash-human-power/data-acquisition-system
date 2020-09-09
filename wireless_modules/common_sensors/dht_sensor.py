@@ -2,6 +2,13 @@ import dht
 
 
 class DhtSensor:
+    """
+    Note: The DHT22 will not be polled more than once in 2 seconds (refer to
+        https://docs.micropython.org/en/latest/esp8266/tutorial/dht.html for more information). Hence new data will only
+        be read every 2 seconds, and if the class is queried for data for more than this frequency, the previously read
+        data will be returned instead.
+    """
+
     def __init__(self, pin, queries=1):
         """
         Initialise the DHT sensor for temperature and humidity readings
