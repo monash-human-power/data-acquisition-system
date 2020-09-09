@@ -9,3 +9,6 @@
 [submodule "wireless_modules/libraries/MQ135"]
 	path = wireless_modules/libraries/MQ135
 	url = https://github.com/rubfi/MQ135
+[submodule "wireless_modules/libraries/MPU6050-ESP8266-MicroPython"]
+	path = wireless_modules/libraries/MPU6050-ESP8266-MicroPython
+	url = https://github.com/adamjezek98/MPU6050-ESP8266-MicroPython
