@@ -13,10 +13,13 @@ class WirelessModule:
         :param client_id: A string representing the mqtt client id
         :param broker: A string representing the IP address or web domain of the mqtt broker
         """
-        self.sensors = None
+        self.sensors = []
         self.start_publish = False
-        self.sub_topics = []
-        self.pub_topics = []
+        self.sub_start_topic = None
+        self.sub_stop_topic = None
+        self.pub_data_topic = None
+        self.pub_low_battery = None
+        self.pub_battery_level = None
 
         self.mqtt = Client(client_id, broker)
 
@@ -28,8 +31,8 @@ class WirelessModule:
         """
         if not isinstance(start_topic, bytes) or not isinstance(stop_topic, bytes):
             raise Exception("Ensure the subscribe topics specified are byte literals")
-        self.sub_topics.append(start_topic)
-        self.sub_topics.append(stop_topic)
+        self.sub_start_topic = start_topic
+        self.sub_stop_topic = stop_topic
 
     def set_pub_topics(self, data_topic, battery_topic, low_battery_topic):
         """
@@ -38,22 +41,21 @@ class WirelessModule:
         :param battery_topic: A byte literal representing the topic to publish battery percentage level to
         :param low_battery_topic: A byte literal representing the topic to publish to when battery is low
         """
-        self.pub_topics.append(data_topic)
-        self.pub_topics.append(battery_topic)
-        self.pub_topics.append(low_battery_topic)
+        self.pub_data_topic = data_topic
+        self.pub_battery_level = battery_topic
+        self.pub_low_battery = low_battery_topic
 
     def add_sensors(self, sensor_arr):
         """
         Store instances of sensor class
         :param sensor_arr: An array of sensor class instances.
-        :pre-requisites: Each class must have a .read() method to read data through
         """
         self.sensors = sensor_arr
 
     def _read_sensors(self):
         """
         Reads sensor data from each sensor object stored within this class instance
-        :return: A dictionary of all the sensor types and they're corresponding sensor reading/s
+        :return: A dictionary of all the sensor types and their corresponding sensor reading/s
         :pre-requisite: The read() method for each sensor must return a dictionary
         """
         readings = {"sensors": []}
@@ -72,9 +74,9 @@ class WirelessModule:
         :param msg: The message received
         """
         print("Successfully received message: ", msg, "on:", topic)
-        if topic == self.sub_topics[0]:
+        if topic == self.sub_start_topic:
             self.start_publish = True
-        elif topic == self.sub_topics[1]:
+        elif topic == self.sub_stop_topic:
             self.start_publish = False
 
     def run(self, data_rate=1):
@@ -83,7 +85,8 @@ class WirelessModule:
         received and continuously checks for a stop message - after which the process is repeated
         :param data_rate: Integer representing number of seconds to wait before reading and sending data
         """
-        self.mqtt.connect_and_subscribe(self.sub_topics, self.sub_cb)
+        sub_topics = [self.sub_start_topic, self.sub_stop_topic]
+        self.mqtt.connect_and_subscribe(sub_topics, self.sub_cb)
 
         while True:
             print("waiting for message")
@@ -92,8 +95,8 @@ class WirelessModule:
             while self.start_publish:
                 data = self._read_sensors()
                 print("-------Publishing--------")
-                self.mqtt.publish(self.pub_topics[0], ujson.dumps(data))
-                print("MQTT data sent: {} on {}".format(data, self.pub_topics[0]))
+                self.mqtt.publish(self.pub_data_topic, ujson.dumps(data))
+                print("MQTT data sent: {} on {}".format(data, self.pub_data_topic))
 
                 self.mqtt.check_for_message()
                 utime.sleep(data_rate)
