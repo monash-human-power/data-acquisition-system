@@ -1,49 +1,38 @@
 """
 A class structure to read and collate data from different sensors into a dictionary and send through MQTT
 """
+import machine
+import ubinascii
 import ujson
 import utime
 from mqtt_client import Client
 
+try:
+    import config
+except FileNotFoundError:
+    print('Error importing config.py, ensure a local version of config.py exists')
+
 
 class WirelessModule:
-    def __init__(self, client_id, broker):
+    def __init__(self, module_id):
         """
         Initialises the wireless module
-        :param client_id: A string representing the mqtt client id
-        :param broker: A string representing the IP address or web domain of the mqtt broker
+        :param module_id: An integer representing the wireless module number
         """
         self.sensors = []
+
+        self.pub_data_topic = b"/v3/wireless-module/{}/data".format(module_id)
+        self.pub_low_battery = b"/v3/wireless-module/{}/low-battery".format(module_id)
+        self.pub_battery_level = b"/v3/wireless-module/{}/battery".format(module_id)
+
+        self.sub_start_topic = b"/v3/wireless-module/{}/start".format(module_id)
+        self.sub_stop_topic = b"/v3/wireless-module/{}/stop".format(module_id)
+
         self.start_publish = False
-        self.sub_start_topic = None
-        self.sub_stop_topic = None
-        self.pub_data_topic = None
-        self.pub_low_battery = None
-        self.pub_battery_level = None
 
-        self.mqtt = Client(client_id, broker)
-
-    def set_sub_topics(self, start_topic, stop_topic):
-        """
-        Set the MQTT topics to subscribe to.
-        :param start_topic: A byte literal of the topic to wait for the start message
-        :param stop_topic: A byte literal of the topic to check for the stop message
-        """
-        if not isinstance(start_topic, bytes) or not isinstance(stop_topic, bytes):
-            raise Exception("Ensure the subscribe topics specified are byte literals")
-        self.sub_start_topic = start_topic
-        self.sub_stop_topic = stop_topic
-
-    def set_pub_topics(self, data_topic, battery_topic, low_battery_topic):
-        """
-        Set the MQTT Topics to publish to.
-        :param data_topic: A byte literal representing the topic to publish sensor data to
-        :param battery_topic: A byte literal representing the topic to publish battery percentage level to
-        :param low_battery_topic: A byte literal representing the topic to publish to when battery is low
-        """
-        self.pub_data_topic = data_topic
-        self.pub_battery_level = battery_topic
-        self.pub_low_battery = low_battery_topic
+        # Generate a unique client_id used to set up MQTT Client
+        client_id = ubinascii.hexlify(machine.unique_id())
+        self.mqtt = Client(client_id, config.MQTT_BROKER)
 
     def add_sensors(self, sensor_arr):
         """
