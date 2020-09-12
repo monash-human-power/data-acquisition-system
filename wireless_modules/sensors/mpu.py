@@ -73,16 +73,18 @@ class Mpu(Sensor):
                 `value` key associated with another dictionary containing (key, value) pair of the axis and it's
                 relevant data.
         """
+        lsb_to_g = 16384
+        lsb_to_deg = 131
         all_data = self.get_smoothed_values(n_samples=self.samples, calibration=self.calibrated_values)
         accel_values = {
-            "x": all_data["AcX"],
-            "y": all_data["AcY"],
-            "z": all_data["AcZ"]
+            "x": all_data["AcX"] / lsb_to_g,
+            "y": all_data["AcY"] / lsb_to_g,
+            "z": all_data["AcZ"] / lsb_to_g
         }
         gyro_values = {
-            "x": all_data["GyX"],
-            "y": all_data["GyY"],
-            "z": all_data["GyZ"]
+            "x": all_data["GyX"] / lsb_to_deg,
+            "y": all_data["GyY"] / lsb_to_deg,
+            "z": all_data["GyZ"] / lsb_to_deg
         }
 
         return [{
