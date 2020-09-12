@@ -34,6 +34,7 @@ sensors = {
     "temperature": MockSensor(25),
     "humidity": MockSensor(85),
     "reedVelocity": MockSensor(50),
+    "reedDistance": MockSensor(1000),
     "battery": MockSensor(80),
     "accelerometer": MockSensor(("x", 90),
                                 ("y", 90),
@@ -55,7 +56,7 @@ sensors = {
 # HARDCODED MODULE ONBOARD SENSORS (dict above contains the MockSensor objects)
 M1_sensors = ["temperature", "humidity", "steeringAngle"]
 M2_sensors = ["co2", "temperature", "humidity", "accelerometer", "gyroscope"]
-M3_sensors = ["co2", "reedVelocity", "gps"]
+M3_sensors = ["co2", "reedVelocity", "reedDistance", "gps"]
 M4_sensors = ["power", "cadence", "heartRate"]
 Mn_sensors = list(sensors.keys())  # For other fake module all sensors are used
 
