@@ -7,7 +7,7 @@ class CO2(Sensor):
     def __init__(self, pin):
         """
         A MQ135 sensor class to read co2 concentration levels.
-        :param pin: An instance of the machine.Pin class connected to the MQ135 class
+        :param pin: An instance of the machine.Pin class connected to the MQ135 class.
         """
         # Change ADC resolution to 10 bits consistent with the ESP8266 in order to use the MQ135 library
         adc = ADC(pin)
@@ -23,7 +23,7 @@ class CO2(Sensor):
         """
         Provide the dht sensor to automatically read the temperature and humidity values to get a more accurate co2
         concentration reading when the read() method is called.
-        :param dht_instance: An instance of the dht class (Must contain a .read() method)
+        :param dht_instance: An instance of the dht class (Must contain a .read() method).
         """
         self.dht = dht_instance
         self.dht_sensor_provided = True
@@ -32,8 +32,8 @@ class CO2(Sensor):
         """
         Set the temperature and humidity measurement manually, used to get more accurate co2 concentration readings.
         If a dht class instance is also provided, that class will be used instead to get temperature and humidity.
-        :param temp: An integer representing temperature in degree Celsius
-        :param humidity: An integer representing humidity
+        :param temp: An integer representing temperature in degree Celsius.
+        :param humidity: An integer representing humidity.
         """
         self.temperature = temp
         self.humidity = humidity
@@ -50,7 +50,7 @@ class CO2(Sensor):
     def get_rzero(self):
         """
         Read RZERO value from the MQ135 library.
-        :return: An integer representing the calibration resistance at atmospheric CO2 level
+        :return: An integer representing the calibration resistance at atmospheric CO2 level.
         """
         self._read_temp_humidity()
 
@@ -62,7 +62,7 @@ class CO2(Sensor):
     def set_rzero(self, rzero):
         """
         Set the RZERO value in the MQ135 library.
-        :param rzero: An integer representing the Calibration resistance at atmospheric CO2 level
+        :param rzero: An integer representing the Calibration resistance at atmospheric CO2 level.
         """
         self.mq135.RZERO = rzero
         print(self.mq135.RZERO)
@@ -72,7 +72,7 @@ class CO2(Sensor):
         Read the co2 concentration level. It uses the temperature and humidity data to get a more 'correct' reading, if
         provided.
         Assume only co2 in the air.
-        :return: An array of length 1 containing a dictionary with the sensor type (string) and sensor value (int)
+        :return: An array of length 1 containing a dictionary with the sensor type (string) and sensor value (int).
         """
         self._read_temp_humidity()
 

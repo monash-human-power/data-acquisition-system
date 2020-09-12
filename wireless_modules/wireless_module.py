@@ -12,12 +12,12 @@ except FileNotFoundError:
 
 class WirelessModule:
     """
-    A class structure to read and collate data from different sensors into a dictionary and send through MQTT
+    A class structure to read and collate data from different sensors into a dictionary and send through MQTT.
     """
     def __init__(self, module_id):
         """
         Initialises the wireless module.
-        :param module_id: An integer representing the wireless module number
+        :param module_id: An integer representing the wireless module number.
         """
         self.sensors = []
 
@@ -43,9 +43,9 @@ class WirelessModule:
 
     def _read_sensors(self):
         """
-        Reads sensor data from each sensor object stored within this class instance.
-        :return: A dictionary of all the sensor types and their corresponding sensor reading/s
-        :pre-requisite: The read() method for each sensor must return a dictionary
+        Read sensor data from each sensor object stored within this class instance.
+        :return: A dictionary of all the sensor types and their corresponding sensor reading/s.
+        :pre-requisite: The read() method for each sensor must return a dictionary.
         """
         readings = {"sensors": []}
 
@@ -59,8 +59,8 @@ class WirelessModule:
     def sub_cb(self, topic, msg):
         """
         Method to process any message received from one of the subscribed topics.
-        :param topic: The topic on which the message is received
-        :param msg: The message received
+        :param topic: The topic on which the message is received.
+        :param msg: The message received.
         """
         print("Successfully received message: ", msg, "on:", topic)
         if topic == self.sub_start_topic:
@@ -72,7 +72,7 @@ class WirelessModule:
         """
         Start the wireless module process: Wait for start message, publish sensor data when start message
         received and continuously check for a stop message - after which the process is repeated.
-        :param data_rate: Integer representing number of seconds to wait before reading and sending data
+        :param data_rate: Integer representing number of seconds to wait before sending data.
         """
         ms_to_sec = 1 / 1000
 

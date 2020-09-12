@@ -7,9 +7,9 @@ class Mpu(Sensor):
     def __init__(self, scl_pin, sda_pin, samples=10):
         """
         Initialise the MPU6050 sensor to read accelerometer and gyroscope data.
-        :param scl_pin: A Pin object connected to SCL on the sensor
-        :param sda_pin: A Pin object connected to SDA on the sensor
-        :param samples: An integer representing number of readings to take the average of
+        :param scl_pin: A Pin object connected to SCL on the sensor.
+        :param sda_pin: A Pin object connected to SDA on the sensor.
+        :param samples: An integer representing number of readings to take the average of.
         """
         i2c = I2C(scl=scl_pin, sda=sda_pin)
         self.accelerometer = accel(i2c)
@@ -49,8 +49,8 @@ class Mpu(Sensor):
         """
         Get calibration data for the sensor, by repeatedly measuring while the sensor is stable. The resulting
         calibration dictionary contains offsets for this sensor in its current position.
-        :param threshold: The accuracy of the calibration
-        :param n_samples: The number of times the sensor should be read and averaged
+        :param threshold: The accuracy of the calibration.
+        :param n_samples: The number of times the sensor should be read and averaged.
         Note: Sourced from: https://www.twobitarcade.net/article/3-axis-gyro-micropython/
         """
         print("--------Calibrating:")
