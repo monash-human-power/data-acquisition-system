@@ -1,13 +1,18 @@
 from MQ135 import MQ135
 from sensor_base import Sensor
+from machine import ADC
 
 
 class CO2(Sensor):
     def __init__(self, pin):
         """
-        A MQ135 sensor class to read co2 concentration levels
-        :param pin: An object of the machine.Pin class
+        A MQ135 sensor class to read co2 concentration levels.
+        :param pin: An instance of the machine.Pin class connected to the MQ135 class
         """
+        # Change ADC resolution to 10 bits consistent with the ESP8266 in order to use the MQ135 library
+        adc = ADC(pin)
+        adc.width(ADC.WIDTH_10BIT)
+
         self.mq135 = MQ135(pin)
         self.dht = None
         self.temperature = None
@@ -25,7 +30,7 @@ class CO2(Sensor):
 
     def set_temp_humidity(self, temp, humidity):
         """
-        Sets the temperature and humidity measurement manually, used to get a more accurate co2 concentration reading.
+        Set the temperature and humidity measurement manually, used to get more accurate co2 concentration readings.
         If a dht class instance is also provided, that class will be used instead to get temperature and humidity.
         :param temp: An integer representing temperature in degree Celsius
         :param humidity: An integer representing humidity
@@ -44,7 +49,7 @@ class CO2(Sensor):
 
     def get_rzero(self):
         """
-        Reads the RZERO value from the MQ135 library
+        Read RZERO value from the MQ135 library.
         :return: An integer representing the calibration resistance at atmospheric CO2 level
         """
         self._read_temp_humidity()
@@ -56,7 +61,7 @@ class CO2(Sensor):
 
     def set_rzero(self, rzero):
         """
-        Sets the RZERO value in the MQ135 library
+        Set the RZERO value in the MQ135 library.
         :param rzero: An integer representing the Calibration resistance at atmospheric CO2 level
         """
         self.mq135.RZERO = rzero
@@ -64,9 +69,9 @@ class CO2(Sensor):
 
     def read(self):
         """
-        Reads the co2 concentration level. It uses the temperature and humidity data to get a more 'correct' reading, if
+        Read the co2 concentration level. It uses the temperature and humidity data to get a more 'correct' reading, if
         provided.
-        Assumes only co2 in the air.
+        Assume only co2 in the air.
         :return: An array of length 1 containing a dictionary with the sensor type (string) and sensor value (int)
         """
         self._read_temp_humidity()

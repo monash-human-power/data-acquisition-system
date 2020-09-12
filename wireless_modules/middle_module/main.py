@@ -16,10 +16,6 @@ sda_pin = machine.Pin(21)
 dht_pin = machine.Pin(4)
 mq135_pin = machine.Pin(34)
 
-# Change ADC resolution to 10 bits consistent with the ESP8266 in order to use the MQ135 library
-adc = machine.ADC(mq135_pin)
-adc.width(machine.ADC.WIDTH_10BIT)
-
 # Instantiate sensor objects
 my_mpu = Mpu(scl_pin, sda_pin, 100)
 my_mpu.calibrate()
