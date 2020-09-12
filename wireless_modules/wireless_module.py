@@ -4,7 +4,7 @@ A class structure to read and collate data from different sensors into a diction
 import machine
 import ubinascii
 import ujson
-import utime
+import time
 from mqtt_client import Client
 
 try:
@@ -74,6 +74,8 @@ class WirelessModule:
         received and continuously checks for a stop message - after which the process is repeated
         :param data_rate: Integer representing number of seconds to wait before reading and sending data
         """
+        ms_to_sec = 1 / 1000
+
         sub_topics = [self.sub_start_topic, self.sub_stop_topic]
         self.mqtt.connect_and_subscribe(sub_topics, self.sub_cb)
 
@@ -81,12 +83,20 @@ class WirelessModule:
             print("waiting for message")
             self.mqtt.wait_for_message()
 
+            # get millisecond counter
+            start = time.ticks_ms()
+
             while self.start_publish:
                 data = self._read_sensors()
                 print("-------Publishing--------")
+
+                # compute time difference
+                time_taken = time.ticks_diff(time.ticks_ms(), start) * ms_to_sec
+
+                time.sleep(data_rate - time_taken)
+
                 self.mqtt.publish(self.pub_data_topic, ujson.dumps(data))
+                start = time.ticks_ms()
                 print("MQTT data sent: {} on {}".format(data, self.pub_data_topic))
 
                 self.mqtt.check_for_message()
-                utime.sleep(data_rate)
-
