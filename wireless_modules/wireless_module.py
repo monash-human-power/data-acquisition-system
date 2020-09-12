@@ -1,6 +1,3 @@
-"""
-A class structure to read and collate data from different sensors into a dictionary and send through MQTT
-"""
 import machine
 import ubinascii
 import ujson
@@ -14,9 +11,12 @@ except FileNotFoundError:
 
 
 class WirelessModule:
+    """
+    A class structure to read and collate data from different sensors into a dictionary and send through MQTT
+    """
     def __init__(self, module_id):
         """
-        Initialises the wireless module
+        Initialises the wireless module.
         :param module_id: An integer representing the wireless module number
         """
         self.sensors = []
@@ -36,14 +36,14 @@ class WirelessModule:
 
     def add_sensors(self, sensor_arr):
         """
-        Store instances of sensor class
+        Store instances of sensor class.
         :param sensor_arr: An array of sensor class instances.
         """
         self.sensors = sensor_arr
 
     def _read_sensors(self):
         """
-        Reads sensor data from each sensor object stored within this class instance
+        Reads sensor data from each sensor object stored within this class instance.
         :return: A dictionary of all the sensor types and their corresponding sensor reading/s
         :pre-requisite: The read() method for each sensor must return a dictionary
         """
@@ -58,7 +58,7 @@ class WirelessModule:
 
     def sub_cb(self, topic, msg):
         """
-        Method to process any message received from one of the subscribed topics
+        Method to process any message received from one of the subscribed topics.
         :param topic: The topic on which the message is received
         :param msg: The message received
         """
@@ -70,8 +70,8 @@ class WirelessModule:
 
     def run(self, data_rate=1):
         """
-        Starts the wireless module process: Waits for a start message, publishes sensor data when start message is
-        received and continuously checks for a stop message - after which the process is repeated
+        Start the wireless module process: Wait for start message, publish sensor data when start message
+        received and continuously check for a stop message - after which the process is repeated.
         :param data_rate: Integer representing number of seconds to wait before reading and sending data
         """
         ms_to_sec = 1 / 1000

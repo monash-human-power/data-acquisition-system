@@ -6,7 +6,7 @@ from sensor_base import Sensor
 class Mpu(Sensor):
     def __init__(self, scl_pin, sda_pin, samples=10):
         """
-        Initialises the MPU6050 sensor to read accelerometer and gyroscope data
+        Initialise the MPU6050 sensor to read accelerometer and gyroscope data.
         :param scl_pin: A Pin object connected to SCL on the sensor
         :param sda_pin: A Pin object connected to SDA on the sensor
         :param samples: An integer representing number of readings to take the average of
@@ -18,7 +18,6 @@ class Mpu(Sensor):
 
     def get_smoothed_values(self, n_samples=10, calibration=None):
         """
-        code from: https://www.twobitarcade.net/article/3-axis-gyro-micropython/
         Get smoothed values from the sensor by sampling
         the sensor `n_samples` times and returning the mean.
 
@@ -28,6 +27,7 @@ class Mpu(Sensor):
         :param calibration: calibration values to offset by
         :return: A dictionary of mean sensor measurements for the temperature, 3 dimensions of acceleration and
                 gyroscope
+        Note: Sourced from https://www.twobitarcade.net/article/3-axis-gyro-micropython/
         """
         result = {}
         for _ in range(n_samples):
@@ -47,11 +47,11 @@ class Mpu(Sensor):
 
     def calibrate(self, threshold=50, n_samples=10):
         """
-        code from: https://www.twobitarcade.net/article/3-axis-gyro-micropython/
         Get calibration data for the sensor, by repeatedly measuring while the sensor is stable. The resulting
         calibration dictionary contains offsets for this sensor in its current position.
         :param threshold: The accuracy of the calibration
         :param n_samples: The number of times the sensor should be read and averaged
+        Note: Sourced from: https://www.twobitarcade.net/article/3-axis-gyro-micropython/
         """
         print("--------Calibrating:")
         while True:
@@ -67,7 +67,7 @@ class Mpu(Sensor):
 
     def read(self):
         """
-        Read averaged and calibrated sensor data for the accelerometer and gyroscope
+        Read averaged and calibrated sensor data for the accelerometer and gyroscope.
         :return: An array of length 2 containing a dictionary of acceleration values and a dictionary for
                 gyroscope values. Each contains a `type` key associated with a string of the measurement type and a
                 `value` key associated with another dictionary containing (key, value) pair of the axis and it's

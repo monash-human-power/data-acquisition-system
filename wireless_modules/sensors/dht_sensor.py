@@ -12,8 +12,8 @@ class DhtSensor(Sensor):
 
     def __init__(self, pin, queries=1):
         """
-        Initialise the DHT sensor for temperature and humidity readings
-        :param pin: A Pin object
+        Initialise the DHT sensor for temperature and humidity readings.
+        :param pin: An instance of the Pin class that is connected to the DHT22 sensor.
         :param queries: Number of times the sensor will be read every 2 seconds
         """
         self.sensor = dht.DHT22(pin)
@@ -24,7 +24,7 @@ class DhtSensor(Sensor):
 
     def read(self):
         """
-        Reads the temperature and humidity measurements from the sensor
+        Read the temperature and humidity measurements from the sensor.
         :return: An array of length 2 containing dictionary for the temperature and humidity values. Each dictionary has
         a `type` key associated with the name of the sensor (a string) and a `value` key associated with the value of
         the sensor (an integer)
