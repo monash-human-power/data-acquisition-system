@@ -26,6 +26,7 @@ This repository contains all the code related to Monash Human Power's middle wir
 
 
 ## Dependencies
+- Remember to run `git submodule update --init` to set up the required submodules
 - Ensure the `config.py` file is created locally (see the 'Getting Started' section above)
 - The `test.py` requires the `paho-mqtt` library installed for Python
 
