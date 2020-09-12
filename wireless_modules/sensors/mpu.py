@@ -1,8 +1,9 @@
 from machine import I2C
 from mpu6050 import accel
+from sensor_base import Sensor
 
 
-class Mpu:
+class Mpu(Sensor):
     def __init__(self, scl_pin, sda_pin, samples=10):
         """
         Initialises the MPU6050 sensor to read accelerometer and gyroscope data

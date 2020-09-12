@@ -1,7 +1,8 @@
 from MQ135 import MQ135
+from sensor_base import Sensor
 
 
-class CO2:
+class CO2(Sensor):
     def __init__(self, pin):
         """
         A MQ135 sensor class to read co2 concentration levels
@@ -59,6 +60,7 @@ class CO2:
         :param rzero: An integer representing the Calibration resistance at atmospheric CO2 level
         """
         self.mq135.RZERO = rzero
+        print(self.mq135.RZERO)
 
     def read(self):
         """

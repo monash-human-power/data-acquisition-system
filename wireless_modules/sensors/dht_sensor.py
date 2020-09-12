@@ -1,7 +1,8 @@
 import dht
+from sensor_base import Sensor
 
 
-class DhtSensor:
+class DhtSensor(Sensor):
     """
     Note: The DHT22 will not be polled more than once in 2 seconds (refer to
         https://docs.micropython.org/en/latest/esp8266/tutorial/dht.html for more information). Hence new data will only
@@ -34,13 +35,16 @@ class DhtSensor:
         # read (fresh) data if this is the first query in the 2 second frame, otherwise use the previously read data
         if self.queries_made == 0:
             self.sensor.measure()
-            self.readings = [{
-                                "type": "temperature",
-                                "value": self.sensor.temperature()
-                             }, {
-                                "type": "humidity",
-                                "value": self.sensor.humidity()
-                            }]
+            self.readings = [
+                {
+                    "type": "temperature",
+                    "value": self.sensor.temperature()
+                },
+                {
+                    "type": "humidity",
+                    "value": self.sensor.humidity()
+                }
+            ]
 
         self.queries_made += 1
         return self.readings
