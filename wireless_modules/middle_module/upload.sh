@@ -19,3 +19,5 @@ ampy -p $1 -b 115200 put ../sensors/co2_sensor.py
 echo "mq135_sensor.py loaded"
 ampy -p $1 -b 115200 put ../libraries/MQ135/mq135.py
 echo "mq135.py loaded"
+ampy -p $1 -b 115200 put ../sensors/sensor_base.py
+echo "sensor_base.py loaded"
