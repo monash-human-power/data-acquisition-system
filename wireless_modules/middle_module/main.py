@@ -19,7 +19,7 @@ mq135_pin = machine.Pin(34)
 # Instantiate sensor objects
 my_mpu = Mpu(scl_pin, sda_pin, 100)
 my_mpu.calibrate()
-my_dht = DhtSensor(dht_pin, 2)
+my_dht = DhtSensor(dht_pin)
 my_mq135 = CO2(mq135_pin)
 my_mq135.set_rzero(RZERO)
 
