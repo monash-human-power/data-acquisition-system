@@ -1,14 +1,11 @@
-from abc import ABC, abstractmethod
 
-
-class Sensor(ABC):
+class Sensor:
     """
     Abstract base class for all sensors
     """
     def __init__(self):
         pass
 
-    @abstractmethod
     def read(self):
         """
         Read the relevant sensor values and return an array of dictionaries for each value. Each dictionary should have
