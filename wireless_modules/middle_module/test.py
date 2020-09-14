@@ -14,18 +14,43 @@ parser.add_argument(
     '--host', action='store', type=str, default="localhost",
     help="""Address of the MQTT broker.""")
 
+old_accel_data = None
+old_gyro_data = None
+
+
+def display_difference(old, new):
+    print("Change in x: \t\t" + str(new["x"] - old["x"]))
+    print("Change in y: \t\t" + str(new["y"] - old["y"]))
+    print("Change in z: \t\t" + str(new["z"] - old["z"]))
+
 
 def on_msg_receive(client, data, message):
+    # Extract data from mqtt topic
     data = message.payload.decode('utf-8')
     data_dict = json.loads(data)
     sensors = data_dict["sensors"]
+
     for sensor in sensors:
         print("Type: \t" + str(sensor["type"]))
         if sensor["type"] == "accelerometer" or sensor["type"] == "gyroscope":
-            values = sensor["value"]
-            print("x value \t" + str(values["x"]))
-            print("y value \t" + str(values["y"]))
-            print("z value \t" + str(values["z"]))
+            new_values = sensor["value"]
+            print("x value \t" + str(new_values["x"]))
+            print("y value \t" + str(new_values["y"]))
+            print("z value \t" + str(new_values["z"]))
+
+            # Display change in sensor readings
+            if sensor["type"] == "accelerometer":
+                global old_accel_data
+                # If this is not the first reading, display the change since last reading
+                if old_accel_data is not None:
+                    display_difference(old_accel_data, new_values)
+                old_accel_data = new_values
+            else:
+                global old_gyro_data
+                if old_gyro_data is not None:
+                    display_difference(old_gyro_data, new_values)
+                old_gyro_data = new_values
+
         else:
             print("Value: \t" + str(sensor["value"]))
         print("--------------------------")
@@ -63,7 +88,7 @@ if __name__ == "__main__":
     client.publish(START_TOPIC, qos=1)
 
     # Wait for data to receive
-    time.sleep(5)
+    time.sleep(10)
 
     client.publish(STOP_TOPIC, qos=1)
     print('Sent stop message')
