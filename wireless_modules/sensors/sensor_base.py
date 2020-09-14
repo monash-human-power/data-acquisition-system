@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 
 class Sensor:
     """
@@ -6,6 +8,7 @@ class Sensor:
     def __init__(self):
         pass
 
+    @abstractmethod
     def read(self):
         """
         Read the relevant sensor values and return an array of dictionaries for each value. Each dictionary should have
