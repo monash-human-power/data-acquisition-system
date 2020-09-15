@@ -71,7 +71,8 @@ class CO2(Sensor):
         Read the co2 concentration level. It uses the temperature and humidity data to get a more 'correct' reading, if
         provided.
         Assume only co2 in the air.
-        :return: An array of length 1 containing a dictionary with the sensor type (string) and sensor value (int).
+        :return: An array of length 1 containing a dictionary with the sensor type (string) and sensor value (int). The
+        sensor value is in PPM.
         """
         self._read_temp_humidity()
 

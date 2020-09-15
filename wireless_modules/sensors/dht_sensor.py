@@ -28,6 +28,7 @@ class DhtSensor(Sensor):
         :return: An array of length 2 containing dictionary for the temperature and humidity values. Each dictionary has
         a `type` key associated with the name of the sensor (a string) and a `value` key associated with the value of
         the sensor (an integer).
+        The temperature measurement is in Degrees Celsius and Humidity measurement is in relative %.
         """
 
         # Return old data if this method was called already in the past 2 seconds

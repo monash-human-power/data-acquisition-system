@@ -72,6 +72,7 @@ class Mpu(Sensor):
                 gyroscope values. Each contains a `type` key associated with a string of the measurement type and a
                 `value` key associated with another dictionary containing (key, value) pair of the axis and it's
                 relevant data.
+                The gyroscope values are in degrees/sec and accelerometer values are in Gs.
         """
         lsb_to_g = 16384
         lsb_to_deg = 131
