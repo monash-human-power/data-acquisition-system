@@ -22,3 +22,4 @@ echo "mq135.py loaded"
 ampy -p $1 -b 115200 put ../sensors/sensor_base.py
 echo "sensor_base.py loaded"
 ampy -p $1 -b 115200 put ../libraries/abc.py
+echo "abc.py loaded"
