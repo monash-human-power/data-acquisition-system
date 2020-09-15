@@ -65,7 +65,6 @@ class CO2(Sensor):
         :param rzero: An integer representing the Calibration resistance at atmospheric CO2 level.
         """
         self.mq135.RZERO = rzero
-        print(self.mq135.RZERO)
 
     def read(self):
         """
@@ -76,15 +75,18 @@ class CO2(Sensor):
         """
         self._read_temp_humidity()
 
-        if self.temperature is not None:
-            ppm = self.mq135.get_corrected_ppm(self.temperature, self.humidity)
+        try:
+            if self.temperature is not None:
+                ppm = self.mq135.get_corrected_ppm(self.temperature, self.humidity)
 
-            print("\t MQ135 Corrected PPM: " + str(ppm))
+                print("\t MQ135 Corrected PPM: " + str(ppm))
 
-        else:
-            ppm = self.mq135.get_ppm()
+            else:
+                ppm = self.mq135.get_ppm()
 
-            print("\t MQ135 PPM: " + str(ppm) + "\t rzero: " + str(self.mq135.get_rzero()))
+                print("\t MQ135 PPM: " + str(ppm) + "\t rzero: " + str(self.mq135.get_rzero()))
+        except ValueError:
+            ppm = 0  # Since ppm cannot reasonably be 0, this can be used to mark that the sensor has not yet heated up
 
         return [{
             "type": "co2",
