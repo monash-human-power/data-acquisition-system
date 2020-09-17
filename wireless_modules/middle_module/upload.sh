@@ -1,17 +1,21 @@
 #!/bin/sh
 
-# Note: Shell scripting should have no white space between the '=' operator for variable assigning
+# NOTE: 
+# Shell scripting should have no white space between the '=' operator for variable assigning
+# $# is the number of arguments given through the command line
+# $arg variable is a list of all arguments passed through the command line
 
 # declares an integer
 declare -i BAUD_RATE=115200
 
 PORT=$1
+NUM_ARGS=$#
 files="main.py ../config.py ../wireless_module.py  ../boot.py ../mqtt_client.py ../sensors/mpu.py \
 ../sensors/dht_sensor.py ../sensors/co2_sensor.py ../libraries/MQ135/mq135.py ../sensors/sensor_base.py \
 ../libraries/abc.py ../libraries/MPU6050-ESP8266-MicroPython/mpu6050.py"
 
-# Check that the port name is specified in the argument
-if [ $# -eq 0 ]
+# Check that the port name is specified in the argument 
+if [ $NUM_ARGS -eq 0 ]
 then   
     echo "Port name not specified after ./upload.sh command"
     exit 1
@@ -36,7 +40,7 @@ upload_file()
 }
 
 # If there are more than 1 command line arguments, user has specified the files to upload in the arguments
-if [ $# -gt 1 ]
+if [ $NUM_ARGS -gt 1 ]
 then
     i=1
     # loop through each argument list and upload the file onto the board
