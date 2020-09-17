@@ -1,25 +1,23 @@
 #!/bin/sh
-ampy -p $1 -b 115200 put ../config.py
-echo "config.py loaded"
-ampy -p $1 -b 115200 put main.py
-echo "main.py loaded"
-ampy -p $1 -b 115200 put ../boot.py
-echo "boot.py loaded"
-ampy -p $1 -b 115200 put ../mqtt_client.py
-echo "mqtt_client.py loaded"
-ampy -p $1 -b 115200 put ../wireless_module.py
-echo "wireless_module.py loaded"
-ampy -p $1 -b 115200 put ../libraries/MPU6050-ESP8266-MicroPython/mpu6050.py
-echo "mpu6050.py loaded"
-ampy -p $1 -b 115200 put ../sensors/mpu.py
-echo "mpu.py loaded"
-ampy -p $1 -b 115200 put ../sensors/dht_sensor.py
-echo "dht_sensor.py loaded"
-ampy -p $1 -b 115200 put ../sensors/co2_sensor.py
-echo "mq135_sensor.py loaded"
-ampy -p $1 -b 115200 put ../libraries/MQ135/mq135.py
-echo "mq135.py loaded"
-ampy -p $1 -b 115200 put ../sensors/sensor_base.py
-echo "sensor_base.py loaded"
-ampy -p $1 -b 115200 put ../libraries/abc.py
-echo "abc.py loaded"
+
+# Shell scripting should have no white space between the '=' operator for variable asisgning
+
+# declares an integer
+declare -i BAUD_RATE=115200
+
+files="config.py ../wireless_module.py"
+
+for file in $files
+do 
+    # Places file on the ESP32
+    ampy -p $1 -b $BAUD_RATE put $file
+
+    # '$?' stores 0 if the above command ran successfully
+    if [ $? == 0 ]
+    then
+        echo "$file loaded"
+    else
+        echo "$file NOT loaded"
+    fi
+done
+
