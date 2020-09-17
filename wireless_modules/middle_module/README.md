@@ -20,15 +20,24 @@ This repository contains all the code related to Monash Human Power's middle wir
 ```
 
 ## Contents
-- `main.py`: Processes messages and sends sensor data through MQTT
+- `main.py`: Declares topics to publish and subscribe to
+- `mpu.py`: Class that helps read data from the MPU6050 sensor
+- `test.py`: A python script to test the sensor data received from the middle wireless module over MQTT
 
 
 ## Dependencies
+- Remember to run `git submodule update --init` to set up the required submodules
 - Ensure the `config.py` file is created locally (see the 'Getting Started' section above)
 - The `test.py` requires the `paho-mqtt` library installed for Python
 
 
 ## Steps to test
 1. Run the `boot.py` file to get your ESP32 connected to the WIFI (Find this in the `wireless_module` folder)
-2. Run the `main.py` file and after starting it run the `test.py` file on your local computer and watch the console. The `test.py` can be found in the `wireless_module` folder.
+2. Run the `main.py` file (Note: it would fail if the sensors are not connected and the script is run as it is)
+3. Either run `test.py` file on your local computer to view the data received in a nicely formatted display or use the
+    terminal on your system to send and receive data through `mosquitto`.
+4. If using `mosquitto`, use 
+    - `mosquitto_pub -h <broker name> -t /v3/wireless-module/2/start -m ""` to inform the module to start sending data
+    - `mosquitto_pub -h <broker name> -t /v3/wireless-module/2/stop -m ""` to inform the module to stop sending data
+    - `mosquitto_sub -h <broker name> -t /v3/wireless-module/2/data` to read data sent from the module
 
