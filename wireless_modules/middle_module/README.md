@@ -16,7 +16,7 @@ This repository contains all the code related to Monash Human Power's middle wir
 
 ```
 # Change the first argument to the serial port of the ESP32.
-# This would upload all files relevant to this wireless module onto the board
+# This would upload all files relevant to the middle wireless module onto the board
 ./upload.sh /dev/ttyUSB0 
 
                             OR
