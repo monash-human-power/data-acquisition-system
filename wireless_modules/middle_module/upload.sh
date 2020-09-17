@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# Check that the port name is specified in the argumennt
+if [ $# -eq 0 ]
+then   
+    echo "Port name not specified after ./upload.sh command"
+    exit 1
+fi
+
 # Shell scripting should have no white space between the '=' operator for variable asisgning
 
 # declares an integer
