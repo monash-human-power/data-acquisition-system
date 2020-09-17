@@ -1,18 +1,21 @@
 #!/bin/sh
 
-# Check that the port name is specified in the argumennt
+# Note: Shell scripting should have no white space between the '=' operator for variable assigning
+
+# Check that the port name is specified in the argument
 if [ $# -eq 0 ]
 then   
     echo "Port name not specified after ./upload.sh command"
     exit 1
 fi
 
-# Shell scripting should have no white space between the '=' operator for variable asisgning
 
 # declares an integer
 declare -i BAUD_RATE=115200
 
-files="config.py ../wireless_module.py"
+files="main.py ../config.py ../wireless_module.py  ../boot.py ../mqtt_client.py ../sensors/mpu.py \
+../sensors/dht_sensor.py ../sensors/co2_sensor.py ../libraries/MQ135/mq135.py ../sensors/sensor_base.py \
+../libraries/abc.py ../libraries/MPU6050-ESP8266-MicroPython/mpu6050.py"
 
 for file in $files
 do 
@@ -27,4 +30,3 @@ do
         echo "$file NOT loaded"
     fi
 done
-
