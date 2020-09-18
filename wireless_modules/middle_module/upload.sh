@@ -11,9 +11,20 @@ declare -i BAUD_RATE=115200
 
 PORT=$1
 NUM_ARGS=$#
-files="main.py ../config.py ../wireless_module.py  ../boot.py ../mqtt_client.py ../sensors/mpu.py \
-../sensors/dht_sensor.py ../sensors/co2_sensor.py ../libraries/MQ135/mq135.py ../sensors/sensor_base.py \
-../libraries/abc.py ../libraries/MPU6050-ESP8266-MicroPython/mpu6050.py"
+files=(
+    "main.py" 
+    "../config.py" 
+    "../wireless_module.py"
+    "../boot.py"
+    "../mqtt_client.py"
+    "../sensors/sensor_base.py"
+    "../sensors/mpu.py"
+    "../sensors/dht_sensor.py"
+    "../sensors/co2_sensor.py"
+    "../libraries/abc.py"
+    "../libraries/MQ135/mq135.py"
+    "../libraries/MPU6050-ESP8266-MicroPython/mpu6050.py"
+)
 
 # Check that the port name is specified in the argument 
 if [ $NUM_ARGS -eq 0 ]
@@ -59,8 +70,8 @@ then
     done
 
 else
-    # Upload all the default files listed under the files variable
-    for file in $files
+    # Upload all the default files listed inside the files array
+    for file in ${files[@]}
     do
         # Invoke function and pass $file as the argument
         upload_file $file
