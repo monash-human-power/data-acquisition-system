@@ -1,9 +1,10 @@
 #!/bin/sh
 
+# Purpose: To upload specific files or all relevant middle wireless module files (default) onto the ESP32
+# Requirements: Must have ampy downloaded
+
 # NOTE: 
 # Shell scripting should have no white space between the '=' operator for variable assigning
-# $# is the number of arguments given through the command line
-# $arg variable is a list of all arguments passed through the command line
 
 # declares an integer
 declare -i BAUD_RATE=115200
@@ -21,7 +22,7 @@ then
     exit 1
 fi
 
-# Function to upload file on ESP32
+# Function to upload file onto the board
 upload_file()
 {
     # Parameters:
@@ -43,7 +44,7 @@ upload_file()
 if [ $NUM_ARGS -gt 1 ]
 then
     i=1
-    # loop through each argument list and upload the file onto the board
+    # loop through each argument provided and upload the file given onto the board
     for arg
     do
         # If this is the first argument, ignore since it's the port name
@@ -52,7 +53,7 @@ then
             i=2
 
         else
-            # Invoke function and pass arguments ($arg is the file name)
+            # Invoke function and pass file name as argument
             upload_file $arg
         fi
     done
@@ -66,5 +67,5 @@ else
     done
 fi
 
-# Print black line at the end of execution
+# Print black line at the end of execution for readability
 echo ""
