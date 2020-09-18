@@ -16,12 +16,18 @@ This repository contains all the code related to Monash Human Power's middle wir
 
 ```
 # Change the first argument to the serial port of the ESP32.
+# This would upload all files relevant to the middle wireless module onto the board
 ./upload.sh /dev/ttyUSB0 
+
+                            OR
+                            
+# To upload only specific files list their path after the port name argument
+./upload.sh /dev/ttyUSB0 file1 ../file2 ... fileN
 ```
 
 ## Contents
 - `main.py`: Declares topics to publish and subscribe to
-- `mpu.py`: Class that helps read data from the MPU6050 sensor
+- `upload.sh`: File to upload specific or all relevant files onto the ESP32 automatically 
 - `test.py`: A python script to test the sensor data received from the middle wireless module over MQTT
 
 
