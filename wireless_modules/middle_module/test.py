@@ -16,6 +16,7 @@ parser.add_argument(
 
 old_accel_data = None
 old_gyro_data = None
+SUB_BATTERY_TOPIC = None
 
 
 def display_difference(old, new):
@@ -25,9 +26,18 @@ def display_difference(old, new):
 
 
 def on_msg_receive(client, data, message):
+    """
+    You can find out more details about the parameters of this function at https://pypi.org/project/paho-mqtt/#callbacks
+    """
     # Extract data from mqtt topic
     data = message.payload.decode('utf-8')
     data_dict = json.loads(data)
+
+    if message.topic == SUB_BATTERY_TOPIC:
+        print("Battery voltage received: " + str(data_dict["percentage"]))
+        return
+
+    # Extract sensor data
     sensors = data_dict["sensors"]
 
     for sensor in sensors:
@@ -69,13 +79,17 @@ if __name__ == "__main__":
     STOP_TOPIC = f'/v3/wireless-module/{MODULE_NUM}/stop'
     SUB_DATA_TOPIC = f'/v3/wireless-module/{MODULE_NUM}/data'
 
+    SUB_BATTERY_TOPIC = f"/v3/wireless-module/{MODULE_NUM}/battery"
+
     # Broker domain name or IP address
     BROKER = args.host
     client.connect(BROKER)
 
     # Set function to call when a message from the subscribed topic is received
     client.on_message = on_msg_receive
-    client.subscribe(SUB_DATA_TOPIC)
+
+    # Subscribe to all topics - the second element in the tuple is the qos level
+    client.subscribe([(SUB_DATA_TOPIC, 0), (SUB_BATTERY_TOPIC, 0)])
 
     # The start loop starts scanning for incoming messages and the stop loop stops this process.
     client.loop_start()
