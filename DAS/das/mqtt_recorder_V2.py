@@ -61,6 +61,9 @@ if __name__ == "__main__":
         recorder.stop()
         sys.exit()
 
+    # Start the logger
+    main_recorder.start()
+
     # Logger can run forever or for a specific time
     if args.time != float("Inf"):
         time.sleep(args.time)

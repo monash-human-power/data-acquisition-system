@@ -36,17 +36,19 @@ class Recorder:
 
     Attributes
     ----------
-    TOPICS: List(str)
+    TOPICS : List(str)
         List of topic names
-    _VERBOSE: bool
+    _recording : bool
+        Whether the Recorder object is currently recording or not
+    _VERBOSE : bool
         Specifies whether the incoming MQTT data and warnings are printed
-    _START_TIME: `time`
+    _START_TIME : `time`
         The current time used to produce time deltas
-    _LOG_FILE: `File`
+    _LOG_FILE : `File`
         Open log file object that can be written to
-    _LOG_FILE_WRITER: `csv.DictWriter`
+    _LOG_FILE_WRITER : `csv.DictWriter`
         Csv writter object that is used to write the data to the _LOG_FILE file
-    _CLIENT: `paho.mqtt.client`
+    _CLIENT : `paho.mqtt.client`
         MQTT client that connects to the broker and recives the messages
     """
 
@@ -78,7 +80,10 @@ class Recorder:
         self._CLIENT.connect(broker_address)
         self._CLIENT.loop_start()  # Threaded execution loop
 
-        logging.info(f"Logging started!")
+        # Do not start logging when object is created (wait for start method)
+        self._recording = False
+
+        logging.info(f"Recorder object successfully created!")
 
     def _create_log_file(self, csv_folder_path: str) -> None:
         """Is used to open a log file and csv obj during the object init
@@ -134,11 +139,11 @@ class Recorder:
 
     def _on_message(self, client, userdata, msg) -> None:
         """Callback function for MQTT broker on message that logs the incoming MQTT message."""
-
-        try:
-            self.log(msg.topic, msg.payload.decode("utf-8"))
-        except Exception as e:
-            logging.error(e)
+        if self._recording:
+            try:
+                self.log(msg.topic, msg.payload.decode("utf-8"))
+            except Exception as e:
+                logging.error(e)
 
     def log(self, mqtt_topic: str, message: str) -> None:
         """Logs the time delta and message data to self._LOG_FILE in the csv format.
@@ -155,7 +160,11 @@ class Recorder:
         # Write data to csv file
         try:
             self._LOG_FILE_WRITER.writerow(
-                {"time_delta": time_delta, "mqtt_topic": mqtt_topic, "message": message}
+                {
+                    "time_delta": time_delta,
+                    "mqtt_topic": mqtt_topic,
+                    "message": message,
+                }
             )
             if self._VERBOSE:
                 logging.info(
@@ -164,8 +173,13 @@ class Recorder:
         except Exception as e:
             logging.error(e)
 
+    def start(self) -> None:
+        self._recording = True
+        logging.info(f"Logging started!")
+
     def stop(self) -> None:
         """Graceful exit for closing the file and stopping the MQTT client."""
+        self._recording = False
         self._CLIENT.loop_stop()
         self._LOG_FILE.close()
         logging.info(f"Data saved in {self._LOG_FILE.name}")
