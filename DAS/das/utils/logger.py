@@ -20,7 +20,7 @@ CsvConfig = {
 logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
 
 
-class Record:
+class Recorder:
     """Record incoming MQTT messages on selected topics.
 
     Parameters
