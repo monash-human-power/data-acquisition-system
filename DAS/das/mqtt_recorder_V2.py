@@ -1,5 +1,6 @@
 import argparse
 import os
+from shutil import Error
 import time
 import sys
 from das.utils import logger
@@ -56,21 +57,21 @@ if __name__ == "__main__":
         CSV_FILEPATH, topics=args.topics, broker_address=args.host, verbose=args.verbose
     )
 
-    # Nicely quits the recorder to ensure the data is saved
-    def graceful_exit(recorder):
-        recorder.stop()
-        sys.exit()
-
     # Start the logger
     main_recorder.start()
 
     # Logger can run forever or for a specific time
-    if args.time != float("Inf"):
-        time.sleep(args.time)
-        graceful_exit(main_recorder)
-    else:
-        while True:
-            try:
+    try:
+        if args.time != float("Inf"):
+            time.sleep(args.time)
+        else:
+            while True:
                 pass
-            except (KeyboardInterrupt, Exception):
-                graceful_exit(main_recorder)
+
+    except (KeyboardInterrupt, Error):
+        pass
+
+    finally:
+        # Graceful exit that nicely quits the recorder to ensure the data is saved
+        main_recorder.stop()
+        sys.exit()
