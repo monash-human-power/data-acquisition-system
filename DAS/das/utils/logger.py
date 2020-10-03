@@ -1,6 +1,7 @@
 from pathlib import Path
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
+import pandas as pd
 import csv
 import time
 import os
@@ -273,3 +274,8 @@ class Playback:
 
         # Load all async operation at the start using gather
         await asyncio.gather(*publish_queue, return_exceptions=True)
+
+
+class LogToDataframe:
+    def __init__():
+        print("yay")
