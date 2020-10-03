@@ -11,7 +11,7 @@ These steps assume that you are in the data-acquisition-system root directory.
 3. `poetry shell`
 4. Run any DAS command, _e.g._ `python -m das.mqtt_recorder`
 
-
+<br/>
 
 ## [MQTT Recorder](/DAS/das/mqtt_recorder.py)
 The command line tool allows for mqtt messages on any topic to be logged and recorded to a csv file. The saved csv files will be stored in the `das/csv_data`. 
@@ -35,7 +35,7 @@ python -m das.mqtt_recorder /v3/wireless-module/# power-model/# -v
 | `-t TIME` or `--time TIME` | Length of time to record data (duration) (default: inf) |
 | `-h` or `--help`           |                          Help                           |
 
-
+<br/>
 
 ## [MQTT Playback](/DAS/das/mqtt_playback.py)
 This command line tool reads a raw csv log created from the MQTT Recorder tool and plays it back over MQTT. Simply specify the log and this tool will do the rest!
@@ -59,7 +59,7 @@ python -m das.mqtt_playback ./das/csv_data/2_log.csv -s 60 -v
 | `-s SPEED` or `--speed SPEED` |         Playback speed up (default: 1)          |
 | `-h` or `--help`              |                      Help                       |
 
-
+<br/>
 
 ## [Fake Module Tester](/DAS/das/utils/MockSensor.py.py)
 This script mocks module data over MQTT similar to the real sensors on V3.
