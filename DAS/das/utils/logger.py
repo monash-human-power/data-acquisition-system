@@ -80,7 +80,7 @@ class Recorder:
 
         logging.info(f"Logging started!")
 
-    def _create_log_file(self, csv_folder_path: str):
+    def _create_log_file(self, csv_folder_path: str) -> None:
         """Is used to open a log file and csv obj during the object init
 
         Parameters
@@ -229,7 +229,7 @@ class Playback:
         # Run the event loop to issue out all of the MQTT publishes
         asyncio.run(self._publish(speed))
 
-    async def _publish(self, speed):
+    async def _publish(self, speed) -> None:
         """Async function that collects all the necessary publish functions and gathers them to then be run by the
         event loop.
 
