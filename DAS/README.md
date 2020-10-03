@@ -11,6 +11,10 @@ These steps assume that you are in the data-acquisition-system root directory.
 3. `poetry shell`
 4. Run any DAS command, _e.g._ `python -m das.mqtt_recorder`
 
+## Run Tests
+These steps assume that you have done the basic setup
+1. `pytest`
+
 <br/>
 
 ## [MQTT Recorder](/DAS/das/mqtt_recorder.py)
