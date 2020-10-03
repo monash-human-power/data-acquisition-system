@@ -73,17 +73,15 @@ class Recorder:
         # Add headers for csv
         self._LOG_FILE_WRITER.writeheader()
 
+        # Do not start logging when object is created (wait for start method)
+        self._recording = False
+
         # Connect to MQTT broker
         self._CLIENT = mqtt.Client()
         self._CLIENT.on_connect = self._on_connect
         self._CLIENT.on_message = self._on_message
         self._CLIENT.connect(broker_address)
         self._CLIENT.loop_start()  # Threaded execution loop
-
-        # Do not start logging when object is created (wait for start method)
-        self._recording = False
-
-        logging.info(f"Recorder object successfully created!")
 
     def _create_log_file(self, csv_folder_path: str) -> None:
         """Is used to open a log file and csv obj during the object init

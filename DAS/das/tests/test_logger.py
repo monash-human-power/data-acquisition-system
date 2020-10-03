@@ -35,9 +35,11 @@ class LoggerBaseTestTearDown(unittest.TestCase):
 class TestSingleRecorder(LoggerBaseTestTearDown):
     def setUp(self):
         # Start and stop logger immediately
-        logger.Record(
+        recorder_1 = logger.Recorder(
             csv_folder_path=TEST_FOLDER, topics=["sensor/#"], broker_address=MQTT_BROKER
-        ).stop()
+        )
+        recorder_1.start()
+        recorder_1.stop()
 
     def test_make_csv_folder(self):
         # Check that a directory called csv_data has been created and 1_log.csv has been created
@@ -55,25 +57,30 @@ class TestMultipleRecorders(LoggerBaseTestTearDown):
         }
 
         # Start logger 1 for sensor/#
-        recorder_1 = logger.Record(
+        recorder_1 = logger.Recorder(
             csv_folder_path=TEST_FOLDER,
             topics=[f"{self.log_to_topic['1_log.csv']}/#"],
             broker_address=MQTT_BROKER,
         )
 
         # Start logger 2 for test/#
-        recorder_2 = logger.Record(
+        recorder_2 = logger.Recorder(
             csv_folder_path=TEST_FOLDER,
             topics=[f"{self.log_to_topic['2_log.csv']}/#"],
             broker_address=MQTT_BROKER,
         )
 
         # Start logger 3 for data/#
-        recorder_3 = logger.Record(
+        recorder_3 = logger.Recorder(
             csv_folder_path=TEST_FOLDER,
             topics=[f"{self.log_to_topic['3_log.csv']}/#"],
             broker_address=MQTT_BROKER,
         )
+
+        # Start all recorders
+        recorder_1.start()
+        recorder_2.start()
+        recorder_3.start()
 
         # Wait for a short amount of time
         time.sleep(5)
@@ -108,25 +115,29 @@ class TestMultipleRecorders(LoggerBaseTestTearDown):
 
                 # The correct log should contain the correct data
                 assert row["mqtt_topic"].startswith(self.log_to_topic[filepath])
-                assert row["message"]
+
+                # Assert that the message is a string
+                assert isinstance(row["message"], str)
 
             log_file.close()
 
 
 class TestPlayback(LoggerBaseTestTearDown):
     def setUp(self):
-        main_recorder = logger.Record(
+        main_recorder = logger.Recorder(
             csv_folder_path=TEST_FOLDER, topics=["sensor/#"], broker_address=MQTT_BROKER
         )
 
         # Wait for a short amount of time
+        main_recorder.start()
         time.sleep(5)
         main_recorder.stop()
 
     def test_accurate_playback(self):
-        main_recorder = logger.Record(TEST_FOLDER)
+        main_recorder = logger.Recorder(TEST_FOLDER)
         main_playback = logger.Playback(os.path.join(TEST_FOLDER, "1_log.csv"))
 
+        main_recorder.start()
         main_playback.play(speed=10)
         main_recorder.stop()
 
