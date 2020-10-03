@@ -46,7 +46,7 @@ class Recorder:
         Open log file object that can be written to
     _LOG_FILE_WRITER: `csv.DictWriter`
         Csv writter object that is used to write the data to the _LOG_FILE file
-    _client: `paho.mqtt.client`
+    _CLIENT: `paho.mqtt.client`
         MQTT client that connects to the broker and recives the messages
     """
 
@@ -72,11 +72,11 @@ class Recorder:
         self._LOG_FILE_WRITER.writeheader()
 
         # Connect to MQTT broker
-        self._client = mqtt.Client()
-        self._client.on_connect = self._on_connect
-        self._client.on_message = self._on_message
-        self._client.connect(broker_address)
-        self._client.loop_start()  # Threaded execution loop
+        self._CLIENT = mqtt.Client()
+        self._CLIENT.on_connect = self._on_connect
+        self._CLIENT.on_message = self._on_message
+        self._CLIENT.connect(broker_address)
+        self._CLIENT.loop_start()  # Threaded execution loop
 
         logging.info(f"Logging started!")
 
@@ -127,7 +127,7 @@ class Recorder:
         # Subscribe to all of the topics
         try:
             for topic in self.TOPICS:
-                self._client.subscribe(topic)
+                self._CLIENT.subscribe(topic)
                 logging.info(f"Subscribed to: {topic}")
         except Exception as e:
             logging.error(e)
@@ -166,7 +166,7 @@ class Recorder:
 
     def stop(self) -> None:
         """Graceful exit for closing the file and stopping the MQTT client."""
-        self._client.loop_stop()
+        self._CLIENT.loop_stop()
         self._LOG_FILE.close()
         logging.info(f"Data saved in {self._LOG_FILE.name}")
 
