@@ -1,6 +1,5 @@
 import argparse
 import os
-from shutil import Error
 import time
 import sys
 from das.utils import logger
@@ -68,7 +67,7 @@ if __name__ == "__main__":
             while True:
                 pass
 
-    except (KeyboardInterrupt, Error):
+    except (KeyboardInterrupt, Exception):
         pass
 
     finally:

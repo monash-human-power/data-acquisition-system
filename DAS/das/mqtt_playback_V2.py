@@ -1,3 +1,4 @@
+import sys
 import argparse
 from das.utils import logger
 
@@ -41,7 +42,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Make logger object and initiate playback
-    main_logger = logger.Playback(
+    main_playback = logger.Playback(
         filepath=args.filepath, broker_address=args.host, verbose=args.verbose
     )
-    main_logger.play(speed=args.speed)
+
+    try:
+        main_playback.play(speed=args.speed)
+
+    except (KeyboardInterrupt, Exception):
+        pass
+
+    finally:
+        # Graceful exit
+        sys.exit()
