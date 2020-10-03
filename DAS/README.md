@@ -14,7 +14,7 @@ These steps assume that you are in the data-acquisition-system root directory.
 
 
 ## [MQTT Recorder](/DAS/das/mqtt_recorder.py)
-Once started this script will log any data coming in on the MQTT module data and battery channels. The saved csv files will be stored in the `das/csv_data`. 
+The command line tool allows for mqtt messages on any topic to be logged and recorded to a csv file. The saved csv files will be stored in the `das/csv_data`. 
 
 ### Usage
 ```
