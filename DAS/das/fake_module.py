@@ -7,25 +7,44 @@ from das.utils import MockSensor
 from das.utils import WirelessModule
 
 parser = argparse.ArgumentParser(
-    description='MQTT wireless module test script that sends fake data',
-    add_help=True)
+    description="MQTT wireless module test script that sends fake data",
+    add_help=True,
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+)
+
 parser.add_argument(
-    '-t', '--time', action='store', type=int,
-    default=float('Inf'), help="""Length of time to send data in seconds
-    (duration). If nothing is selected it will continuously send out data.""")
+    "-t",
+    "--time",
+    action="store",
+    type=int,
+    default=float("Inf"),
+    help="""Length of time to send data in seconds (duration)""",
+)
 parser.add_argument(
-    '-r', '--rate', action='store', type=float, default=1,
-    help="""Rate of data in data sent per second. Default is 1 data pack sent
-    per second.""")
+    "-r",
+    "--rate",
+    action="store",
+    type=float,
+    default=1,
+    help="""Rate of data in data sent per second""",
+)
 parser.add_argument(
-    '--host', action='store', type=str, default="localhost",
-    help="""Address of the MQTT broker. If nothing is selected it will
-    default to localhost.""")
+    "--host",
+    action="store",
+    type=str,
+    default="localhost",
+    help="""Address of the MQTT broker""",
+)
 parser.add_argument(
-    '-i', '--id', action='store', nargs='+', type=int, default=[1, 2, 3, 4],
-    help="""Specify the module to produce fake data. eg. --id 1 2 25 specifies
-    that module 1, 2 and 25 will produce data. If nothing is given all real
-    modules will be active.""")
+    "-i",
+    "--id",
+    action="store",
+    nargs="+",
+    type=int,
+    default=[1, 2, 3, 4],
+    help="""Specify the modules to produce fake data. eg. --id 1 2 25 specifies
+    that module 1, 2 and 25 will produce data.""",
+)
 
 # Generate a dict of the fake sensors with average values
 sensors = {
@@ -35,18 +54,16 @@ sensors = {
     "humidity": MockSensor(85),
     "reedVelocity": MockSensor(50),
     "battery": MockSensor(80),
-    "accelerometer": MockSensor(("x", 90),
-                                ("y", 90),
-                                ("z", 90)),
-    "gyroscope": MockSensor(("x", 90),
-                            ("y", 90),
-                            ("z", 90)),
-    "gps": MockSensor(("speed", 50),
-                      ("satellites", 10),
-                      ("latitude", 25),
-                      ("longitude", 25),
-                      ("altitude", 50),
-                      ("course", 0)),
+    "accelerometer": MockSensor(("x", 90), ("y", 90), ("z", 90)),
+    "gyroscope": MockSensor(("x", 90), ("y", 90), ("z", 90)),
+    "gps": MockSensor(
+        ("speed", 50),
+        ("satellites", 10),
+        ("latitude", 25),
+        ("longitude", 25),
+        ("altitude", 50),
+        ("course", 0),
+    ),
     "power": MockSensor(200, percent_range=0.8),
     "cadence": MockSensor(90, percent_range=0.2),
     "heartRate": MockSensor(120),
@@ -69,16 +86,10 @@ def generate_module_data(module_id_num, sensor_list):
     """
 
     # Full dict containing all of the sensor data and their type
-    module_data = {
-        "module-id": module_id_num,
-        "sensors": []
-    }
+    module_data = {"module-id": module_id_num, "sensors": []}
 
     for sensor_name in sensor_list:
-        sensor_data = {
-            "type": sensor_name,
-            "value": sensors[sensor_name].get_value()
-        }
+        sensor_data = {"type": sensor_name, "value": sensors[sensor_name].get_value()}
         module_data["sensors"].append(sensor_data)
 
     return module_data
@@ -98,8 +109,8 @@ def send_fake_data(client, duration, rate, module_id_nums):
 
     start_time = round(time.time(), 2)
     total_time = 0
-    battery_duration = 5 * 60   # Battery info to be published every 5min
-    battery_counter = 0         # Battery counter to determine when to publish
+    battery_duration = 5 * 60  # Battery info to be published every 5min
+    battery_counter = 0  # Battery counter to determine when to publish
 
     while total_time < duration:
         current_time = round(time.time(), 2)
@@ -113,7 +124,7 @@ def send_fake_data(client, duration, rate, module_id_nums):
         def publish_data_and_battery(module_id_num):
             battery_data = {
                 "module-id": module_id_num,
-                "percentage": sensors["battery"].get_value()
+                "percentage": sensors["battery"].get_value(),
             }
 
             module_topic = WirelessModule.data(module_id_num)
@@ -155,7 +166,7 @@ def send_fake_data(client, duration, rate, module_id_nums):
                 publish_data_and_battery(module_id_num)
 
         print()  # Newline for clarity
-        time.sleep(1/rate)
+        time.sleep(1 / rate)
 
 
 def publish(client, topic, data={}):
@@ -181,7 +192,7 @@ def start_modules(args):
     # random modules. The modules should not be hard coded to this script.
     for module_id_num in args.id:
         publish(client, WirelessModule.start(module_id_num))
-        print('Started module', module_id_num)
+        print("Started module", module_id_num)
 
 
 def stop_modules(args):
@@ -190,7 +201,7 @@ def stop_modules(args):
 
     for module_id_num in args.id:
         publish(client, WirelessModule.stop(module_id_num))
-        print('Stopped module', module_id_num)
+        print("Stopped module", module_id_num)
 
 
 def start_publishing(client, args):
@@ -209,7 +220,7 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, msg):
-    print(msg.topic+" "+str(msg.payload.decode("utf-8")))
+    print(msg.topic + " " + str(msg.payload.decode("utf-8")))
 
 
 if __name__ == "__main__":
