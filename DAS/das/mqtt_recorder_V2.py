@@ -72,5 +72,5 @@ if __name__ == "__main__":
         while True:
             try:
                 pass
-            except KeyboardInterrupt:
+            except (KeyboardInterrupt, Exception):
                 graceful_exit(main_recorder)
