@@ -38,10 +38,26 @@ python -m das.mqtt_recorder /v3/wireless-module/# power-model/# -v
 
 
 ## [MQTT Playback](/DAS/das/mqtt_playback.py)
-Once started this script will log any data coming in on the MQTT module data and battery channels. The saved csv files will be stored in the `das/csv_data`. 
+This command line tool reads a raw csv log created from the MQTT Recorder tool and plays it back over MQTT. Simply specify the log and this tool will do the rest!
 
 ### Usage
-Within the poetry environment, run `python -m das.mqtt_wireless_logger --host 192.168.100.100`. This will connect to the MQTT broker set to 192.168.1.1000 and run a logger indefinitely. If no host is specified it will default to `localhost`.
+```
+# General command
+python -m das.mqtt_playback [FILEPATH] [FLAGS]
+
+# Playback of 1_log.csv
+python -m das.mqtt_playback ./das/csv_data/1_log.csv  -v
+
+# Playback of 2_log.csv at 60x speed 
+python -m das.mqtt_playback ./das/csv_data/2_log.csv -s 60 -v
+```
+
+| Flag                          |                      Info                       |
+| :---------------------------- | :---------------------------------------------: |
+| `--host HOST`                 | Address of the MQTT broker (default: localhost) |
+| `-v ` or `--verbose`          |     Verbose logging output (default: False)     |
+| `-s SPEED` or `--speed SPEED` |         Playback speed up (default: 1)          |
+| `-h` or `--help`              |                      Help                       |
 
 
 
