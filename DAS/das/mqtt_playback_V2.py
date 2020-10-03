@@ -25,7 +25,7 @@ parser.add_argument(
     action="store",
     type=float,
     default=1,
-    help="""Playback speed up. Default is 1x""",
+    help="""Playback speed up""",
 )
 
 parser.add_argument(
