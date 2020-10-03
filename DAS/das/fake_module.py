@@ -26,7 +26,7 @@ parser.add_argument(
     action="store",
     type=float,
     default=1,
-    help="""Rate of data in data sent per second""",
+    help="""Rate of data sent per second""",
 )
 parser.add_argument(
     "--host",

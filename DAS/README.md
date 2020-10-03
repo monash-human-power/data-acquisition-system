@@ -61,13 +61,28 @@ python -m das.mqtt_playback ./das/csv_data/2_log.csv -s 60 -v
 
 <br/>
 
-## [Fake Module Tester](/DAS/das/utils/MockSensor.py.py)
+## [Fake Module](/DAS/das/fake_module.py)
 This script mocks module data over MQTT similar to the real sensors on V3.
 
 ### Usage
-Within the poetry environment, run `python -m das.tests.fake_module_tester --host 192.168.100.100 --time 10 --rate 2 --id 3`. This will run a fake test with the MQTT broker on 192.168.100.100 for 10 seconds, pinging out data 2 times per second only for module 3.
+```
+# General command
+python -m das.fake_module [FLAGS]
 
+# Fake sensor output for 10s at 3 messages per second
+python -m das.fake_module -t 10 -r 3
 
+# Fake sensor output for just module 1 and 2
+python -m das.fake_module --id 1 2
+```
+
+| Flag                                    |                               Info                               |
+| :-------------------------------------- | :--------------------------------------------------------------: |
+| `--host HOST`                           |         Address of the MQTT broker (default: localhost)          |
+| `-t TIME` or `--time TIME`              |     Length of time to record data (duration) (default: inf)      |
+| `-r RATE` or `--rate RATE`              |            Rate of data sent per second (default: 1)             |
+| ` -i ID [ID ...]` or `--id ID [ID ...]` | Specify the modules to produce fake data (default: [1, 2, 3, 4]) |
+| `-h` or `--help`                        |                               Help                               |
 
 
 
