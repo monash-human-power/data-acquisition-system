@@ -349,14 +349,12 @@ class LogToDataframe:
                 f"{last_key}-{message_json['type']}", message_json["value"]
             )
 
+        # In the case of a nested dict
         else:
             flat_dict = {}
             for key in message_json.keys():
-                print(key == "sensors")
                 next_key = f"{last_key}-{key}"
                 next_json = message_json[key]
-
-                print("next", next_key)
 
                 flat_dict.update(self.flatten_aux(next_key, next_json))
 
