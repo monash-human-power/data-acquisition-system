@@ -306,7 +306,7 @@ class LogToDataframe:
         self.dataframe = pd.DataFrame.from_dict(huge_list_of_dicts)
 
     def flatten(self, message_string: str) -> dict:
-        # If there is not json it will error out and do the string
+        # If there is not JSON it will error out and return the message string
         try:
             message_json = json.loads(message_string)
             prefix_key = "data"
@@ -315,8 +315,8 @@ class LogToDataframe:
         except json.decoder.JSONDecodeError:
             return {"message": message_string}
 
-    def flatten_aux(self, last_key: str, message_json: dict or str):
-        # Try to dig deeper in the dict until can't go any further
+    def flatten_aux(self, last_key: str, message_json: dict or str) -> dict:
+        # Try to dig deeper in the dict until can't go any further to extract data
 
         # In the case of an empty list return an empty list
         if message_json == {}:
