@@ -10,6 +10,8 @@ import asyncio
 import logging
 import re
 
+from pandas.core.frame import DataFrame
+
 CsvConfig = {
     "delimiter": ",",
     "quotechar": "`",
@@ -296,14 +298,17 @@ class LogToDataframe:
                 if not first_row:
                     huge_list_of_dicts.append(
                         {
-                            "time-delta": row["time_delta"],
-                            "MQTT-topic": row["mqtt_topic"],
+                            "time_delta": row["time_delta"],
+                            "MQTT_topic": row["mqtt_topic"],
                             **self.flatten(row["message"]),  # COPY THING
                         }
                     )
                 first_row = False
 
-        self.dataframe = pd.DataFrame.from_dict(huge_list_of_dicts)
+        self.df = pd.DataFrame.from_dict(huge_list_of_dicts)
+
+        # convert the time_delta to numbers (weird parsing bug)
+        self.df["time_delta"] = pd.to_numeric(self.df["time_delta"])
 
     def flatten(self, message_string: str) -> dict:
         # If there is not JSON it will error out and return the message string
@@ -346,22 +351,33 @@ class LogToDataframe:
             and "value" in message_json.keys()
         ):
             return self.flatten_aux(
-                f"{last_key}-{message_json['type']}", message_json["value"]
+                f"{last_key}_{message_json['type']}", message_json["value"]
             )
 
         # In the case of a nested dict
         else:
             flat_dict = {}
             for key in message_json.keys():
-                next_key = f"{last_key}-{key}"
+                next_key = f"{last_key}_{key}"
                 next_json = message_json[key]
 
                 flat_dict.update(self.flatten_aux(next_key, next_json))
 
             return flat_dict
 
-    def export_excel(self, output_file: str) -> None:
-        self.dataframe.to_excel(output_file)
+    def to_excel(self, output_file: str) -> None:
+        self.df.to_excel(output_file)
 
-    def export_csv(self, output_file: str) -> None:
-        self.dataframe.to_csv(output_file)
+    def to_csv(self, output_file: str) -> None:
+        self.df.to_csv(output_file)
+
+    def topic_filter(self, topic: str) -> DataFrame:
+        # Create a filtered for a specific topic
+        filter = self.df["MQTT_topic"] == topic
+        filtered_df = self.df.loc[filter]
+
+        # Remove NaN cols (aka drop)
+        filtered_df = filtered_df.dropna(axis=1)
+
+        return filtered_df
+

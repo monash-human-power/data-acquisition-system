@@ -39,12 +39,17 @@ if __name__ == "__main__":
         "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/136_log.csv"
     )
 
-    print(x.dataframe)
+    print(x.df)
+    print()
+    data = x.topic_filter("/v3/wireless-module/4/data")
+    data.to_excel(
+        "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/1_out.xlsx"
+    )
 
-    # x.export_excel(
-    #     "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/1_out.xlsx"
-    # )
-
+    x.to_excel(
+        "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/2_out.xlsx"
+    )
+    print(data)
     # if args.filepaths is None:
     #     print("yay")
     # FIX
