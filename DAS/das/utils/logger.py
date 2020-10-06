@@ -318,10 +318,11 @@ class LogToDataframe:
     def flatten_aux(self, last_key: str, message_json: dict or str):
         # Try to dig deeper in the dict until can't go any further
 
-        # BASE CASE if the dict is empty or a string
+        # In the case of an empty list return an empty list
         if message_json == {}:
             return {}
 
+        # In the case of a string or number record the value with the last key
         elif (
             isinstance(message_json, int)
             or isinstance(message_json, float)
@@ -329,6 +330,7 @@ class LogToDataframe:
         ):
             return {last_key: message_json}
 
+        # In the case of a list parse each index individually
         elif isinstance(message_json, list):
             flat_dict = {}
             for item in message_json:
@@ -336,20 +338,29 @@ class LogToDataframe:
 
             return flat_dict
 
-        try:
+        # In the case of a "type" "value" pair set the key to the type
+        elif (
+            isinstance(message_json, dict)
+            and len(message_json.keys()) == 2
+            and "type" in message_json.keys()
+            and "value" in message_json.keys()
+        ):
+            return self.flatten_aux(
+                f"{last_key}-{message_json['type']}", message_json["value"]
+            )
+
+        else:
             flat_dict = {}
             for key in message_json.keys():
+                print(key == "sensors")
                 next_key = f"{last_key}-{key}"
                 next_json = message_json[key]
-                print("next", next_json)
+
+                print("next", next_key)
+
                 flat_dict.update(self.flatten_aux(next_key, next_json))
 
             return flat_dict
-
-        except AttributeError:
-            # print(message_json)
-            return {last_key: message_json}
-            # print(last_key, message_string)
 
     def export_excel(self, output_file: str) -> None:
         self.dataframe.to_excel(output_file)
