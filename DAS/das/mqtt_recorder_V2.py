@@ -2,6 +2,7 @@ import argparse
 import os
 import time
 import sys
+import socket
 from das.utils import logger
 
 parser = argparse.ArgumentParser(
@@ -11,11 +12,7 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument(
-    "topics",
-    nargs="*",
-    action="store",
-    default=["#"],
-    help="""Verbose logging output""",
+    "topics", nargs="*", action="store", default=["#"], help="""MQTT topics""",
 )
 
 parser.add_argument(
@@ -40,8 +37,7 @@ parser.add_argument(
     action="store",
     type=float,
     default=float("Inf"),
-    help="""Length of time to record data
-    (duration). If nothing is selected it will continuously record data.""",
+    help="""Length of time to record data (duration)""",
 )
 
 if __name__ == "__main__":
@@ -51,24 +47,34 @@ if __name__ == "__main__":
     # Read command line arguments
     args = parser.parse_args()
 
-    # Make logger object and initiate logging
-    main_recorder = logger.Recorder(
-        CSV_FILEPATH, topics=args.topics, broker_address=args.host, verbose=args.verbose
-    )
-
-    # Start the logger
-    main_recorder.start()
-
     # Logger can run forever or for a specific time
     try:
+        # Make logger object and initiate logging
+        main_recorder = logger.Recorder(
+            CSV_FILEPATH,
+            topics=args.topics,
+            broker_address=args.host,
+            verbose=args.verbose,
+        )
+
+        # Start the logger
+        main_recorder.start()
+
         if args.time != float("Inf"):
             time.sleep(args.time)
         else:
             while True:
                 pass
 
-    except (KeyboardInterrupt, Exception):
+    except KeyboardInterrupt:
         pass
+
+    except socket.timeout as e:
+        print(f"{type(e)}: {e}")
+        print(f"The IP address of the MQTT broker is probably wrong")
+
+    except Exception as e:
+        print(f"{type(e)}: {e}")
 
     finally:
         # Graceful exit that nicely quits the recorder to ensure the data is saved
