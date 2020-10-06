@@ -2,6 +2,7 @@ from pathlib import Path
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import pandas as pd
+import json
 import csv
 import time
 import os
@@ -277,5 +278,81 @@ class Playback:
 
 
 class LogToDataframe:
-    def __init__():
-        print("yay")
+    def __init__(self, input_filepath: str) -> None:
+
+        huge_list_of_dicts = []
+        with open(input_filepath, mode="r") as csv_file:
+            csv_reader = csv.DictReader(
+                csv_file,
+                delimiter=CsvConfig["delimiter"],
+                quotechar=CsvConfig["quotechar"],
+                quoting=CsvConfig["quoting"],
+                fieldnames=CsvConfig["fieldnames"],
+            )
+
+            # First row is filled with crappy headers
+            first_row = True
+            for row in csv_reader:
+                if not first_row:
+                    huge_list_of_dicts.append(
+                        {
+                            "time-delta": row["time_delta"],
+                            "MQTT-topic": row["mqtt_topic"],
+                            **self.flatten(row["message"]),  # COPY THING
+                        }
+                    )
+                first_row = False
+
+        self.dataframe = pd.DataFrame.from_dict(huge_list_of_dicts)
+
+    def flatten(self, message_string: str) -> dict:
+        # If there is not json it will error out and do the string
+        try:
+            message_json = json.loads(message_string)
+            prefix_key = "data"
+            return self.flatten_aux(prefix_key, message_json)
+
+        except json.decoder.JSONDecodeError:
+            return {"message": message_string}
+
+    def flatten_aux(self, last_key: str, message_json: dict or str):
+        # Try to dig deeper in the dict until can't go any further
+
+        # BASE CASE if the dict is empty or a string
+        if message_json == {}:
+            return {}
+
+        elif (
+            isinstance(message_json, int)
+            or isinstance(message_json, float)
+            or isinstance(message_json, str)
+        ):
+            return {last_key: message_json}
+
+        elif isinstance(message_json, list):
+            flat_dict = {}
+            for item in message_json:
+                flat_dict.update(self.flatten_aux(last_key, item))
+
+            return flat_dict
+
+        try:
+            flat_dict = {}
+            for key in message_json.keys():
+                next_key = f"{last_key}-{key}"
+                next_json = message_json[key]
+                print("next", next_json)
+                flat_dict.update(self.flatten_aux(next_key, next_json))
+
+            return flat_dict
+
+        except AttributeError:
+            # print(message_json)
+            return {last_key: message_json}
+            # print(last_key, message_string)
+
+    def export_excel(self, output_file: str) -> None:
+        self.dataframe.to_excel(output_file)
+
+    def export_csv(self, output_file: str) -> None:
+        self.dataframe.to_csv(output_file)

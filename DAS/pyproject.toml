@@ -10,6 +10,7 @@ paho-mqtt = "^1.5.0"
 urllib3 = "^1.25.9"
 pandas = "^1.0.3"
 argparse = "^1.4.0"
+openpyxl = "^3.0.5"
 
 [tool.poetry.dev-dependencies]
 

@@ -1,7 +1,6 @@
 import argparse
 import os
-import time
-import sys
+import json
 from das.utils import logger
 
 parser = argparse.ArgumentParser(
@@ -19,11 +18,7 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "-v",
-    "--verbose",
-    action="store_true",
-    default=False,
-    help="""Verbose logging output""",
+    "-v", "--verbose", action="store_true", default=False, help="""Verbose output""",
 )
 
 if __name__ == "__main__":
@@ -39,6 +34,17 @@ if __name__ == "__main__":
 
     if args.filepaths != []:
         print("yoooo")
+
+    x = logger.LogToDataframe(
+        "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/136_log.csv"
+    )
+
+    print(x.dataframe)
+
+    # x.export_excel(
+    #     "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/1_out.xlsx"
+    # )
+
     # if args.filepaths is None:
     #     print("yay")
     # FIX
