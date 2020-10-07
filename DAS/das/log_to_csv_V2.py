@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import json
 from das.utils import logger
@@ -35,13 +36,13 @@ if __name__ == "__main__":
     if args.filepaths != []:
         print("yoooo")
 
-    x = logger.LogToDataframe(
+    x = logger.log_to_dataframe(
         "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/136_log.csv"
     )
 
-    print(x.df)
+    print(x)
     print()
-    data = x.topic_filter("/v3/wireless-module/4/data")
+    data = logger.topic_filter(x, "/v3/wireless-module/4/data")
     data.to_excel(
         "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/1_out.xlsx"
     )
@@ -50,6 +51,14 @@ if __name__ == "__main__":
         "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/2_out.xlsx"
     )
     print(data)
+
+    x2 = logger.log_to_dataframe(
+        "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/150_log.csv"
+    )
+    x2.to_excel(
+        "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/3_out.xlsx"
+    )
+
     # if args.filepaths is None:
     #     print("yay")
     # FIX

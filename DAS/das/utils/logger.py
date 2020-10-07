@@ -279,105 +279,110 @@ class Playback:
         await asyncio.gather(*publish_queue, return_exceptions=True)
 
 
-class LogToDataframe:
-    def __init__(self, input_filepath: str) -> None:
+def log_to_dataframe(input_filepath: str) -> DataFrame:
 
-        huge_list_of_dicts = []
-        with open(input_filepath, mode="r") as csv_file:
-            csv_reader = csv.DictReader(
-                csv_file,
-                delimiter=CsvConfig["delimiter"],
-                quotechar=CsvConfig["quotechar"],
-                quoting=CsvConfig["quoting"],
-                fieldnames=CsvConfig["fieldnames"],
-            )
+    huge_list_of_dicts = []
+    with open(input_filepath, mode="r") as csv_file:
+        csv_reader = csv.DictReader(
+            csv_file,
+            delimiter=CsvConfig["delimiter"],
+            quotechar=CsvConfig["quotechar"],
+            quoting=CsvConfig["quoting"],
+            fieldnames=CsvConfig["fieldnames"],
+        )
 
-            # First row is filled with crappy headers
-            first_row = True
-            for row in csv_reader:
-                if not first_row:
-                    huge_list_of_dicts.append(
-                        {
-                            "time_delta": row["time_delta"],
-                            "MQTT_topic": row["mqtt_topic"],
-                            **self.flatten(row["message"]),  # COPY THING
-                        }
-                    )
-                first_row = False
+        # First row is filled with crappy headers so not included
+        row_num = 0
+        finished = False
+        while not finished:
+            try:
+                row = next(csv_reader, None)
+            except Exception as e:
+                logging.error(f"{type(e)}:{e} @ csv row {row_num}")
 
-        self.df = pd.DataFrame.from_dict(huge_list_of_dicts)
+            if row is None:
+                finished = True
 
-        # convert the time_delta to numbers (weird parsing bug)
-        self.df["time_delta"] = pd.to_numeric(self.df["time_delta"])
+            if row_num != 0 and not finished:
+                huge_list_of_dicts.append(
+                    {
+                        "time_delta": row["time_delta"],
+                        "MQTT_topic": row["mqtt_topic"],
+                        **flatten(row["message"]),  # COPY THING
+                    }
+                )
+            row_num += 1
 
-    def flatten(self, message_string: str) -> dict:
-        # If there is not JSON it will error out and return the message string
-        try:
-            message_json = json.loads(message_string)
-            prefix_key = "data"
-            return self.flatten_aux(prefix_key, message_json)
+    df = pd.DataFrame.from_dict(huge_list_of_dicts)
 
-        except json.decoder.JSONDecodeError:
-            return {"message": message_string}
+    # convert the time_delta to numbers (weird parsing bug)
+    df["time_delta"] = pd.to_numeric(df["time_delta"])
 
-    def flatten_aux(self, last_key: str, message_json: dict or str) -> dict:
-        # Try to dig deeper in the dict until can't go any further to extract data
+    return df
 
-        # In the case of an empty list return an empty list
-        if message_json == {}:
-            return {}
 
-        # In the case of a string or number record the value with the last key
-        elif (
-            isinstance(message_json, int)
-            or isinstance(message_json, float)
-            or isinstance(message_json, str)
-        ):
-            return {last_key: message_json}
+def flatten(message_string: str) -> dict:
+    # If there is not JSON it will error out and return the message string
+    try:
+        message_json = json.loads(message_string)
+        prefix_key = "data"
+        return flatten_aux(prefix_key, message_json)
 
-        # In the case of a list parse each index individually
-        elif isinstance(message_json, list):
-            flat_dict = {}
-            for item in message_json:
-                flat_dict.update(self.flatten_aux(last_key, item))
+    except json.decoder.JSONDecodeError:
+        return {"message": message_string}
 
-            return flat_dict
 
-        # In the case of a "type" "value" pair set the key to the type
-        elif (
-            isinstance(message_json, dict)
-            and len(message_json.keys()) == 2
-            and "type" in message_json.keys()
-            and "value" in message_json.keys()
-        ):
-            return self.flatten_aux(
-                f"{last_key}_{message_json['type']}", message_json["value"]
-            )
+def flatten_aux(last_key: str, message_json: dict or str) -> dict:
+    # Try to dig deeper in the dict until can't go any further to extract data
 
-        # In the case of a nested dict
-        else:
-            flat_dict = {}
-            for key in message_json.keys():
-                next_key = f"{last_key}_{key}"
-                next_json = message_json[key]
+    # In the case of an empty list return an empty list
+    if message_json == {}:
+        return {}
 
-                flat_dict.update(self.flatten_aux(next_key, next_json))
+    # In the case of a string or number record the value with the last key
+    elif (
+        isinstance(message_json, int)
+        or isinstance(message_json, float)
+        or isinstance(message_json, str)
+    ):
+        return {last_key: message_json}
 
-            return flat_dict
+    # In the case of a list parse each index individually
+    elif isinstance(message_json, list):
+        flat_dict = {}
+        for item in message_json:
+            flat_dict.update(flatten_aux(last_key, item))
 
-    def to_excel(self, output_file: str) -> None:
-        self.df.to_excel(output_file)
+        return flat_dict
 
-    def to_csv(self, output_file: str) -> None:
-        self.df.to_csv(output_file)
+    # In the case of a "type" "value" pair set the key to the type
+    elif (
+        isinstance(message_json, dict)
+        and len(message_json.keys()) == 2
+        and "type" in message_json.keys()
+        and "value" in message_json.keys()
+    ):
+        return flatten_aux(f"{last_key}_{message_json['type']}", message_json["value"])
 
-    def topic_filter(self, topic: str) -> DataFrame:
-        # Create a filtered for a specific topic
-        filter = self.df["MQTT_topic"] == topic
-        filtered_df = self.df.loc[filter]
+    # In the case of a nested dict
+    else:
+        flat_dict = {}
+        for key in message_json.keys():
+            next_key = f"{last_key}_{key}"
+            next_json = message_json[key]
 
-        # Remove NaN cols (aka drop)
-        filtered_df = filtered_df.dropna(axis=1)
+            flat_dict.update(flatten_aux(next_key, next_json))
 
-        return filtered_df
+        return flat_dict
+
+
+def topic_filter(df: DataFrame, topic: str) -> DataFrame:
+    # Create a filtered for a specific topic
+    filter = df["MQTT_topic"] == topic
+    filtered_df = df.loc[filter]
+
+    # Remove NaN cols (aka drop)
+    filtered_df = filtered_df.dropna(axis=1)
+
+    return filtered_df
 
