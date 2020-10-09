@@ -48,7 +48,7 @@ if __name__ == "__main__":
         # No output file has been selected (Export to default folder for both CSV and excel)
         if args.output is None:
             print("Excel saved at:", OUTPUT_EXCEL_FILEPATH)
-            logger.make_nice_excel_with_many_topics(args.logfile, OUTPUT_EXCEL_FILEPATH)
+            logger.multi_sheet_excel(args.logfile, OUTPUT_EXCEL_FILEPATH)
 
             print("CSV saved at:  ", OUTPUT_CSV_FILEPATH)
             df.to_csv(OUTPUT_CSV_FILEPATH)
@@ -61,10 +61,11 @@ if __name__ == "__main__":
         # Output a excel file from log
         elif args.output.endswith(".xlsx"):
             print("Excel saved at:", args.output)
-            logger.make_nice_excel_with_many_topics(args.logfile, args.output)
+            logger.multi_sheet_excel(args.logfile, args.output)
 
         else:
             raise ValueError("Output filepath did not end in either '.csv' or '.xlsx'")
+
     except KeyboardInterrupt:
         pass
 

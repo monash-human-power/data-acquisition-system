@@ -280,8 +280,20 @@ class Playback:
 
 
 def log_to_dataframe(input_filepath: str) -> DataFrame:
+    """ Converts a log file to a pandas dataframe, flattening the nested data.
 
-    huge_list_of_dicts = []
+        Parameters
+        ----------
+        input_filepath : str
+            filepath of the log to be converted to a dataframe
+
+        Returns
+        ----------
+        DataFrame
+            A pandas dataframe containing all of the logged values
+    """
+
+    array_of_dicts = []
     with open(input_filepath, mode="r") as csv_file:
         csv_reader = csv.DictReader(
             csv_file,
@@ -304,16 +316,17 @@ def log_to_dataframe(input_filepath: str) -> DataFrame:
                 finished = True
 
             if row_num != 0 and not finished:
-                huge_list_of_dicts.append(
+                array_of_dicts.append(
                     {
                         "time_delta": row["time_delta"],
                         "MQTT_topic": row["mqtt_topic"],
-                        **flatten(row["message"]),  # COPY THING
+                        **_flatten(row["message"]),  # COPY THING
                     }
                 )
+
             row_num += 1
 
-    df = pd.DataFrame.from_dict(huge_list_of_dicts)
+    df = pd.DataFrame.from_dict(array_of_dicts)
 
     # convert the time_delta to numbers (weird parsing bug)
     df["time_delta"] = pd.to_numeric(df["time_delta"])
@@ -321,19 +334,47 @@ def log_to_dataframe(input_filepath: str) -> DataFrame:
     return df
 
 
-def flatten(message_string: str) -> dict:
+def _flatten(message_string: str) -> dict:
+    """ Flattens a dict so that it goes from deeply nested to one level deep. Works BEST with 
+        the MHP MQTT JSON data structure.
+
+        Parameters
+        ----------
+        message_string : str
+            Takes a single JSON line from the raw log file
+
+        Returns
+        ----------
+        Dict
+            A dictionary containing the flattened data only a single level deep
+
+    """
+
     # If there is not JSON it will error out and return the message string
     try:
         message_json = json.loads(message_string)
         prefix_key = "data"
-        return flatten_aux(prefix_key, message_json)
+        return _flatten_aux(prefix_key, message_json)
 
     except json.decoder.JSONDecodeError:
         return {"message": message_string}
 
 
-def flatten_aux(last_key: str, message_json: dict or str) -> dict:
-    # Try to dig deeper in the dict until can't go any further to extract data
+def _flatten_aux(last_key: str, message_json: dict or str) -> dict:
+    """ The auxiliary recursive function for _flatten which does all of the hard work flattening the dict.
+
+        Parameters
+        ----------
+        last_key : str
+            The last key from the dict above. Is used as the name of each item in the flattened dict.
+        message_json : dict or str
+            Depending on how deep the recursion has been it will either be a dict or a string
+
+        Returns
+        ----------
+        Dict
+            A dictionary containing the flattened data only a single level deep (once finished)
+    """
 
     # In the case of an empty list return an empty list
     if message_json == {}:
@@ -351,43 +392,68 @@ def flatten_aux(last_key: str, message_json: dict or str) -> dict:
     elif isinstance(message_json, list):
         flat_dict = {}
         for item in message_json:
-            flat_dict.update(flatten_aux(last_key, item))
+            flat_dict.update(_flatten_aux(last_key, item))
 
         return flat_dict
 
-    # In the case of a "type" "value" pair set the key to the type
+    # In the case of a "type" "value" pair set the key to the type (MHP structure)
     elif (
         isinstance(message_json, dict)
         and len(message_json.keys()) == 2
         and "type" in message_json.keys()
         and "value" in message_json.keys()
     ):
-        return flatten_aux(f"{last_key}_{message_json['type']}", message_json["value"])
+        return _flatten_aux(f"{last_key}_{message_json['type']}", message_json["value"])
 
-    # In the case of a nested dict
+    # In the case of a nested dict (most general)
     else:
         flat_dict = {}
         for key in message_json.keys():
             next_key = f"{last_key}_{key}"
             next_json = message_json[key]
 
-            flat_dict.update(flatten_aux(next_key, next_json))
+            flat_dict.update(_flatten_aux(next_key, next_json))
 
         return flat_dict
 
 
 def topic_filter(df: DataFrame, topic: str) -> DataFrame:
+    """ Filters a dataframe created from a log according to its MQTT topic
+
+        Parameters
+        ----------
+        df : DataFrame
+            A dataframe created by log_to_dataframe
+        topic : str
+            Specifies the MQTT topic that the df is filtered against
+
+        Returns
+        ----------
+        DataFrame
+            It is simply the input dataframe with only the input topic stored 
+    """
+
     # Create a filtered for a specific topic
     filter = df["MQTT_topic"] == topic
     filtered_df = df.loc[filter]
 
-    # Remove NaN cols (aka drop)
+    # Remove NaN cols to make more compact (aka drop)
     filtered_df = filtered_df.dropna(axis=1)
 
     return filtered_df
 
 
-def make_nice_excel_with_many_topics(input_filepath: str, output_filepath: str) -> None:
+def multi_sheet_excel(input_filepath: str, output_filepath: str) -> None:
+    """ Converts an input log to an excel file with multiply sheets and saves it at the output filepath
+
+        Parameters
+        ----------
+        input_filepath : str
+            Input log filepath (log file created by the MQTT_recorder)
+        output_filepath : str
+            Specifies where the excel file will be outputted to
+    """
+
     df = log_to_dataframe(input_filepath)
 
     # Find all unique topics
@@ -403,7 +469,6 @@ def make_nice_excel_with_many_topics(input_filepath: str, output_filepath: str) 
         dfs.append(topic_tuple)
 
     # Merge all dataframes into excel sheets
-
     Excelwriter = pd.ExcelWriter(output_filepath, engine="openpyxl")
 
     for (df, topic) in dfs:
