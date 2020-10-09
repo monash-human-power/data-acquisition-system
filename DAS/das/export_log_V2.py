@@ -10,9 +10,9 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument(
-    "input_log",
+    "logfile",
     action="store",
-    help="""Filepath for outputted MQTT log. Accepts either .csv or .xlsx""",
+    help="""Filepath for MQTT log created from MQTT_recorder (Should be a '.csv' file)""",
 )
 
 parser.add_argument(
@@ -20,11 +20,7 @@ parser.add_argument(
     "--output",
     action="store",
     default=None,
-    help="""Filepath for outputted MQTT log. Accepts either .csv or .xlsx""",
-)
-
-parser.add_argument(
-    "-v", "--verbose", action="store_true", default=False, help="""Verbose output""",
+    help="""Filepath for pretty output MQTT log. Accepts either '.csv' or '.xlsx' files""",
 )
 
 if __name__ == "__main__":
@@ -32,30 +28,27 @@ if __name__ == "__main__":
     OUTPUT_FOLDER = os.path.join(CURRENT_FILEPATH, "csv_data_exported")
 
     try:
-        #  Remove later
-        # args.input_log = "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/136_log.csv"
-
         # Read command line arguments
         args = parser.parse_args()
 
         # Create csv_folder_path folder if none exists
         Path(OUTPUT_FOLDER).mkdir(parents=True, exist_ok=True)
 
-        LOG_NAME = os.path.basename(args.input_log).split(".")[
-            0
-        ]  # Remove '.csv' extension
+        # Remove '.csv' extension from input filepath
+        LOG_NAME = os.path.basename(args.logfile)
+        LOG_NAME = LOG_NAME.split(".")[0]
+
+        # Generate file locations when -o is not selected
         OUTPUT_CSV_FILEPATH = os.path.join(OUTPUT_FOLDER, f"{LOG_NAME}.csv")
         OUTPUT_EXCEL_FILEPATH = os.path.join(OUTPUT_FOLDER, f"{LOG_NAME}.xlsx")
 
         # Create dataframe from input file
-        df = logger.log_to_dataframe(args.input_log)
+        df = logger.log_to_dataframe(args.logfile)
 
         # No output file has been selected (Export to default folder for both CSV and excel)
         if args.output is None:
             print("Excel saved at:", OUTPUT_EXCEL_FILEPATH)
-            logger.make_nice_excel_with_many_topics(
-                args.input_log, OUTPUT_EXCEL_FILEPATH
-            )
+            logger.make_nice_excel_with_many_topics(args.logfile, OUTPUT_EXCEL_FILEPATH)
 
             print("CSV saved at:  ", OUTPUT_CSV_FILEPATH)
             df.to_csv(OUTPUT_CSV_FILEPATH)
@@ -68,8 +61,10 @@ if __name__ == "__main__":
         # Output a excel file from log
         elif args.output.endswith(".xlsx"):
             print("Excel saved at:", args.output)
-            logger.make_nice_excel_with_many_topics(args.input_log, args.output)
+            logger.make_nice_excel_with_many_topics(args.logfile, args.output)
 
+        else:
+            raise ValueError("Output filepath did not end in either '.csv' or '.xlsx'")
     except KeyboardInterrupt:
         pass
 
