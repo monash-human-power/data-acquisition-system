@@ -1,7 +1,6 @@
+from pathlib import Path
 import argparse
-import logging
 import os
-import json
 from das.utils import logger
 
 parser = argparse.ArgumentParser(
@@ -11,11 +10,17 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument(
-    "filepaths",
-    nargs="*",
+    "input_log",
     action="store",
-    default=[],
-    help="""filepaths of MQTT logs that are to be converted to pretty CSVs""",
+    help="""Filepath for outputted MQTT log. Accepts either .csv or .xlsx""",
+)
+
+parser.add_argument(
+    "-o",
+    "--output",
+    action="store",
+    default=None,
+    help="""Filepath for outputted MQTT log. Accepts either .csv or .xlsx""",
 )
 
 parser.add_argument(
@@ -24,65 +29,49 @@ parser.add_argument(
 
 if __name__ == "__main__":
     CURRENT_FILEPATH = os.path.dirname(__file__)
-    CSV_FILEPATH = os.path.join(CURRENT_FILEPATH, "csv_data")
+    OUTPUT_FOLDER = os.path.join(CURRENT_FILEPATH, "csv_data_exported")
 
-    # Read command line arguments
-    args = parser.parse_args()
+    try:
+        #  Remove later
+        # args.input_log = "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/136_log.csv"
 
-    # Make logger object and initiate logging
-    print("yes")
-    print(args.filepaths)
+        # Read command line arguments
+        args = parser.parse_args()
 
-    if args.filepaths != []:
-        print("yoooo")
+        # Create csv_folder_path folder if none exists
+        Path(OUTPUT_FOLDER).mkdir(parents=True, exist_ok=True)
 
-    INPUT = "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/136_log.csv"
-    OUTPUT = "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/136_log.xlsx"
+        LOG_NAME = os.path.basename(args.input_log).split(".")[
+            0
+        ]  # Remove '.csv' extension
+        OUTPUT_CSV_FILEPATH = os.path.join(OUTPUT_FOLDER, f"{LOG_NAME}.csv")
+        OUTPUT_EXCEL_FILEPATH = os.path.join(OUTPUT_FOLDER, f"{LOG_NAME}.xlsx")
 
-    x = logger.log_to_dataframe(
-        "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/136_log.csv"
-    )
+        # Create dataframe from input file
+        df = logger.log_to_dataframe(args.input_log)
 
-    logger.make_nice_excel_with_many_topics(INPUT, OUTPUT)
+        # No output file has been selected (Export to default folder for both CSV and excel)
+        if args.output is None:
+            print("Excel saved at:", OUTPUT_EXCEL_FILEPATH)
+            logger.make_nice_excel_with_many_topics(
+                args.input_log, OUTPUT_EXCEL_FILEPATH
+            )
 
-    print(x)
-    print()
-    data = logger.topic_filter(x, "/v3/wireless-module/4/data")
-    data.to_excel(
-        "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/1_out.xlsx"
-    )
+            print("CSV saved at:  ", OUTPUT_CSV_FILEPATH)
+            df.to_csv(OUTPUT_CSV_FILEPATH)
 
-    x.to_excel(
-        "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/2_out.xlsx"
-    )
-    print(data)
+        # Output a CSV from log
+        elif args.output.endswith(".csv"):
+            print("CSV saved at:  ", args.output)
+            df.to_csv(args.output)
 
-    x2 = logger.log_to_dataframe(
-        "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/150_log.csv"
-    )
-    x2.to_excel(
-        "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/3_out.xlsx"
-    )
+        # Output a excel file from log
+        elif args.output.endswith(".xlsx"):
+            print("Excel saved at:", args.output)
+            logger.make_nice_excel_with_many_topics(args.input_log, args.output)
 
-    # if args.filepaths is None:
-    #     print("yay")
-    # FIX
+    except KeyboardInterrupt:
+        pass
 
-    # # Start the logger
-    # main_recorder.start()
-
-    # # Logger can run forever or for a specific time
-    # try:
-    #     if args.time != float("Inf"):
-    #         time.sleep(args.time)
-    #     else:
-    #         while True:
-    #             pass
-
-    # except (KeyboardInterrupt, Exception):
-    #     pass
-
-    # finally:
-    #     # Graceful exit that nicely quits the recorder to ensure the data is saved
-    #     main_recorder.stop()
-    #     sys.exit()
+    except Exception as e:
+        print(f"{type(e)}: {e}")
