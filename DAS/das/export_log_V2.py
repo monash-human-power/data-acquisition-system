@@ -36,9 +36,14 @@ if __name__ == "__main__":
     if args.filepaths != []:
         print("yoooo")
 
+    INPUT = "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/136_log.csv"
+    OUTPUT = "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/136_log.xlsx"
+
     x = logger.log_to_dataframe(
         "/Users/blake/Sync/Projects/MHP_2020/data-acquisition-system/DAS/das/csv_data/136_log.csv"
     )
+
+    logger.make_nice_excel_with_many_topics(INPUT, OUTPUT)
 
     print(x)
     print()

@@ -386,3 +386,30 @@ def topic_filter(df: DataFrame, topic: str) -> DataFrame:
 
     return filtered_df
 
+
+def make_nice_excel_with_many_topics(input_filepath: str, output_filepath: str) -> None:
+    df = log_to_dataframe(input_filepath)
+
+    # Find all unique topics
+    topics = []
+    for topic in df["MQTT_topic"]:
+        if topic not in topics:
+            topics.append(topic)
+
+    # Make a DataFrame for each topic
+    dfs = []
+    for topic in topics:
+        topic_tuple = (topic_filter(df, topic), topic)
+        dfs.append(topic_tuple)
+
+    # Merge all dataframes into excel sheets
+
+    Excelwriter = pd.ExcelWriter(output_filepath, engine="openpyxl")
+
+    for (df, topic) in dfs:
+        # Excel cannot except / in the sheet names so we replace with -
+        excel_safe_topic = topic.lstrip("/")  # remove starting / for nicer page names
+        excel_safe_topic = excel_safe_topic.replace("/", "-")
+        df.to_excel(Excelwriter, sheet_name=excel_safe_topic, index=True)
+
+    Excelwriter.save()
