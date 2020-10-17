@@ -12,13 +12,8 @@ Type `git clone https://github.com/Monash-Human-Power/MHP_DAS.git --recurse-subm
 
 ## Contents
 
-<<<<<<< HEAD
 ### [DAS](/DAS/)
 Stores the scripts for the DAS 
-=======
-### DAS
-Stores the scripts for the DAS.
->>>>>>> master
 
 ### ant_plus_sensor
 Stores the scripts for the ant plus sensors.
