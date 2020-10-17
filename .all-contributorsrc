@@ -58,11 +58,21 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "Blake-Haydon",
+      "name": "Blake",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/23159604?v=4",
+      "profile": "https://github.com/Blake-Haydon",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
   "projectName": "data-acquisition-system",
   "projectOwner": "monash-human-power",
   "repoType": "github",
-  "repoHost": "https://github.com"
+  "repoHost": "https://github.com",
+  "skipCi": true
 }
