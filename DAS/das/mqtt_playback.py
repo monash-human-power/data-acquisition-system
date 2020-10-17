@@ -1,4 +1,6 @@
+import sys
 import argparse
+import socket
 from das.utils import logger
 
 parser = argparse.ArgumentParser(
@@ -40,8 +42,24 @@ if __name__ == "__main__":
     # Read command line arguments
     args = parser.parse_args()
 
-    # Make logger object and initiate playback
-    main_logger = logger.Playback(
-        filepath=args.filepath, broker_address=args.host, verbose=args.verbose
-    )
-    main_logger.play(speed=args.speed)
+    try:
+        # Make logger object and initiate playback
+        main_playback = logger.Playback(
+            filepath=args.filepath, broker_address=args.host, verbose=args.verbose
+        )
+
+        main_playback.play(speed=args.speed)
+
+    except KeyboardInterrupt:
+        pass
+
+    except socket.timeout as e:
+        print(f"{type(e)}: {e}")
+        print(f"The IP address of the MQTT broker is probably wrong")
+
+    except Exception as e:
+        print(f"{type(e)}: {e}")
+
+    finally:
+        # Graceful exit
+        sys.exit()

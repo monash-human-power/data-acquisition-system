@@ -1,6 +1,5 @@
 from pathlib import Path
 import paho.mqtt.client as mqtt
-import paho.mqtt.publish as publish
 import csv
 import time
 import os
@@ -17,7 +16,7 @@ CsvConfig = {
 }
 
 # Set logging to output all info by default (with a space for clarity)
-logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
+logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.WARNING)
 
 
 class Recorder:
@@ -40,8 +39,6 @@ class Recorder:
         List of topic names
     _recording : bool
         Whether the Recorder object is currently recording or not
-    _VERBOSE : bool
-        Specifies whether the incoming MQTT data and warnings are printed
     _START_TIME : `time`
         The current time used to produce time deltas
     _LOG_FILE : `File`
@@ -61,8 +58,11 @@ class Recorder:
     ) -> None:
         # The logger object can subscribe to many topics (if none are selected then it will subscribe to all)
         self.TOPICS = topics
-        self._VERBOSE = verbose
         self._START_TIME = time.monotonic()
+
+        # If set to verbose print info messages
+        if verbose:
+            logging.getLogger().setLevel(logging.INFO)
 
         # Create csv_folder_path folder if none exists
         Path(csv_folder_path).mkdir(parents=True, exist_ok=True)
@@ -84,7 +84,7 @@ class Recorder:
         self._CLIENT.loop_start()  # Threaded execution loop
 
     def _create_log_file(self, csv_folder_path: str) -> None:
-        """Is used to open a log file and csv obj during the object init
+        """Generates a log file ready to be written in.
 
         Parameters
         ----------
@@ -100,11 +100,12 @@ class Recorder:
                 current_log_num = int(re.search("(\d*)_log.csv", filename).group(1))
                 if current_log_num > previous_log_num:
                     previous_log_num = current_log_num
+
             except AttributeError:
-                if self._VERBOSE:
-                    logging.warning(f"{filename} should not be in {csv_folder_path}")
+                logging.warning(f"{filename} should not be in {csv_folder_path}")
+
             except Exception as e:
-                logging.error(e)
+                logging.error(f"{type(e)}: {e}")
 
         # Create the new log file and name it one more than the previous
         filename = f"{previous_log_num + 1}_log.csv"
@@ -132,16 +133,18 @@ class Recorder:
             for topic in self.TOPICS:
                 self._CLIENT.subscribe(topic)
                 logging.info(f"Subscribed to: {topic}")
+
         except Exception as e:
-            logging.error(e)
+            logging.error(f"{type(e)}: {e}")
 
     def _on_message(self, client, userdata, msg) -> None:
         """Callback function for MQTT broker on message that logs the incoming MQTT message."""
         if self._recording:
             try:
                 self.log(msg.topic, msg.payload.decode("utf-8"))
+
             except Exception as e:
-                logging.error(e)
+                logging.error(f"{type(e)}: {e}")
 
     def log(self, mqtt_topic: str, message: str) -> None:
         """Logs the time delta and message data to self._LOG_FILE in the csv format.
@@ -164,14 +167,13 @@ class Recorder:
                     "message": message,
                 }
             )
-            if self._VERBOSE:
-                logging.info(
-                    f"{round(time_delta, 5): <10} | {mqtt_topic: <50} | {message}"
-                )
+            logging.info(f"{round(time_delta, 5): <10} | {mqtt_topic: <50} | {message}")
+
         except Exception as e:
-            logging.error(e)
+            logging.error(f"{type(e)}: {e}")
 
     def start(self) -> None:
+        """Starts the MQTT logging."""
         self._recording = True
         logging.info(f"Logging started!")
 
@@ -197,10 +199,10 @@ class Playback:
 
     Attributes
     ----------
-    _VERBOSE: bool
-        Specifies whether the incoming MQTT data and warnings are printed
     _BROKER_ADDRESS: bool
         The IP address of the MQTT broker
+    _CLIENT : `paho.mqtt.client`
+        MQTT client that connects to the broker and recives the messages
     _log_data: list(dict)
         A list of all of the rows in the log file stored in dict format
     """
@@ -208,8 +210,10 @@ class Playback:
     def __init__(
         self, filepath: str, broker_address: str = "localhost", verbose: bool = False
     ) -> None:
-        self._VERBOSE = verbose
-        self._BROKER_ADDRESS = broker_address
+
+        # If set to verbose print info messages
+        if verbose:
+            logging.getLogger().setLevel(logging.INFO)
 
         # Read in data from log file and save each row in _log_data list
         log_file = open(filepath, "r")
@@ -226,6 +230,21 @@ class Playback:
             # Convert time delta to float
             row["time_delta"] = float(row["time_delta"])
             self._log_data.append(row)
+
+        # Connect to MQTT broker
+        self._CLIENT = mqtt.Client()
+        self._CLIENT.on_connect = self._on_connect
+        self._CLIENT.connect(broker_address)
+
+    def _on_connect(self, client, userdata, flags, rc) -> None:
+        """Callback function for MQTT broker on connection."""
+
+        if rc == 0:
+            logging.info("Connection Successful!")
+        else:
+            raise ConnectionError(
+                "Connection was unsuccessful, check that the broker IP is corrrect"
+            )
 
     def play(self, speed: float = 1) -> None:
         """Play the logged data at a certain speed using an async function.
@@ -255,17 +274,15 @@ class Playback:
             scaled_sleep = row["time_delta"] / speed
             await asyncio.sleep(scaled_sleep)
 
-            if self._VERBOSE:
-                logging.info(
-                    f"{round(row['time_delta'], 5): <10} | {round(scaled_sleep, 5): <10} | {row['mqtt_topic']: <50} | {row['message']}"
-                )
+            logging.info(
+                f"{round(row['time_delta'], 5): <10} | {round(scaled_sleep, 5): <10} | {row['mqtt_topic']: <50} | {row['message']}"
+            )
 
             try:
-                publish.single(
-                    row["mqtt_topic"], row["message"], hostname=self._BROKER_ADDRESS
-                )
+                self._CLIENT.publish(row["mqtt_topic"], row["message"])
+
             except Exception as e:
-                logging.error(e)
+                logging.error(f"{type(e)}: {e}")
 
         publish_queue = []
         for row in self._log_data:
