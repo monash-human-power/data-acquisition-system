@@ -63,9 +63,18 @@ class Recorder:
     ) -> None:
         # The logger object can subscribe to many topics (if none are selected then it will subscribe to all)
         self.TOPICS = topics
+        self._START_TIME = time.monotonic()
 
         # If set to verbose print info messages
         if verbose:
+            logging.getLogger().setLevel(logging.INFO)
+
+        # Create csv_folder_path folder if none exists
+        Path(csv_folder_path).mkdir(parents=True, exist_ok=True)
+
+        # Create the csv log and csv writter
+        self._create_log_file(csv_folder_path)
+
         # Add headers for csv
         self._LOG_FILE_WRITER.writeheader()
 
