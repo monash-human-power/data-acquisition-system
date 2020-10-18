@@ -1,0 +1,14 @@
+[submodule "Bridge/libs/ZetaRF"]
+	path = Bridge/libs/ZetaRF
+	url = https://github.com/GIPdA/ZetaRF
+	branch = v2
+[submodule "Bridge/libs/paho.mqtt.cpp"]
+	path = Bridge/libs/paho.mqtt.cpp
+	url = https://github.com/eclipse/paho.mqtt.cpp.git
+	ignore = untracked
+[submodule "wireless_modules/libraries/MQ135"]
+	path = wireless_modules/libraries/MQ135
+	url = https://github.com/rubfi/MQ135
+[submodule "wireless_modules/libraries/MPU6050-ESP8266-MicroPython"]
+	path = wireless_modules/libraries/MPU6050-ESP8266-MicroPython
+	url = https://github.com/adamjezek98/MPU6050-ESP8266-MicroPython
