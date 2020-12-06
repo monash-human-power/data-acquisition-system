@@ -14,6 +14,7 @@ argparse = "^1.4.0"
 mhp = {git = "https://github.com/monash-human-power/common.git", rev = "hallgchris/mqtt-refactor"}
 
 [tool.poetry.dev-dependencies]
+pytest = "^6.1.2"
 
 [build-system]
 requires = ["poetry>=0.12"]
