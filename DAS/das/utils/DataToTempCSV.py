@@ -1,11 +1,23 @@
-import json
-from datetime import datetime
-import os
 import csv
+from datetime import datetime
+from enum import Enum, unique
+import json
+import os
 
 from mhp.topics import WirelessModule
 
-from das.utils import WirelessModuleType
+
+@unique
+class WirelessModuleType(Enum):
+    """Used in the DataToTempCSV script to specify the type of data
+    received"""
+
+    def __str__(self):
+        return self.value
+
+    data = "DATA"
+    battery = "BATTERY"
+    low_battery = "LOW_BATTERY"
 
 
 def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num, temp_dir):
