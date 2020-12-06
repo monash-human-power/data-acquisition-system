@@ -6,8 +6,9 @@ import argparse
 import glob
 import re
 
+from mhp.topics import WirelessModule
+
 from das.utils import DataToTempCSV
-from das.utils import WirelessModule
 
 
 # Global dicts to store state

@@ -3,7 +3,9 @@ from datetime import datetime
 import os
 import csv
 
-from das.utils import WirelessModule, WirelessModuleType
+from mhp.topics import WirelessModule
+
+from das.utils import WirelessModuleType
 
 
 def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num, temp_dir):
