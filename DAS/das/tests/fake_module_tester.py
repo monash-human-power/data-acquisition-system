@@ -164,7 +164,7 @@ def publish(client, topic, data={}):
     """
     Publishes python dict data to a specific topic in JSON and prints it out
     client: MQTT client object
-    topic:  MQTT topic eg. '/v3/wireless-module/<id>/start'
+    topic:  MQTT topic eg. '/v3/wireless_module/<id>/start'
     data:   Python dict containing the data to be published on the topic
     """
     # Generate JSON from the python dict
