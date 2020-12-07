@@ -171,7 +171,7 @@ def publish(client, topic, data={}):
     json_data = json.dumps(data)
 
     # Publish the data over MQTT
-    client.publish(topic, json_data)
+    client.publish(str(topic), json_data)
     print(topic, "--> ", json_data)
 
 
@@ -179,7 +179,7 @@ def start_modules(args):
     """ Sends a null message on the start channels for all of the selected
     modules to start """
 
-    # TODO: Add posibility to make modules by importing a file or generating
+    # TODO: Add possibility to make modules by importing a file or generating
     # random modules. The modules should not be hard coded to this script.
     for module_id_num in args.id:
         publish(client, WirelessModule.start(module_id_num))
