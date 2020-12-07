@@ -9,7 +9,7 @@ These steps assume that you are in the data-acquisition-system root directory an
 1. `cd DAS`
 2. `poetry install`
 3. `poetry shell`
-4. Run any DAS command, _e.g._ `python -m das.mqtt_recorder`
+4. Run any DAS command, _e.g._ `python -m das.V3_mqtt_recorder`
 
 ## Run Tests
 These steps assume that you have done the basic setup.
@@ -17,19 +17,19 @@ These steps assume that you have done the basic setup.
 
 <br/>
 
-## [MQTT Recorder](/DAS/das/mqtt_recorder.py)
+## [V3 MQTT Recorder](/DAS/das/V3_mqtt_recorder.py)
 The command line tool allows for mqtt messages on any topic to be logged and recorded to a csv file. The saved csv files will be stored in the `das/csv_data`. 
 
 ### Usage
 ```
 # General command
-python -m das.mqtt_recorder [TOPICS] [FLAGS]
+python -m das.V3_mqtt_recorder [TOPICS] [FLAGS]
 
 # Subscribe to all topics on the V3 bike
-python -m das.mqtt_recorder /v3/#  -v
+python -m das.V3_mqtt_recorder /v3/#  -v
 
 # Subscribe just BOOST and wireless module topics
-python -m das.mqtt_recorder /v3/wireless-module/# power-model/# -v
+python -m das.V3_mqtt_recorder /v3/wireless-module/# power-model/# -v
 ```
 
 | Flag                       | Default Value |                   Info                   |
@@ -41,19 +41,19 @@ python -m das.mqtt_recorder /v3/wireless-module/# power-model/# -v
 
 <br/>
 
-## [MQTT Playback](/DAS/das/mqtt_playback.py)
-This command line tool reads a raw csv log created from the MQTT Recorder tool and plays it back over MQTT. Simply specify the log and this tool will do the rest!
+## [V3 MQTT Playback](/DAS/das/V3_mqtt_playback.py)
+This command line tool reads a raw csv log created from the V3 MQTT Recorder tool and plays it back over MQTT. Simply specify the log and this tool will do the rest!
 
 ### Usage
 ```
 # General command
-python -m das.mqtt_playback [FILEPATH] [FLAGS]
+python -m das.V3_mqtt_playback [FILEPATH] [FLAGS]
 
 # Playback of 1_log.csv
-python -m das.mqtt_playback ./das/csv_data/1_log.csv  -v
+python -m das.V3_mqtt_playback ./das/csv_data/1_log.csv  -v
 
 # Playback of 2_log.csv at 60x speed 
-python -m das.mqtt_playback ./das/csv_data/2_log.csv -s 60 -v
+python -m das.V3_mqtt_playback ./das/csv_data/2_log.csv -s 60 -v
 ```
 
 | Flag                          | Default Value |            Info            |
@@ -65,19 +65,19 @@ python -m das.mqtt_playback ./das/csv_data/2_log.csv -s 60 -v
 
 <br/>
 
-## [Fake Module](/DAS/das/fake_module.py)
+## [V3 Fake Module](/DAS/das/V3_fake_module.py)
 This script mocks module data over MQTT similar to the real sensors on V3.
 
 ### Usage
 ```
 # General command
-python -m das.fake_module [FLAGS]
+python -m das.V3_fake_module [FLAGS]
 
 # Fake sensor output for 10s at 3 messages per second
-python -m das.fake_module -t 10 -r 3
+python -m das.V3_fake_module -t 10 -r 3
 
 # Fake sensor output for just module 1 and 2
-python -m das.fake_module --id 1 2
+python -m das.V3_fake_module --id 1 2
 ```
 
 | Flag                                    | Default Value  |                   Info                   |
@@ -88,6 +88,36 @@ python -m das.fake_module --id 1 2
 | ` -i ID [ID ...]` or `--id ID [ID ...]` | `[1, 2, 3, 4]` | Specify the modules to produce fake data |
 | `-h` or `--help`                        |                |                   Help                   |
 
+<br/>
 
+## [V2 MQTT Playback](/DAS/das/V2_mqtt_playback.py)
+This command line tool plays back MQTT data by reading a V2 csv log or making up fake data.
+
+### Usage
+```
+# General command (with file)
+python -m das.V2_mqtt_playback --file [FILEPATH] [FLAGS]
+
+# General command (without file)
+python -m das.V2_mqtt_playback [FLAGS]
+
+# Playback of 1_log.csv for 30 seconds
+python -m das.V2_mqtt_playback ./das/V2_csv_data/1_log.csv -t 30
+
+# Playback of 2_log.csv at 60x speed 
+python -m das.V2_mqtt_playback ./das/V2_csv_data/2_log.csv -s 60 
+```
+
+| Flag                          | Default Value |                           Info                           |
+| :---------------------------- | :-----------: | :------------------------------------------------------: |
+| `-t TIME` or `--time TIME`    |      `1`      |               Length of time to send data                |
+| `-r RATE` or `--rate RATE`    |     `0.5`     |                 Rate of data in seconds                  |
+| `--host HOST`                 |  `localhost`  |                Address of the MQTT broker                |
+| `--port PORT`                 |    `1883`     |                 Port of the MQTT broker                  |
+| `--username USERNAME`         |               |               Username for the MQTT broker               |
+| `--password PASSWORD`         |               |               Password for the MQTT broker               |
+| `-f FILE` or `--file FILE`    |               | The csv file to replay (if not specified, makes up data) |
+| `-s SPEED` or `--speed SPEED` |      `1`      |                 Replay speed multiplier                  |
+| `-j JUMP` or `--jump JUMP`    |      `0`      |   Starts replaying from a specified time (in seconds)    |
 
 

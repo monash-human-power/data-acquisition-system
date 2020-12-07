@@ -34,7 +34,7 @@ parser.add_argument(
     help="address of the MQTT broker",
 )
 parser.add_argument(
-    "--port", action="store", type=int, default=1883, help="address of the MQTT broker"
+    "--port", action="store", type=int, default=1883, help="port of the MQTT broker"
 )
 parser.add_argument(
     "--username",
