@@ -5,7 +5,11 @@ import paho.mqtt.client as mqtt
 from das.utils.das_data_generator import send_csv_data, send_fake_data
 
 # Arguments
-parser = argparse.ArgumentParser(description="DAS MQTT python script", add_help=True)
+parser = argparse.ArgumentParser(
+    description="DAS MQTT python script",
+    add_help=True,
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+)
 parser.add_argument(
     "-t",
     "--time",
