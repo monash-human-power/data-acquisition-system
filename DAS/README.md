@@ -5,7 +5,7 @@
 
 
 ## Basic Setup and Usage
-These steps assume that you are in the data-acquisition-system root directory.
+These steps assume that you are in the data-acquisition-system root directory and poetry installed.
 1. `cd DAS`
 2. `poetry install`
 3. `poetry shell`
