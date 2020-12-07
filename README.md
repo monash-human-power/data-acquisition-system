@@ -12,10 +12,16 @@ Type `git clone https://github.com/monash-human-power/data-acquisition-system.gi
 ## Contents
 
 ### [DAS](/DAS/)
-Stores the scripts for the DAS. This also
+Stores the scripts for the DAS.
 
-### Bridge
+### [Ant Plus Sensor](/ant_plus_sensor/)
+Stores the scripts for the ant plus sensors.
+
+### [Bridge](/Bridge/)
 The MQTT radio bridge, for connecting the MQTT brokers of the bike and chase car.
+
+### [Wireless Modules](/wireless_modules/)
+Stores the scripts for the wireless modules.
 
 ## Contributors ✨
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
