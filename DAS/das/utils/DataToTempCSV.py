@@ -9,8 +9,7 @@ from mhp.topics import WirelessModule
 
 @unique
 class WirelessModuleType(Enum):
-    """Used in the DataToTempCSV script to specify the type of data
-    received"""
+    """ Used to specify the type of data received. """
 
     def __str__(self):
         return self.value
