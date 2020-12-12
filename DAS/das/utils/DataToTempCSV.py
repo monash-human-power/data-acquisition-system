@@ -4,7 +4,7 @@ from enum import Enum, unique
 import json
 import os
 
-from mhp.topics import WirelessModule
+from mhp import topics
 
 
 @unique
@@ -85,11 +85,11 @@ def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num, temp_dir
     module_data = json.loads(module_data)
 
     # Determine which type of data to parse
-    if WirelessModule.id(module_id_num).data == msg.topic:
+    if topics.WirelessModule.id(module_id_num).data == msg.topic:
         module_type = str(WirelessModuleType.data)
         parse_module_data()
 
-    elif WirelessModule.id(module_id_num).battery == msg.topic:
+    elif topics.WirelessModule.id(module_id_num).battery == msg.topic:
         module_type = str(WirelessModuleType.battery)
         parse_module_battery()
 

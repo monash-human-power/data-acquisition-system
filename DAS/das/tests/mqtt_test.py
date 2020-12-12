@@ -2,7 +2,7 @@ import sys
 import argparse
 import paho.mqtt.client as mqtt
 
-from mhp.topics import DAS, BOOST
+from mhp import topics
 
 from das.tests.das_data_generator import send_csv_data, send_fake_data
 
@@ -31,11 +31,11 @@ parser.add_argument('-j', '--jump', action='store', type=int, default=0,
 
 def start_publishing(client, args):
     print("start")
-    client.publish(str(BOOST.start))
-    client.publish(str(DAS.start))
+    client.publish(str(topics.BOOST.start))
+    client.publish(str(topics.DAS.start))
 
     def send_data_func(data):
-        return client.publish(str(DAS.data), data)
+        return client.publish(str(topics.DAS.data), data)
 
     if args.file is None:
         send_fake_data(send_data_func, args.time, args.rate)
@@ -43,8 +43,8 @@ def start_publishing(client, args):
         send_csv_data(send_data_func, args.file, args.jump, speedup=args.speed)
 
     print("stop")
-    client.publish(str(DAS.stop))
-    client.publish(str(BOOST.stop))
+    client.publish(str(topics.DAS.stop))
+    client.publish(str(topics.BOOST.stop))
     sys.exit(0)
 
 
