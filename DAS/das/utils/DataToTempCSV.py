@@ -16,7 +16,6 @@ class WirelessModuleType(Enum):
 
     data = "DATA"
     battery = "BATTERY"
-    low_battery = "LOW_BATTERY"
 
 
 def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num, temp_dir):
@@ -86,15 +85,11 @@ def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num, temp_dir
     module_data = json.loads(module_data)
 
     # Determine which type of data to parse
-    if WirelessModule.data(module_id_num) == msg.topic:
+    if WirelessModule.id(module_id_num).data == msg.topic:
         module_type = str(WirelessModuleType.data)
         parse_module_data()
 
-    elif WirelessModule.low_battery(module_id_num) == msg.topic:
-        module_type = str(WirelessModuleType.low_battery)
-        # Nothing to parse
-
-    elif WirelessModule.battery(module_id_num) == msg.topic:
+    elif WirelessModule.id(module_id_num).battery == msg.topic:
         module_type = str(WirelessModuleType.battery)
         parse_module_battery()
 
