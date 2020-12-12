@@ -32,12 +32,12 @@ python -m das.V3_mqtt_recorder /v3/#  -v
 python -m das.V3_mqtt_recorder /v3/wireless-module/# power-model/# -v
 ```
 
-| Flag                       | Default Value |                   Info                   |
-| :------------------------- | :-----------: | :--------------------------------------: |
-| `--host HOST`              |  `localhost`  |        Address of the MQTT broker        |
-| `-v ` or `--verbose`       |    `False`    |          Verbose logging output          |
-| `-t TIME` or `--time TIME` |     `inf`     | Length of time to record data (duration) |
-| `-h` or `--help`           |               |                   Help                   |
+| Flag                       | Default Value |                        Info                         |
+| :------------------------- | :-----------: | :-------------------------------------------------: |
+| `--host HOST`              |  `localhost`  |             Address of the MQTT broker              |
+| `-v ` or `--verbose`       |    `False`    |               Verbose logging output                |
+| `-t TIME` or `--time TIME` |     `inf`     | Length of time to record data (duration in seconds) |
+| `-h` or `--help`           |               |                        Help                         |
 
 <br/>
 
@@ -56,12 +56,12 @@ python -m das.V3_mqtt_playback ./das/csv_data/1_log.csv  -v
 python -m das.V3_mqtt_playback ./das/csv_data/2_log.csv -s 60 -v
 ```
 
-| Flag                          | Default Value |            Info            |
-| :---------------------------- | :-----------: | :------------------------: |
-| `--host HOST`                 |  `localhost`  | Address of the MQTT broker |
-| `-v ` or `--verbose`          |    `False`    |   Verbose logging output   |
-| `-s SPEED` or `--speed SPEED` |      `1`      |     Playback speed up      |
-| `-h` or `--help`              |               |            Help            |
+| Flag                          | Default Value |               Info               |
+| :---------------------------- | :-----------: | :------------------------------: |
+| `--host HOST`                 |  `localhost`  |    Address of the MQTT broker    |
+| `-v ` or `--verbose`          |    `False`    |      Verbose logging output      |
+| `-s SPEED` or `--speed SPEED` |      `1`      | Playback speed up (x multiplier) |
+| `-h` or `--help`              |               |               Help               |
 
 <br/>
 
@@ -80,13 +80,13 @@ python -m das.V3_fake_module -t 10 -r 3
 python -m das.V3_fake_module --id 1 2
 ```
 
-| Flag                                    | Default Value  |                   Info                   |
-| :-------------------------------------- | :------------: | :--------------------------------------: |
-| `--host HOST`                           |  `localhost`   |        Address of the MQTT broker        |
-| `-t TIME` or `--time TIME`              |     `inf`      | Length of time to record data (duration) |
-| `-r RATE` or `--rate RATE`              |      `1`       |       Rate of data sent per second       |
-| ` -i ID [ID ...]` or `--id ID [ID ...]` | `[1, 2, 3, 4]` | Specify the modules to produce fake data |
-| `-h` or `--help`                        |                |                   Help                   |
+| Flag                                    | Default Value  |                        Info                         |
+| :-------------------------------------- | :------------: | :-------------------------------------------------: |
+| `--host HOST`                           |  `localhost`   |             Address of the MQTT broker              |
+| `-t TIME` or `--time TIME`              |     `inf`      | Length of time to record data (duration in seconds) |
+| `-r RATE` or `--rate RATE`              |      `1`       |            Rate of data sent per second             |
+| ` -i ID [ID ...]` or `--id ID [ID ...]` | `[1, 2, 3, 4]` |      Specify the modules to produce fake data       |
+| `-h` or `--help`                        |                |                        Help                         |
 
 <br/>
 
@@ -110,14 +110,14 @@ python -m das.V2_mqtt_playback ./das/V2_csv_data/2_log.csv -s 60
 
 | Flag                          | Default Value |                           Info                           |
 | :---------------------------- | :-----------: | :------------------------------------------------------: |
-| `-t TIME` or `--time TIME`    |      `1`      |               Length of time to send data                |
-| `-r RATE` or `--rate RATE`    |     `0.5`     |                 Rate of data in seconds                  |
+| `-t TIME` or `--time TIME`    |      `1`      |         Length of time to send data (in seconds)         |
+| `-r RATE` or `--rate RATE`    |     `0.5`     |                  Rate of data (seconds)                  |
 | `--host HOST`                 |  `localhost`  |                Address of the MQTT broker                |
 | `--port PORT`                 |    `1883`     |                 Port of the MQTT broker                  |
 | `--username USERNAME`         |               |               Username for the MQTT broker               |
 | `--password PASSWORD`         |               |               Password for the MQTT broker               |
 | `-f FILE` or `--file FILE`    |               | The csv file to replay (if not specified, makes up data) |
-| `-s SPEED` or `--speed SPEED` |      `1`      |                 Replay speed multiplier                  |
+| `-s SPEED` or `--speed SPEED` |      `1`      |               Replay speed (x multiplier)                |
 | `-j JUMP` or `--jump JUMP`    |      `0`      |   Starts replaying from a specified time (in seconds)    |
 
 
