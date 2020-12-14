@@ -10,8 +10,7 @@ paho-mqtt = "^1.5.0"
 urllib3 = "^1.25.9"
 pandas = "^1.0.3"
 argparse = "^1.4.0"
-# TODO: change branch to revision (e.g. 202012.9)
-mhp = {git = "https://github.com/monash-human-power/common.git", rev = "hallgchris/mqtt-refactor"}
+mhp = {git = "https://github.com/monash-human-power/common.git", rev = "202012.9"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"
