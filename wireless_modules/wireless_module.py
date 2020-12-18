@@ -21,12 +21,12 @@ class WirelessModule:
         """
         self.sensors = []
 
-        self.pub_data_topic = b"/v3/wireless-module/{}/data".format(module_id)
-        self.pub_low_battery = b"/v3/wireless-module/{}/low-battery".format(module_id)
-        self.pub_battery_level = b"/v3/wireless-module/{}/battery".format(module_id)
+        self.pub_data_topic = b"/v3/wireless_module/{}/data".format(module_id)
+        self.pub_low_battery = b"/v3/wireless_module/{}/low-battery".format(module_id)
+        self.pub_battery_level = b"/v3/wireless_module/{}/battery".format(module_id)
 
-        self.sub_start_topic = b"/v3/wireless-module/{}/start".format(module_id)
-        self.sub_stop_topic = b"/v3/wireless-module/{}/stop".format(module_id)
+        self.sub_start_topic = b"/v3/wireless_module/{}/start".format(module_id)
+        self.sub_stop_topic = b"/v3/wireless_module/{}/stop".format(module_id)
 
         self.start_publish = False
 

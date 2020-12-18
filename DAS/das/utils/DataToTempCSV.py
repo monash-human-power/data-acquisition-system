@@ -1,9 +1,21 @@
-import json
-from datetime import datetime
-import os
 import csv
+from datetime import datetime
+from enum import Enum, unique
+import json
+import os
 
-from das.utils import WirelessModule, WirelessModuleType
+from mhp import topics
+
+
+@unique
+class WirelessModuleType(Enum):
+    """ Used to specify the type of data received. """
+
+    def __str__(self):
+        return self.value
+
+    data = "DATA"
+    battery = "BATTERY"
 
 
 def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num, temp_dir):
@@ -73,15 +85,11 @@ def DataToTempCSV(msg, module_start_time, module_id_str, module_id_num, temp_dir
     module_data = json.loads(module_data)
 
     # Determine which type of data to parse
-    if WirelessModule.data(module_id_num) == msg.topic:
+    if topics.WirelessModule.id(module_id_num).data == msg.topic:
         module_type = str(WirelessModuleType.data)
         parse_module_data()
 
-    elif WirelessModule.low_battery(module_id_num) == msg.topic:
-        module_type = str(WirelessModuleType.low_battery)
-        # Nothing to parse
-
-    elif WirelessModule.battery(module_id_num) == msg.topic:
+    elif topics.WirelessModule.id(module_id_num).battery == msg.topic:
         module_type = str(WirelessModuleType.battery)
         parse_module_battery()
 
