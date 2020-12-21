@@ -20,11 +20,11 @@ from umqtt.simple import MQTTClient
 MODULE_NUM = "1"
 FAKE_MODULE = fake.module(MODULE_NUM)
 
-PUB_DATA = b'/v3/wireless-module/{}/data'.format(MODULE_NUM)
-PUB_BATTERY = b'/v3/wireless-module/{}/battery'.format(MODULE_NUM)
-PUB_LOW_BATTERY = b'/v3/wireless-module/{}/low-battery'.format(MODULE_NUM)
+PUB_DATA = b'/v3/wireless_module/{}/data'.format(MODULE_NUM)
+PUB_BATTERY = b'/v3/wireless_module/{}/battery'.format(MODULE_NUM)
+PUB_LOW_BATTERY = b'/v3/wireless_module/{}/low-battery'.format(MODULE_NUM)
 
-SUB_LED = b'/v3/wireless-module/{}/LED'.format(MODULE_NUM)
+SUB_LED = b'/v3/wireless_module/{}/LED'.format(MODULE_NUM)
 SUB_TOPICS = [SUB_LED]
 
 

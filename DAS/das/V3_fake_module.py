@@ -3,8 +3,9 @@ import argparse
 import json
 import paho.mqtt.client as mqtt
 
+from mhp import topics
+
 from das.utils import MockSensor
-from das.utils import WirelessModule
 
 parser = argparse.ArgumentParser(
     description="MQTT wireless module test script that sends fake data",
@@ -128,8 +129,8 @@ def send_fake_data(client, duration, rate, module_id_nums):
                 "percentage": sensors["battery"].get_value(),
             }
 
-            module_topic = WirelessModule.data(module_id_num)
-            battery_topic = WirelessModule.battery(module_id_num)
+            module_topic = topics.WirelessModule.id(module_id_num).data
+            battery_topic = topics.WirelessModule.id(module_id_num).battery
 
             # Publish data and battery if needed
             publish(client, module_topic, module_data)
@@ -174,14 +175,14 @@ def publish(client, topic, data={}):
     """
     Publishes python dict data to a specific topic in JSON and prints it out
     client: MQTT client object
-    topic:  MQTT topic eg. '/v3/wireless-module/<id>/start'
+    topic:  MQTT topic eg. '/v3/wireless_module/<id>/start'
     data:   Python dict containing the data to be published on the topic
     """
     # Generate JSON from the python dict
     json_data = json.dumps(data)
 
     # Publish the data over MQTT
-    client.publish(topic, json_data)
+    client.publish(str(topic), json_data)
     print(topic, "--> ", json_data)
 
 
@@ -189,10 +190,10 @@ def start_modules(args):
     """ Sends a null message on the start channels for all of the selected
     modules to start """
 
-    # TODO: Add posibility to make modules by importing a file or generating
+    # TODO: Add possibility to make modules by importing a file or generating
     # random modules. The modules should not be hard coded to this script.
     for module_id_num in args.id:
-        publish(client, WirelessModule.start(module_id_num))
+        publish(client, topics.WirelessModule.id(module_id_num).start)
         print("Started module", module_id_num)
 
 
@@ -201,7 +202,7 @@ def stop_modules(args):
     modules to stop """
 
     for module_id_num in args.id:
-        publish(client, WirelessModule.stop(module_id_num))
+        publish(client, topics.WirelessModule.id(module_id_num).stop)
         print("Stopped module", module_id_num)
 
 
