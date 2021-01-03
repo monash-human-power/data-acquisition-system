@@ -1,6 +1,6 @@
 # DAS
 
-*This directory contains scripts to log and test various components of the data data-acquisition-system*
+*This directory contains scripts to log and test various components of the data-acquisition-system*
 
 
 
