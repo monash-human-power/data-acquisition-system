@@ -29,7 +29,7 @@ python -m das.V3_mqtt_recorder [TOPICS] [FLAGS]
 python -m das.V3_mqtt_recorder /v3/#  -v
 
 # Subscribe just BOOST and wireless module topics
-python -m das.V3_mqtt_recorder /v3/wireless-module/# power-model/# -v
+python -m das.V3_mqtt_recorder /v3/wireless_module/# boost/# -v
 ```
 
 | Flag                       | Default Value |                        Info                         |
