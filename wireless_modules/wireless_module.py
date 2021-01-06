@@ -14,20 +14,20 @@ class WirelessModule:
     """
     A class structure to read and collate data from different sensors into a dictionary and send through MQTT.
     """
-    def __init__(self, module_id, voltage_factor, battery_pin=machine.Pin(33)):
+    def __init__(self, module_id, battery_reader=None):
         """
         Initialises the wireless module.
         :param module_id: An integer representing the wireless module number.
-        :param battery_pin: A Pin object of the board pin connected to the middle node of the voltage divider connecting
-        the battery and the ESP32
-        :param voltage_factor: A float representing the ratio {(Total resistance):(Resistance between battery_pin and
-        ground)}
+        :param battery_reader: A `BatteryReader` class to read the battery voltage from
         """
         self.sensors = []
 
         self.pub_data_topic = b"/v3/wireless-module/{}/data".format(module_id)
+
+        # FIXME: Need to verify the need for the low-battery topic
         self.pub_low_battery = b"/v3/wireless-module/{}/low-battery".format(module_id)
-        self.pub_battery_level = b"/v3/wireless-module/{}/battery".format(module_id)
+
+        self.battery_topic = b"/v3/wireless-module/{}/battery".format(module_id)
 
         self.sub_start_topic = b"/v3/wireless-module/{}/start".format(module_id)
         self.sub_stop_topic = b"/v3/wireless-module/{}/stop".format(module_id)
@@ -38,15 +38,7 @@ class WirelessModule:
         client_id = ubinascii.hexlify(machine.unique_id())
         self.mqtt = Client(client_id, config.MQTT_BROKER)
 
-        # Set up variables used to calculate battery voltage
-        self.adc_battery_pin = machine.ADC(battery_pin)
-        self.adc_resolution = 4095
-
-        # Maximum voltage detected by ADC pins on the ESP32 (Can be changed using ADC.atten() method)
-        self.max_readable_voltage = 1
-
-        # The factor to multiply the voltage at the battery pin to get the battery voltage
-        self.voltage_factor = voltage_factor
+        self.battery = battery_reader
 
     def add_sensors(self, sensor_arr):
         """
@@ -69,18 +61,6 @@ class WirelessModule:
                 readings["sensors"].append(data)
 
         return readings
-
-    def _read_battery_voltage(self):
-        """
-        Calculates the voltage level of the battery charging this wireless module
-        :return: A dictionnary with key 'percentage' and the battery voltage (an int) as the associated value
-        """
-        adc_value = self.adc_battery_pin.read()
-        print("ADC value for the battery pin: " + str(adc_value))
-        voltage_at_adc_pin = (self.max_readable_voltage * adc_value) / self.adc_resolution
-        battery_voltage = voltage_at_adc_pin * self.voltage_factor
-
-        return {"percentage": battery_voltage}
 
     def sub_cb(self, topic, msg):
         """
@@ -117,22 +97,20 @@ class WirelessModule:
             while self.start_publish:
                 # Publish the battery voltage of this wireless module if 5 minutes (300 seconds) have elapsed since last
                 # battery read
-                if time.ticks_diff(time.ticks_ms(), prev_battery_read) * ms_to_sec >= battery_data_rate:
-                    battery_voltage = self._read_battery_voltage()
-                    self.mqtt.publish(self.pub_battery_level, ujson.dumps(battery_voltage))
+                time_since_last_battery_read = time.ticks_diff(time.ticks_ms(), prev_battery_read) * ms_to_sec
+                if time_since_last_battery_read >= battery_data_rate and self.battery is not None:
+                    battery_voltage = self.battery.read()
+                    self.mqtt.publish(self.battery_topic, ujson.dumps(battery_voltage))
 
                 # Publish sensor data
                 sensor_data = self._read_sensors()
-                print("-------Publishing Sensor Data--------")
 
                 # compute the time difference since the last sensor data was read
                 time_taken = time.ticks_diff(time.ticks_ms(), prev_data_sent) * ms_to_sec
                 time.sleep(data_rate - time_taken)
 
                 self.mqtt.publish(self.pub_data_topic, ujson.dumps(sensor_data))
-
                 prev_data_sent = time.ticks_ms()
 
                 print("MQTT data sent: {} on {}".format(sensor_data, self.pub_data_topic))
-
                 self.mqtt.check_for_message()
