@@ -45,7 +45,7 @@ class BatteryReader(Sensor):
         print("Battery voltage calculated: " + str(battery_voltage))
 
         return [{
-            "percentage": battery_voltage
+            "voltage": battery_voltage
         }]
 
 
