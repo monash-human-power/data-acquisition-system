@@ -74,7 +74,7 @@ class WirelessModule:
         elif topic == self.sub_stop_topic:
             self.start_publish = False
 
-    def run(self, data_rate=1, battery_data_rate=1):
+    def run(self, data_rate=1, battery_data_rate=300):
         """
         Start the wireless module process: Wait for start message, publish sensor data when start message
         received and continuously check for a stop message - after which the process is repeated.
