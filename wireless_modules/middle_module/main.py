@@ -1,8 +1,11 @@
+# Note: these import statements are based off the file hierarchy on the ESP32
+# board and not off this repository
 import machine
 from mpu import Mpu
 from wireless_module import WirelessModule
 from co2_sensor import CO2
 from dht_sensor import DhtSensor
+from battery_reader import BatteryReader
 
 # Define module number
 MODULE_NUM = "2"
@@ -26,8 +29,11 @@ my_dht = DhtSensor(dht_pin)
 my_mq135 = CO2(mq135_pin)
 my_mq135.set_rzero(RZERO)
 
+battery_pin = 33
+battery_reader = BatteryReader(battery_pin, VOLTAGE_FACTOR)
+
 # Set up the wireless module
-middle_module = WirelessModule(MODULE_NUM, VOLTAGE_FACTOR, machine.Pin(34))
+middle_module = WirelessModule(MODULE_NUM, battery_reader)
 sensors = [my_mpu, my_dht, my_mq135]
 middle_module.add_sensors(sensors)
 
