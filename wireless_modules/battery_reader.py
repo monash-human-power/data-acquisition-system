@@ -44,9 +44,9 @@ class BatteryReader(Sensor):
         battery_voltage = voltage_at_adc_pin * self.voltage_factor
         print("Battery voltage calculated: " + str(battery_voltage))
 
-        return [{
+        return {
             "voltage": battery_voltage
-        }]
+        }
 
 
 if __name__=='__main__':
