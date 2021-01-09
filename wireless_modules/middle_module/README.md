@@ -39,5 +39,8 @@ This repository contains all the code related to Monash Human Power's middle wir
 4. If using `mosquitto`, use 
     - `mosquitto_pub -h <broker name> -t /v3/wireless-module/2/start -m ""` to inform the module to start sending data
     - `mosquitto_pub -h <broker name> -t /v3/wireless-module/2/stop -m ""` to inform the module to stop sending data
-    - `mosquitto_sub -h <broker name> -t /v3/wireless-module/2/data` to read data sent from the module
+    - `mosquitto_sub -h <broker name> -t /v3/wireless-module/2/data` to read sensor data sent from the module
+    - `mosquitto_sub -h <broker name> -t /v3/wireless-module/2/battery` to read battery data sent from the module, 
+    remember that battery is only sent every 5 minutes. Change this in `../wireless_module.py` or `main.py` if you want
+    to test it with faster data rate.
 
