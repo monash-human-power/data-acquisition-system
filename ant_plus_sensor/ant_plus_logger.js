@@ -35,9 +35,9 @@ const args = argumentParser.parseArgs();
 const { id: moduleID, host: mqttAddress, rate } = args;
 winston.info(`Wireless module ID: ${moduleID}`);
 
-const startTopic = `/v3/wireless-module/${moduleID}/start`;
-const stopTopic = `/v3/wireless-module/${moduleID}/stop`;
-const dataTopic = `/v3/wireless-module/${moduleID}/data`;
+const startTopic = `/v3/wireless_module/${moduleID}/start`;
+const stopTopic = `/v3/wireless_module/${moduleID}/stop`;
+const dataTopic = `/v3/wireless_module/${moduleID}/data`;
 
 /**
  * Connect to the MQTT broker

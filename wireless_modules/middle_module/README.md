@@ -16,12 +16,18 @@ This repository contains all the code related to Monash Human Power's middle wir
 
 ```
 # Change the first argument to the serial port of the ESP32.
+# This would upload all files relevant to the middle wireless module onto the board
 ./upload.sh /dev/ttyUSB0 
+
+                            OR
+                            
+# To upload only specific files list their path after the port name argument
+./upload.sh /dev/ttyUSB0 file1 ../file2 ... fileN
 ```
 
 ## Contents
 - `main.py`: Declares topics to publish and subscribe to
-- `mpu.py`: Class that helps read data from the MPU6050 sensor
+- `upload.sh`: File to upload specific or all relevant files onto the ESP32 automatically 
 - `test.py`: A python script to test the sensor data received from the middle wireless module over MQTT
 
 
@@ -37,10 +43,10 @@ This repository contains all the code related to Monash Human Power's middle wir
 3. Either run `test.py` file on your local computer to view the data received in a nicely formatted display or use the
     terminal on your system to send and receive data through `mosquitto`.
 4. If using `mosquitto`, use 
-    - `mosquitto_pub -h <broker name> -t /v3/wireless-module/2/start -m ""` to inform the module to start sending data
-    - `mosquitto_pub -h <broker name> -t /v3/wireless-module/2/stop -m ""` to inform the module to stop sending data
-    - `mosquitto_sub -h <broker name> -t /v3/wireless-module/2/data` to read sensor data sent from the module
-    - `mosquitto_sub -h <broker name> -t /v3/wireless-module/2/battery` to read battery data sent from the module, 
+    - `mosquitto_pub -h <broker name> -t /v3/wireless_module/2/start -m ""` to inform the module to start sending data
+    - `mosquitto_pub -h <broker name> -t /v3/wireless_module/2/stop -m ""` to inform the module to stop sending data
+    - `mosquitto_sub -h <broker name> -t /v3/wireless_module/2/data` to read sensor data sent from the module
+    - `mosquitto_sub -h <broker name> -t /v3/wireless_module/2/battery` to read battery data sent from the module, 
     remember that battery is only sent every 5 minutes. Change this in `../wireless_module.py` or `main.py` if you want
     to test it with faster data rate.
 

@@ -6,8 +6,9 @@ import argparse
 import glob
 import re
 
+from mhp import topics
+
 from das.utils import DataToTempCSV
-from das.utils import WirelessModule
 
 
 # Global dicts to store state
@@ -58,14 +59,14 @@ def on_message(client, userdata, msg):
     module_id_str = "M" + module_id_num
 
     # Start the recording of <module_id>
-    if WirelessModule.start(module_id_num) == msg.topic:
+    if topics.WirelessModule.id(module_id_num).start == msg.topic:
         start_recording(module_id_str)
         print(module_id_str,
               "STARTED, RECORDING TO FILE:",
               output_filepath[module_id_str])
 
     # Stop the recording of <module_id>
-    elif WirelessModule.stop(module_id_num) == msg.topic:
+    elif topics.WirelessModule.id(module_id_num).stop == msg.topic:
         stop_recording(module_id_str)
         print(module_id_str,
               "STOPPED, RECORDED TO FILE:",
