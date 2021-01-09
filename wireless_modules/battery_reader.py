@@ -1,5 +1,5 @@
 from machine import Pin, ADC
-from sensors.sensor_base import Sensor
+from sensor_base import Sensor
 
 
 class BatteryReader(Sensor):
