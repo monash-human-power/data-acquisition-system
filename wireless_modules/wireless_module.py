@@ -22,7 +22,7 @@ class WirelessModule:
         """
         self.sensors = []
 
-        self.pub_data_topic = b"/v3/wireless_module/{}/data".format(module_id)
+        self.pub_sensor_topic = b"/v3/wireless_module/{}/data".format(module_id)
         # FIXME: Need to verify the need for the low-battery topic
         self.pub_low_battery = b"/v3/wireless_module/{}/low-battery".format(module_id)
         self.battery_topic = b"/v3/wireless_module/{}/battery".format(module_id)
@@ -107,8 +107,8 @@ class WirelessModule:
                 time_taken = time.ticks_diff(time.ticks_ms(), prev_data_sent) * ms_to_sec
                 time.sleep(data_rate - time_taken)
 
-                self.mqtt.publish(self.pub_data_topic, ujson.dumps(sensor_data))
+                self.mqtt.publish(self.pub_sensor_topic, ujson.dumps(sensor_data))
                 prev_data_sent = time.ticks_ms()
 
-                print("MQTT data sent: {} on {}".format(sensor_data, self.pub_data_topic))
+                print("MQTT data sent: {} on {}".format(sensor_data, self.pub_sensor_topic))
                 self.mqtt.check_for_message()
