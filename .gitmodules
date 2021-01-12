@@ -12,3 +12,6 @@
 [submodule "wireless_modules/libraries/MPU6050-ESP8266-MicroPython"]
 	path = wireless_modules/libraries/MPU6050-ESP8266-MicroPython
 	url = https://github.com/adamjezek98/MPU6050-ESP8266-MicroPython
+[submodule "wireless_modules/libraries/micropyGPS"]
+	path = wireless_modules/libraries/micropyGPS
+	url = https://github.com/inmcm/micropyGPS.git
