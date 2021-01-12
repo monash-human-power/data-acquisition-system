@@ -2,6 +2,7 @@ import uasyncio as asyncio
 import machine
 from wireless_module import WirelessModule
 from co2_sensor import CO2
+from gps_sensor import GpsSensor
 
 
 # Define module number
@@ -17,9 +18,11 @@ mq135_pin = machine.Pin(34)
 my_mq135 = CO2(mq135_pin)
 my_mq135.set_rzero(RZERO)
 
+my_gps = GpsSensor(2)
+
 # Set up the wireless module
 back_module = WirelessModule(MODULE_NUM)
-sensors = [my_mq135]
+sensors = [my_mq135, my_gps]
 back_module.add_sensors(sensors)
 
 
