@@ -1,5 +1,5 @@
+import uasyncio as asyncio
 import machine
-from mpu import Mpu
 from wireless_module import WirelessModule
 from co2_sensor import CO2
 
@@ -18,10 +18,17 @@ my_mq135 = CO2(mq135_pin)
 my_mq135.set_rzero(RZERO)
 
 # Set up the wireless module
-middle_module = WirelessModule(MODULE_NUM)
+back_module = WirelessModule(MODULE_NUM)
 sensors = [my_mq135]
-middle_module.add_sensors(sensors)
+back_module.add_sensors(sensors)
 
-# Enters an infinite loop
-print("starting loop")
-middle_module.run()
+
+async def main():
+    print("Starting asyncio loop")
+    asyncio.create_task(back_module.run())
+
+    while True:
+        await asyncio.sleep(1)
+
+
+asyncio.run(main())

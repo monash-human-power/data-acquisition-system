@@ -28,6 +28,13 @@ middle_module = WirelessModule(MODULE_NUM)
 sensors = [my_mpu, my_dht, my_mq135]
 middle_module.add_sensors(sensors)
 
-# Enters an infinite loop
-print("starting loop")
-middle_module.run()
+
+async def main():
+    print("Starting asyncio loop")
+    asyncio.create_task(middle_module.run())
+
+    while True:
+        await asyncio.sleep(1)
+
+
+asyncio.run(main())
