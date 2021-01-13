@@ -23,8 +23,6 @@ class WirelessModule:
         self.sensors = []
 
         self.pub_sensor_topic = b"/v3/wireless_module/{}/data".format(module_id)
-        # FIXME: Need to verify the need for the low-battery topic
-        self.pub_low_battery = b"/v3/wireless_module/{}/low-battery".format(module_id)
         self.battery_topic = b"/v3/wireless_module/{}/battery".format(module_id)
 
         self.sub_start_topic = b"/v3/wireless_module/{}/start".format(module_id)
