@@ -41,15 +41,16 @@ class Client:
         str_data = str(data)
         return str.encode(str_data)
 
-    def publish(self, topic, data=""):
+    def publish(self, topic, data="", retain=False):
         """
         This function takes care of all of the formatting and publishes 'data' on the given topic. Also checks for any
         incoming messages
         :param topic: A string representing the topic to send 'data' to.
         :param data: A string of data to send/publish
+        :param retain:
         """
         msg = self._to_bytes_literal(data)
-        self.client.publish(topic, msg)
+        self.client.publish(topic, msg, retain=retain)
 
         self.check_for_message()
 
