@@ -79,7 +79,7 @@ if __name__ == "__main__":
     STOP_TOPIC = f'/v3/wireless_module/{MODULE_NUM}/stop'
     SUB_DATA_TOPIC = f'/v3/wireless_module/{MODULE_NUM}/data'
 
-    SUB_BATTERY_TOPIC = f"/v3/wireless-module/{MODULE_NUM}/battery"
+    SUB_BATTERY_TOPIC = f"/v3/wireless_module/{MODULE_NUM}/battery"
 
     # Broker domain name or IP address
     BROKER = args.host
