@@ -91,8 +91,8 @@ class WirelessModule:
             prev_battery_read = time.ticks_ms()
 
             while self.start_publish:
-                # Publish the battery voltage of this wireless module if 5 minutes (300 seconds) have elapsed since last
-                # battery read
+                # Publish the battery voltage of this wireless module if the given delay (refer to `battery_data_rate`)
+                # has elapsed
                 time_since_last_battery_read = time.ticks_diff(time.ticks_ms(), prev_battery_read) * ms_to_sec
                 if time_since_last_battery_read >= battery_data_rate and self.battery is not None:
                     battery_voltage = self.battery.read()
