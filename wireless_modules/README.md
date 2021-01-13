@@ -44,9 +44,10 @@ If using `picocom`:
 3) Use `mosquitto` to interact with ESP32 (see [this](https://github.com/monash-human-power/data-acquisition-system/tree/master/wireless_modules/middle_module#steps-to-test))
 4) If you find that the board is not publishing to the `mqtt` topic or is not running, try the next few steps.
 5) Use `Control-C` to open REPL
-6) To explicitly run a file, say `main.py` on the board use `import main.py`.
+6) To explicitly run a file, say `main.py` on the board use `import main.py`. Note: This only works once in a `picocom` 
+session, after that you'll need to close `picocom` and repeat from step 5.
 
-Use `Control-A` and then `Control-B` to terminate `picocom`.
+Use `Control-A` and then `Control-X` to terminate `picocom`.
 
 ## TODOs
 
