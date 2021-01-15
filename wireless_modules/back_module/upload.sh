@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Purpose: To upload specific files or all relevant middle wireless module files (default) onto the ESP32
+# Purpose: To upload specific files or all relevant back wireless module files (default) onto the ESP32
 # Requirements: Must have ampy downloaded
 
 # NOTE: 
