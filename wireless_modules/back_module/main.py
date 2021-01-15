@@ -1,3 +1,4 @@
+import time
 import uasyncio as asyncio
 import machine
 from wireless_module import WirelessModule
@@ -11,22 +12,22 @@ MODULE_NUM = "3"
 # RZERO (for calibration of MQ135) found when the sensor was first 'activated'
 RZERO = 8.62
 
-# Define all the Pin objects for each sensor
-mq135_pin = machine.Pin(34)
-
-# Instantiate sensor objects
-my_mq135 = CO2(mq135_pin)
-my_mq135.set_rzero(RZERO)
-
-my_gps = GpsSensor(2)
-
-# Set up the wireless module
-back_module = WirelessModule(MODULE_NUM)
-sensors = [my_mq135, my_gps]
-back_module.add_sensors(sensors)
-
 
 async def main():
+    # Define all the Pin objects for each sensor
+    mq135_pin = machine.Pin(34)
+
+    # Instantiate sensor objects
+    my_mq135 = CO2(mq135_pin)
+    my_mq135.set_rzero(RZERO)
+
+    my_gps = GpsSensor(2)
+
+    # Set up the wireless module
+    back_module = WirelessModule(MODULE_NUM)
+    sensors = [my_mq135, my_gps]
+    back_module.add_sensors(sensors)
+
     print("Starting asyncio loop")
     asyncio.create_task(back_module.run())
 
@@ -35,4 +36,11 @@ async def main():
         await asyncio.sleep(1)
 
 
-asyncio.run(main())
+try:
+    asyncio.run(main())
+except KeyboardInterrupt:
+    print("KeyboardInterrupt, exiting...")
+except:
+    print("Detected crash, resetting in 5 seconds...")
+    time.sleep(5)
+    machine.reset()
