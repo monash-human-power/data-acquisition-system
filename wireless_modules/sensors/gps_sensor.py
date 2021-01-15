@@ -23,7 +23,7 @@ class GpsSensor(Sensor):
         """
         Read and load data from the GPS over UART.
         """
-        uart = UART(uart_channel, 9600)
+        uart = UART(uart_channel, baudrate=9600)
         stream_reader = asyncio.StreamReader(uart)
         while True:
             res = await stream_reader.readline()
@@ -42,6 +42,7 @@ class GpsSensor(Sensor):
         datetime = "20{:02d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02.0f}".format(
             self.gps.date[2], self.gps.date[1], self.gps.date[0], *self.gps.timestamp
         )
+        kph_per_mps = 3.6
 
         return [
             {
@@ -52,7 +53,7 @@ class GpsSensor(Sensor):
                     "latitude": latitude,
                     "longitude": longitude,
                     "altitude": self.gps.altitude,
-                    "speed": self.gps.speed[2] / 3.6,
+                    "speed": self.gps.speed[2] / kph_per_mps,
                     "course": self.gps.course,
                     "datetime": datetime,
                 },
