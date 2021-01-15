@@ -16,7 +16,6 @@ parser.add_argument(
 
 old_accel_data = None
 old_gyro_data = None
-SUB_BATTERY_TOPIC = None
 
 
 def display_difference(old, new):
@@ -32,9 +31,8 @@ def on_msg_receive(client, data, message):
     # Extract data from mqtt topic
     data = message.payload.decode('utf-8')
     data_dict = json.loads(data)
-
-    if message.topic == SUB_BATTERY_TOPIC:
-        print("Battery voltage received: " + str(data_dict["percentage"]))
+    if mqtt.topic_matches_sub("/v3/wireless_module/+/battery", message.topic):
+        print("Battery voltage received: " + str(data_dict["voltage"]))
         return
 
     # Extract sensor data
