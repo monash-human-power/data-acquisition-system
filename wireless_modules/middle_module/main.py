@@ -1,3 +1,4 @@
+import uasyncio as asyncio
 import machine
 from mpu import Mpu
 from wireless_module import WirelessModule
@@ -33,6 +34,7 @@ async def main():
     print("Starting asyncio loop")
     asyncio.create_task(middle_module.run())
 
+    # Keep our code running indefinitely - the above call won't block!
     while True:
         await asyncio.sleep(1)
 

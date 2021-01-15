@@ -30,6 +30,7 @@ async def main():
     print("Starting asyncio loop")
     asyncio.create_task(back_module.run())
 
+    # Keep our code running indefinitely - the above call won't block!
     while True:
         await asyncio.sleep(1)
 
