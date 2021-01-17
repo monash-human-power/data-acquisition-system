@@ -1,3 +1,4 @@
+import sys
 import time
 import uasyncio as asyncio
 import machine
@@ -44,7 +45,8 @@ try:
     asyncio.run(main())
 except KeyboardInterrupt:
     print("KeyboardInterrupt, exiting...")
-except:
+except Exception as exc:
+    sys.print_exception(exc)
     print("Detected crash, resetting in 5 seconds...")
     time.sleep(5)
     machine.reset()
