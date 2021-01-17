@@ -36,13 +36,15 @@ class GpsSensor(Sensor):
         :return: An array containing the GPS sensor dictionary. `value` in this
         dictionary contains spacial, quality of service and time information.
         """
+        # gps.latitude[1] will be "N" if north of equator, otherwise "S" if south.
+        # gps.longitude[1] is similar. The [0] component is always positive.
         latitude = self.gps.latitude[0] * (1 if self.gps.latitude[1] == "N" else -1)
         longitude = self.gps.longitude[0] * (1 if self.gps.longitude[1] == "E" else -1)
         # ISO 8601 datetime format
         datetime = "20{:02d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02.0f}".format(
             self.gps.date[2], self.gps.date[1], self.gps.date[0], *self.gps.timestamp
         )
-        kph_per_mps = 3.6
+        kph_to_mps = 1 / 3.6
 
         return [
             {
@@ -53,7 +55,7 @@ class GpsSensor(Sensor):
                     "latitude": latitude,
                     "longitude": longitude,
                     "altitude": self.gps.altitude,
-                    "speed": self.gps.speed[2] / kph_per_mps,
+                    "speed": self.gps.speed[2] * kph_to_mps,
                     "course": self.gps.course,
                     "datetime": datetime,
                 },
