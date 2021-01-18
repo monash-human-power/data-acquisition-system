@@ -89,7 +89,7 @@ class WirelessModule:
             self.mqtt.wait_for_message()
 
             # get millisecond counter and initialise to some previous time to start data publication immediately
-            prev_data_sent = time.ticks_ms() - 1000
+            prev_data_sent = time.ticks_ms() - data_rate
             prev_battery_read = time.ticks_ms()
             prev_battery_read = prev_battery_read - battery_data_rate
             while self.start_publish:
