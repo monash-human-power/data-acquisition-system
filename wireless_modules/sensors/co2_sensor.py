@@ -1,4 +1,4 @@
-from MQ135 import MQ135
+from mq135 import MQ135
 from sensor_base import Sensor
 from machine import ADC
 
