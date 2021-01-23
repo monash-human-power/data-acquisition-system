@@ -20,15 +20,15 @@ micropy
 
 You will need to create a local version of `config.py` (`cp src/config.example.py src/config.py`) and change some settings.
 
-|Name|Description|
-|----|-----------|
-|SENSOR_ID|Wireless module ID|
-|WIFI_SSID|Name of Wifi network to connect to|
-|WIFI_PASS|Wifi password|
+| Name      | Description                        |
+| --------- | ---------------------------------- |
+| SENSOR_ID | Wireless module ID                 |
+| WIFI_SSID | Name of Wifi network to connect to |
+| WIFI_PASS | Wifi password                      |
 
 ### Flashing MicroPython to the ESP32
 
-The ESP32 needs to be flashed with the base micropython firmware. This only needs to be done once. See the [MicroPython ESP32 Getting Started guide](https://docs.micropython.org/en/latest/esp32/tutorial/intro.html) for detailed instructions.
+The ESP32 needs to be flashed with the base micropython firmware. This only needs to be done once. See the [MicroPython ESP32 Getting Started guide](https://docs.micropython.org/en/latest/esp32/tutorial/intro.html) for detailed instructions. At this point, version v1.13 of micropython (`esp32-idf3-20200902-v1.13.bin`) is required to run the modules. You can download the firmware [here](https://micropython.org/download/esp32/).
 
 ## Uploading Code
 
