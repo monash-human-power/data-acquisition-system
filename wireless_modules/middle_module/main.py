@@ -13,8 +13,8 @@ MODULE_NUM = "2"
 # RZERO (for calibration of MQ135) found when the sensor was first 'activated'
 RZERO = 8.62
 
-# Define Voltage divider factor for this module
-VOLTAGE_FACTOR = 1
+# Define Voltage divider factor for this module or leave as None to use default voltage factor
+VOLTAGE_FACTOR = None
 
 # Define all the Pin objects for each sensor
 scl_pin = machine.Pin(22)
@@ -30,7 +30,7 @@ my_mq135 = CO2(mq135_pin)
 my_mq135.set_rzero(RZERO)
 
 battery_pin = 33
-battery_reader = BatteryReader(battery_pin, VOLTAGE_FACTOR)
+battery_reader = BatteryReader(battery_pin, scale=1, voltage_factor=VOLTAGE_FACTOR)
 
 # Set up the wireless module
 middle_module = WirelessModule(MODULE_NUM, battery_reader)

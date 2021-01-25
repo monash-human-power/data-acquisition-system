@@ -3,17 +3,21 @@ from sensor_base import Sensor
 
 
 class BatteryReader(Sensor):
-    def __init__(self, pin_num=33, voltage_factor=None):
+    def __init__(self, pin_num=33, scale=1, voltage_factor=None):
         """
         Initiate the battery reader algorithm
         :param pin_num: The pin number on the ESP32 to read off the battery voltage from
         :param voltage_factor: The factor to multiply the voltage read from the given pin to get the actual battery
         voltage (Use the voltage divider formula to find this factor)
+        :param scale: Integer to scale the voltage calculation by to get the correct voltage (due to the inaccuracy of
+        ESP32 ADC pins)
         """
         # Resistor values in the voltage divider design here:
         # https://www.notion.so/Preliminary-Design-Report-2d0a06e271614ae886e7a2b3f88f93aa
         self.R1 = 33.2
         self.R2 = 100
+
+        self.scale_factor = scale
 
         # The factor to multiply the voltage at the battery pin with to get the battery voltage
         self.voltage_factor = voltage_factor
@@ -41,7 +45,7 @@ class BatteryReader(Sensor):
         voltage_at_adc_pin = (self.max_readable_voltage * adc_value) / self.adc_resolution
         print("Voltage at pin: " + str(voltage_at_adc_pin))
 
-        battery_voltage = voltage_at_adc_pin * self.voltage_factor
+        battery_voltage = voltage_at_adc_pin * self.voltage_factor * self.scale_factor
         print("Battery voltage calculated: " + str(battery_voltage))
 
         return {
