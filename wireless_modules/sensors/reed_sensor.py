@@ -15,18 +15,32 @@ MAX_REVOLUTION_TIME = 5_000_000  # us
 
 class ReedSensor(Sensor):
     def __init__(self, reed_pin: machine.Pin, tyre_circumference: float):
+        """
+        Initialise the reed switch speed sensor.
+        :param reed_pin: The pin that the reed switch is attached to.
+        :param tyre_circumference: Circumference of the tyre the reed switch measures.
+        """
         self.tyre_circumference = tyre_circumference
         self.last_trigger_time = time.ticks_us()
         self.current_speed = 0
         self.distance_travelled = 0
 
+        # Configure reed_pin as an input pulled up internally, and set up reed_callback
+        # to be called whenever pin is driven low.
         reed_pin.init(mode=machine.Pin.IN, pull=machine.Pin.PULL_UP)
         reed_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=self.reed_callback)
 
     def reed_callback(self, pin: machine.Pin):
+        """
+        Handle interrupt triggered when the reed_pin is driven low.
+        Will update the speed and distance travelled if sufficient time has passed
+        since the last interrupt.
+        :param pin: The pin that triggered the interrupt. Unused.
+        """
         now = time.ticks_us()
         diff_us = time.ticks_diff(now, self.last_trigger_time)
 
+        # Ignore short intervals between triggers, this is likely the switch bouncing.
         if diff_us < MIN_REVOLUTION_TIME:
             return
 
@@ -35,6 +49,11 @@ class ReedSensor(Sensor):
         self.current_speed = self.tyre_circumference / (diff_us * US_TO_S)
 
     def read(self):
+        """
+        Return the current speed and distance travelled of the bike.
+        :return: An array containing the velocity data and the distance data as
+            separate elements.
+        """
         now = time.ticks_us()
         diff = time.ticks_diff(now, self.last_trigger_time)
         current_speed = self.current_speed if diff < MAX_REVOLUTION_TIME else 0
@@ -45,6 +64,7 @@ class ReedSensor(Sensor):
         ]
 
     def start(self):
+        """ Reset the speed and distance travelled by the bike. """
         self.last_trigger_time = time.ticks_us()
         self.current_speed = 0
         self.distance_travelled = 0
