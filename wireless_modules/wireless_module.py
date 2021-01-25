@@ -14,16 +14,16 @@ class WirelessModule:
     """
     A class structure to read and collate data from different sensors into a dictionary and send through MQTT.
     """
-    def __init__(self, module_id):
+    def __init__(self, module_id, battery_reader=None):
         """
         Initialises the wireless module.
         :param module_id: An integer representing the wireless module number.
+        :param battery_reader: A `BatteryReader` class to read the battery voltage from
         """
         self.sensors = []
 
-        self.pub_data_topic = b"/v3/wireless_module/{}/data".format(module_id)
-        self.pub_low_battery = b"/v3/wireless_module/{}/low-battery".format(module_id)
-        self.pub_battery_level = b"/v3/wireless_module/{}/battery".format(module_id)
+        self.pub_sensor_topic = b"/v3/wireless_module/{}/data".format(module_id)
+        self.battery_topic = b"/v3/wireless_module/{}/battery".format(module_id)
 
         self.sub_start_topic = b"/v3/wireless_module/{}/start".format(module_id)
         self.sub_stop_topic = b"/v3/wireless_module/{}/stop".format(module_id)
@@ -33,6 +33,8 @@ class WirelessModule:
         # Generate a unique client_id used to set up MQTT Client
         client_id = ubinascii.hexlify(machine.unique_id())
         self.mqtt = Client(client_id, config.MQTT_BROKER)
+
+        self.battery = battery_reader
 
     def add_sensors(self, sensor_arr):
         """
@@ -68,13 +70,16 @@ class WirelessModule:
         elif topic == self.sub_stop_topic:
             self.start_publish = False
 
-    def run(self, data_rate=1):
+    def run(self, data_rate=1, battery_data_rate=300):
         """
         Start the wireless module process: Wait for start message, publish sensor data when start message
         received and continuously check for a stop message - after which the process is repeated.
         :param data_rate: Integer representing number of seconds to wait before sending data.
+        :param battery_data_rate: Integer representing number of seconds to wait before sending battery voltage data
         """
-        ms_to_sec = 1 / 1000
+        sec_to_ms = 1000
+        data_rate = data_rate * sec_to_ms
+        battery_data_rate = battery_data_rate * sec_to_ms
 
         sub_topics = [self.sub_start_topic, self.sub_stop_topic]
         self.mqtt.connect_and_subscribe(sub_topics, self.sub_cb)
@@ -83,20 +88,27 @@ class WirelessModule:
             print("waiting for message")
             self.mqtt.wait_for_message()
 
-            # get millisecond counter
-            start = time.ticks_ms()
-
+            # get millisecond counter and initialise to some previous time to start data publication immediately
+            prev_data_sent = time.ticks_ms() - data_rate
+            prev_battery_read = time.ticks_ms()
+            prev_battery_read = prev_battery_read - battery_data_rate
             while self.start_publish:
-                data = self._read_sensors()
-                print("-------Publishing--------")
+                # Publish the battery voltage of this wireless module if the given delay (refer to `battery_data_rate`)
+                # has elapsed
+                time_since_last_battery_read = time.ticks_diff(time.ticks_ms(), prev_battery_read)
+                if time_since_last_battery_read >= battery_data_rate and self.battery is not None:
+                    battery_voltage = self.battery.read()
+                    self.mqtt.publish(self.battery_topic, ujson.dumps(battery_voltage), retain=True)
+                    prev_battery_read = time.ticks_ms()
 
-                # compute time difference
-                time_taken = time.ticks_diff(time.ticks_ms(), start) * ms_to_sec
+                # Get sensor data
+                sensor_data = self._read_sensors()
 
-                time.sleep(data_rate - time_taken)
+                # compute the time difference since the last sensor data was read
+                time_taken = time.ticks_diff(time.ticks_ms(), prev_data_sent)
+                time.sleep_ms(data_rate - time_taken)
 
-                self.mqtt.publish(self.pub_data_topic, ujson.dumps(data))
-                start = time.ticks_ms()
-                print("MQTT data sent: {} on {}".format(data, self.pub_data_topic))
+                self.mqtt.publish(self.pub_sensor_topic, ujson.dumps(sensor_data))
+                prev_data_sent = time.ticks_ms()
 
                 self.mqtt.check_for_message()
