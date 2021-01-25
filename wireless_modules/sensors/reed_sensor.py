@@ -3,7 +3,14 @@ import time
 
 from sensor_base import Sensor
 
-us_to_s = 1e-6
+US_TO_S = 1e-6
+
+# Ignore anything shorter than 50ms, likely to be switch bouncing.
+# (roughly corresponds to 150 km/h)
+MIN_REVOLUTION_TIME = 50_000  # us
+# If a wheel revolution has taken longer than this duration,
+# assume speed is zero. (roughly corresponds to 1.5 km/h)
+MAX_REVOLUTION_TIME = 5_000_000  # us
 
 
 class ReedSensor(Sensor):
@@ -20,16 +27,19 @@ class ReedSensor(Sensor):
         now = time.ticks_us()
         diff_us = time.ticks_diff(now, self.last_trigger_time)
 
-        # Ignore anything shorter than 50ms (roughly corresponds to 150 km/h)
-        if diff_us < 50_000:
+        if diff_us < MIN_REVOLUTION_TIME:
             return
 
         self.last_trigger_time = now
         self.distance_travelled += self.tyre_circumference
-        self.current_speed = self.tyre_circumference / (diff_us * us_to_s)
+        self.current_speed = self.tyre_circumference / (diff_us * US_TO_S)
 
     def read(self):
+        now = time.ticks_us()
+        diff = time.ticks_diff(now, self.last_trigger_time)
+        current_speed = self.current_speed if diff < MAX_REVOLUTION_TIME else 0
+
         return [
-            {"type": "reedVelocity", "value": self.current_speed},
+            {"type": "reedVelocity", "value": current_speed},
             {"type": "reedDistance", "value": self.distance_travelled},
         ]
