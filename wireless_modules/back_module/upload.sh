@@ -20,6 +20,7 @@ files=(
     "../sensors/sensor_base.py"
     "../sensors/co2_sensor.py"
     "../sensors/gps_sensor.py"
+    "../sensors/reed_sensor.py"
     "../libraries/abc.py"
     "../libraries/MQ135/mq135.py"
     "../libraries/micropyGPS/micropyGPS.py"
