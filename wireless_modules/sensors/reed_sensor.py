@@ -43,3 +43,8 @@ class ReedSensor(Sensor):
             {"type": "reedVelocity", "value": current_speed},
             {"type": "reedDistance", "value": self.distance_travelled},
         ]
+
+    def start(self):
+        self.last_trigger_time = time.ticks_us()
+        self.current_speed = 0
+        self.distance_travelled = 0

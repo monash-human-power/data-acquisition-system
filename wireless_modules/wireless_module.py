@@ -72,12 +72,21 @@ class WirelessModule:
             self.start_publish = False
 
     async def wait_for_start(self):
+        """
+        Asynchronously blocks until publishing is started.
+        If at the time of calling the function the module is not publishing,
+        each sensor will be told to start when publishing begins.
+        """
         if not self.start_publish:
-            # Print message for first loop
             print("Waiting for start message...")
-        while not self.start_publish:
-            self.mqtt.check_for_message()
-            await asyncio.sleep_ms(100)
+
+            while not self.start_publish:
+                self.mqtt.check_for_message()
+                await asyncio.sleep_ms(100)
+
+            # Start message received, tell sensors to start
+            for sensor in self.sensors:
+                sensor.start()
 
     async def run(self, data_rate=1):
         """
