@@ -65,6 +65,9 @@ class ReedSensor(Sensor):
 
     def start(self):
         """ Reset the speed and distance travelled by the bike. """
+        # Disable IRQ temporarily to avoid race conditions
+        irq_state = machine.disable_irq()
         self.last_trigger_time = time.ticks_us()
         self.current_speed = 0
         self.distance_travelled = 0
+        machine.enable_irq(irq_state)
