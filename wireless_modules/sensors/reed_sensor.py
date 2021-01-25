@@ -14,16 +14,16 @@ MAX_REVOLUTION_TIME = 5_000_000  # us
 
 
 class ReedSensor(Sensor):
-    def __init__(self, reed_pin: int, tyre_circumference: float):
+    def __init__(self, reed_pin: machine.Pin, tyre_circumference: float):
         self.tyre_circumference = tyre_circumference
         self.last_trigger_time = time.ticks_us()
         self.current_speed = 0
         self.distance_travelled = 0
 
-        pin = machine.Pin(reed_pin, machine.Pin.IN, machine.Pin.PULL_UP)
-        pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=self.reed_callback)
+        reed_pin.init(mode=machine.Pin.IN, pull=machine.Pin.PULL_UP)
+        reed_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=self.reed_callback)
 
-    def reed_callback(self, pin):
+    def reed_callback(self, pin: machine.Pin):
         now = time.ticks_us()
         diff_us = time.ticks_diff(now, self.last_trigger_time)
 
