@@ -7,23 +7,23 @@ The Data Acquisition System (DAS) allows us to collect and store data from vario
 This repository contains all the code related to Monash Human Power's Data Acquisition System (DAS).
 
 ## Getting Started
-
-Type `git clone https://github.com/Monash-Human-Power/MHP_DAS.git --recurse-submodules` on the command line to download the whole repository and submodules.
+Type `git clone https://github.com/monash-human-power/data-acquisition-system.git --recurse-submodules` on the command line to download the whole repository and submodules.
 
 ## Contents
 
-### DAS
+### [DAS](/DAS/)
 Stores the scripts for the DAS.
 
-### ant_plus_sensor
+### [Ant Plus Sensor](/ant_plus_sensor/)
 Stores the scripts for the ant plus sensors.
 
-### Bridge
-
+### [Bridge](/Bridge/)
 The MQTT radio bridge, for connecting the MQTT brokers of the bike and chase car.
 
-## Contributors ✨
+### [Wireless Modules](/wireless_modules/)
+Stores the scripts for the wireless modules.
 
+## Contributors ✨
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
