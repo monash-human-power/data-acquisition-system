@@ -86,7 +86,7 @@ class WirelessModule:
 
             # Start message received, tell sensors to start
             for sensor in self.sensors:
-                sensor.start()
+                sensor.on_start()
 
     async def run(self, data_rate=1):
         """
