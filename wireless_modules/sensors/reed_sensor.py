@@ -7,10 +7,10 @@ US_TO_S = 1e-6
 
 # Ignore anything shorter than 50ms, likely to be switch bouncing.
 # (roughly corresponds to 150 km/h)
-MIN_REVOLUTION_TIME = 50_000  # us
+MIN_REVOLUTION_TIME = 50_000  # microseconds
 # If a wheel revolution has taken longer than this duration,
 # assume speed is zero. (roughly corresponds to 1.5 km/h)
-MAX_REVOLUTION_TIME = 5_000_000  # us
+MAX_REVOLUTION_TIME = 5_000_000  # microseconds
 
 
 class ReedSensor(Sensor):
