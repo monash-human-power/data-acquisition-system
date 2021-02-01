@@ -44,7 +44,7 @@ async def main():
     back_module.add_sensors(sensors)
 
     print("Starting asyncio loop")
-    asyncio.create_task(back_module.run(battery_data_rate=1))
+    asyncio.create_task(back_module.run())
 
     # Keep our code running indefinitely - the above call won't block!
     while True:
