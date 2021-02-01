@@ -1,19 +1,22 @@
+import uasyncio as asyncio
 import machine
 import ubinascii
 import ujson
 import time
+
 from mqtt_client import Client
 
 try:
     import config
 except FileNotFoundError:
-    print('Error importing config.py, ensure a local version of config.py exists')
+    print("Error importing config.py, ensure a local version of config.py exists")
 
 
 class WirelessModule:
     """
     A class structure to read and collate data from different sensors into a dictionary and send through MQTT.
     """
+
     def __init__(self, module_id, battery_reader=None):
         """
         Initialises the wireless module.
@@ -22,7 +25,7 @@ class WirelessModule:
         """
         self.sensors = []
 
-        self.pub_sensor_topic = b"/v3/wireless_module/{}/data".format(module_id)
+        self.pub_data_topic = b"/v3/wireless_module/{}/data".format(module_id)
         self.battery_topic = b"/v3/wireless_module/{}/battery".format(module_id)
 
         self.sub_start_topic = b"/v3/wireless_module/{}/start".format(module_id)
@@ -70,7 +73,15 @@ class WirelessModule:
         elif topic == self.sub_stop_topic:
             self.start_publish = False
 
-    def run(self, data_rate=1, battery_data_rate=300):
+    async def wait_for_start(self):
+        if not self.start_publish:
+            # Print message for first loop
+            print("Waiting for start message...")
+        while not self.start_publish:
+            self.mqtt.check_for_message()
+            await asyncio.sleep_ms(100)
+
+    async def run(self, data_rate=1, battery_data_rate=300):
         """
         Start the wireless module process: Wait for start message, publish sensor data when start message
         received and continuously check for a stop message - after which the process is repeated.
@@ -84,31 +95,32 @@ class WirelessModule:
         sub_topics = [self.sub_start_topic, self.sub_stop_topic]
         self.mqtt.connect_and_subscribe(sub_topics, self.sub_cb)
 
+        # get millisecond counter and initialise to some previous time to start data publication immediately
+        prev_data_sent = time.ticks_ms() - data_rate
+        prev_battery_read = time.ticks_ms() - battery_data_rate
+
         while True:
-            print("waiting for message")
-            self.mqtt.wait_for_message()
+            await self.wait_for_start()
 
-            # get millisecond counter and initialise to some previous time to start data publication immediately
-            prev_data_sent = time.ticks_ms() - data_rate
-            prev_battery_read = time.ticks_ms()
-            prev_battery_read = prev_battery_read - battery_data_rate
-            while self.start_publish:
-                # Publish the battery voltage of this wireless module if the given delay (refer to `battery_data_rate`)
-                # has elapsed
-                time_since_last_battery_read = time.ticks_diff(time.ticks_ms(), prev_battery_read)
-                if time_since_last_battery_read >= battery_data_rate and self.battery is not None:
-                    battery_voltage = self.battery.read()
-                    self.mqtt.publish(self.battery_topic, ujson.dumps(battery_voltage), retain=True)
-                    prev_battery_read = time.ticks_ms()
+            # Compute the time difference since the last sensor data was read
+            time_taken = time.ticks_diff(time.ticks_ms(), prev_data_sent)
+            await asyncio.sleep_ms(data_rate - time_taken)
+            prev_data_sent = time.ticks_ms()
 
-                # Get sensor data
-                sensor_data = self._read_sensors()
+            # Get and publish sensor data
+            sensor_data = self._read_sensors()
 
-                # compute the time difference since the last sensor data was read
-                time_taken = time.ticks_diff(time.ticks_ms(), prev_data_sent)
-                time.sleep_ms(data_rate - time_taken)
+            self.mqtt.publish(self.pub_data_topic, ujson.dumps(sensor_data))
+            print("MQTT data sent: {} on {}".format(sensor_data, self.pub_data_topic))
 
-                self.mqtt.publish(self.pub_sensor_topic, ujson.dumps(sensor_data))
-                prev_data_sent = time.ticks_ms()
+            # Publish the battery voltage of this wireless module if the given delay (refer to `battery_data_rate`)
+            # has elapsed
+            ms_since_battery_read = time.ticks_diff(time.ticks_ms(), prev_battery_read)
+            if ms_since_battery_read >= battery_data_rate and self.battery is not None:
+                battery_voltage = self.battery.read()
+                self.mqtt.publish(
+                    self.battery_topic, ujson.dumps(battery_voltage), retain=True
+                )
+                prev_battery_read = time.ticks_ms()
 
-                self.mqtt.check_for_message()
+            self.mqtt.check_for_message()
