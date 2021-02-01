@@ -1,5 +1,4 @@
 #!/bin/sh
-
 # Purpose: To upload specific files or all relevant middle wireless module files (default) onto the ESP32
 # Requirements: Must have ampy downloaded
 
@@ -24,6 +23,7 @@ files=(
     "../libraries/abc.py"
     "../libraries/MQ135/mq135.py"
     "../libraries/MPU6050-ESP8266-MicroPython/mpu6050.py"
+    "../battery_reader.py"
 )
 
 # Check that the port name is specified in the argument 
