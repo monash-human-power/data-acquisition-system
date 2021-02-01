@@ -17,6 +17,7 @@ files=(
     "../wireless_module.py"
     "../boot.py"
     "../mqtt_client.py"
+    "../battery_reader.py"
     "../sensors/sensor_base.py"
     "../sensors/co2_sensor.py"
     "../sensors/gps_sensor.py"

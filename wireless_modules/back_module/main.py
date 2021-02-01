@@ -6,6 +6,7 @@ from wireless_module import WirelessModule
 from co2_sensor import CO2
 from gps_sensor import GpsSensor
 from reed_sensor import ReedSensor
+from battery_reader import BatteryReader
 
 
 # Define module number
@@ -16,6 +17,9 @@ RZERO = 8.62
 
 # Circumference of a 700x28 bike wheel in meters.
 WHEEL_CIRCUMFERENCE = 2.136
+
+# Define Voltage divider factor for this module or leave as None to use default voltage factor
+VOLTAGE_FACTOR = None
 
 
 async def main():
@@ -31,13 +35,16 @@ async def main():
 
     my_reed = ReedSensor(reed_pin, WHEEL_CIRCUMFERENCE)
 
+    battery_pin = 33
+    battery_reader = BatteryReader(battery_pin, scale=1, voltage_factor=VOLTAGE_FACTOR)
+
     # Set up the wireless module
-    back_module = WirelessModule(MODULE_NUM)
+    back_module = WirelessModule(MODULE_NUM, battery_reader)
     sensors = [my_mq135, my_gps, my_reed]
     back_module.add_sensors(sensors)
 
     print("Starting asyncio loop")
-    asyncio.create_task(back_module.run())
+    asyncio.create_task(back_module.run(battery_data_rate=1))
 
     # Keep our code running indefinitely - the above call won't block!
     while True:
