@@ -5,6 +5,7 @@ class Sensor:
     """
     Abstract base class for all sensors
     """
+
     def __init__(self):
         pass
 
@@ -16,4 +17,8 @@ class Sensor:
         with the sensor values - in any format suitable).
         :return:
         """
-        pass
+
+    def on_start(self):
+        """
+        Performs any actions required by the sensor when the module starts publishing.
+        """

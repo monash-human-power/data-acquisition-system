@@ -5,6 +5,8 @@ import machine
 from wireless_module import WirelessModule
 from co2_sensor import CO2
 from gps_sensor import GpsSensor
+from reed_sensor import ReedSensor
+from battery_reader import BatteryReader
 
 
 # Define module number
@@ -13,10 +15,17 @@ MODULE_NUM = "3"
 # RZERO (for calibration of MQ135) found when the sensor was first 'activated'
 RZERO = 8.62
 
+# Circumference of a 700x28 bike wheel in meters.
+WHEEL_CIRCUMFERENCE = 2.136
+
+# Define Voltage divider factor for this module or leave as None to use default voltage factor
+VOLTAGE_FACTOR = None
+
 
 async def main():
     # Define all the Pin objects for each sensor
     mq135_pin = machine.Pin(34)
+    reed_pin = machine.Pin(5)
 
     # Instantiate sensor objects
     my_mq135 = CO2(mq135_pin)
@@ -24,9 +33,14 @@ async def main():
 
     my_gps = GpsSensor(2)
 
+    my_reed = ReedSensor(reed_pin, WHEEL_CIRCUMFERENCE)
+
+    battery_pin = 33
+    battery_reader = BatteryReader(battery_pin, scale=1, voltage_factor=VOLTAGE_FACTOR)
+
     # Set up the wireless module
-    back_module = WirelessModule(MODULE_NUM)
-    sensors = [my_mq135, my_gps]
+    back_module = WirelessModule(MODULE_NUM, battery_reader)
+    sensors = [my_mq135, my_gps, my_reed]
     back_module.add_sensors(sensors)
 
     print("Starting asyncio loop")
