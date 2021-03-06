@@ -1,8 +1,8 @@
-import time
 import argparse
 import json
-import paho.mqtt.client as mqtt
+import time
 
+import paho.mqtt.client as mqtt
 from mhp import topics
 
 from das.utils import MockSensor
@@ -54,17 +54,19 @@ sensors = {
     "temperature": MockSensor(25),
     "humidity": MockSensor(85),
     "reedVelocity": MockSensor(50),
-    "reedDistance": MockSensor(1000),
+    "reedDistance": MockSensor(1000, increment=True, percent_range=0.05),
     "battery": MockSensor(80),
     "accelerometer": MockSensor(("x", 90), ("y", 90), ("z", 90)),
     "gyroscope": MockSensor(("x", 90), ("y", 90), ("z", 90)),
     "gps": MockSensor(
         ("speed", 50),
         ("satellites", 10),
-        ("latitude", 25),
-        ("longitude", 25),
+        ("pdop", 10),
+        ("latitude", -37),
+        ("longitude", 145),
         ("altitude", 50),
         ("course", 0),
+        ("datetime", "2017-11-28 23:55:59.342380")
     ),
     "power": MockSensor(200, percent_range=0.8),
     "cadence": MockSensor(90, percent_range=0.2),
