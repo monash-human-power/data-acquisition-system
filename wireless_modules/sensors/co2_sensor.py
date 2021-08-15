@@ -82,22 +82,25 @@ class CO2(Sensor):
         """
         self._read_temp_humidity()
 
+        ppm = 0
+
         # If the MQ135 is not heated up, the method to extract PPM will crash with a ValueError
         try:
-            if self.temperature is not None:
-                ppm = self.mq135.get_corrected_ppm(self.temperature, self.humidity)
+            total = 0
+            samples = 5
+            for _ in range(samples):
+                if self.temperature is not None:
+                    total += self.mq135.get_corrected_ppm(
+                        self.temperature, self.humidity
+                    )
+                else:
+                    total += self.mq135.get_ppm()
 
-                print("\t MQ135 Corrected PPM: " + str(ppm))
-
-            else:
-                ppm = self.mq135.get_ppm()
-
-                print("\t MQ135 PPM: " + str(ppm) + "\t rzero: " + str(self.mq135.get_rzero()))
+            ppm = total / samples
         except ValueError:
             # Since ppm cannot reasonably be 0, this can be used to mark that the sensor has not yet heated up
-            ppm = 0
+            pass
 
-        return [{
-            "type": "co2",
-            "value": ppm
-        }]
+        print("\t MQ135 PPM: " + str(ppm) + "\t rzero: " + str(self.mq135.get_rzero()))
+
+        return [{"type": "co2", "value": ppm}]
