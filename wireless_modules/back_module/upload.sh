@@ -22,10 +22,12 @@ files=(
     "../sensors/co2_sensor.py"
     "../sensors/dht_sensor.py"
     "../sensors/gps_sensor.py"
+    "../sensors/mpu_sensor.py"
     "../sensors/reed_sensor.py"
     "../libraries/abc.py"
     "../libraries/MQ135/mq135.py"
     "../libraries/micropyGPS/micropyGPS.py"
+    "../libraries/MPU6050-ESP8266-MicroPython/mpu6050.py"
 )
 
 # Check that the port name is specified in the argument 

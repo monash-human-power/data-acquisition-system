@@ -6,6 +6,7 @@ from wireless_module import WirelessModule
 from co2_sensor import CO2
 from dht_sensor import DhtSensor
 from gps_sensor import GpsSensor
+from mpu_sensor import MpuSensor
 from reed_sensor import ReedSensor
 from battery_reader import BatteryReader
 
@@ -27,8 +28,10 @@ SCALE_FACTOR = 4.13 / 4.64
 async def main():
     # Define all the Pin objects for each sensor
     dht_pin = machine.Pin(4)
-    mq135_pin = machine.Pin(34)
     reed_pin = machine.Pin(5)
+    sda_pin = machine.Pin(21)
+    scl_pin = machine.Pin(22)
+    mq135_pin = machine.Pin(34)
 
     # Instantiate sensor objects
     my_dht = DhtSensor(dht_pin)
@@ -40,6 +43,9 @@ async def main():
 
     my_gps = GpsSensor(2)
 
+    my_mpu = MpuSensor(scl_pin, sda_pin, 20)
+    my_mpu.calibrate()
+
     battery_pin = 32
     battery_reader = BatteryReader(
         battery_pin, scale=SCALE_FACTOR, voltage_factor=VOLTAGE_FACTOR
@@ -47,7 +53,7 @@ async def main():
 
     # Set up the wireless module
     back_module = WirelessModule(MODULE_NUM, battery_reader)
-    sensors = [my_dht, my_mq135, my_reed, my_gps]
+    sensors = [my_dht, my_mq135, my_reed, my_gps, my_mpu]
     back_module.add_sensors(sensors)
 
     print("Starting asyncio loop")
