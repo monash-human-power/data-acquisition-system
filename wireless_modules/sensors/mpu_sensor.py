@@ -3,7 +3,7 @@ from mpu6050 import accel
 from sensor_base import Sensor
 
 
-class Mpu(Sensor):
+class MpuSensor(Sensor):
     def __init__(self, scl_pin, sda_pin, samples=10):
         """
         Initialise the MPU6050 sensor to read accelerometer and gyroscope data.
@@ -76,24 +76,21 @@ class Mpu(Sensor):
         """
         lsb_to_g = 16384
         lsb_to_deg = 131
-        all_data = self.get_smoothed_values(n_samples=self.samples, calibration=self.calibrated_values)
+        all_data = self.get_smoothed_values(
+            n_samples=self.samples, calibration=self.calibrated_values
+        )
         accel_values = {
             "x": all_data["AcX"] / lsb_to_g,
             "y": all_data["AcY"] / lsb_to_g,
-            "z": all_data["AcZ"] / lsb_to_g
+            "z": all_data["AcZ"] / lsb_to_g,
         }
         gyro_values = {
             "x": all_data["GyX"] / lsb_to_deg,
             "y": all_data["GyY"] / lsb_to_deg,
-            "z": all_data["GyZ"] / lsb_to_deg
+            "z": all_data["GyZ"] / lsb_to_deg,
         }
 
-        return [{
-            "type": "accelerometer",
-            "value": accel_values
-            },
-            {
-            "type": "gyroscope",
-            "value": gyro_values
-            }]
-
+        return [
+            {"type": "accelerometer", "value": accel_values},
+            {"type": "gyroscope", "value": gyro_values},
+        ]

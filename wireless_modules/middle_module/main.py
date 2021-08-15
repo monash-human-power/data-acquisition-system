@@ -4,7 +4,7 @@ import sys
 import time
 import uasyncio as asyncio
 import machine
-from mpu import Mpu
+from mpu_sensor import MpuSensor
 from wireless_module import WirelessModule
 from co2_sensor import CO2
 from dht_sensor import DhtSensor
@@ -28,7 +28,7 @@ async def main():
     mq135_pin = machine.Pin(34)
 
     # Instantiate sensor objects
-    my_mpu = Mpu(scl_pin, sda_pin, 20)
+    my_mpu = MpuSensor(scl_pin, sda_pin, 20)
     my_mpu.calibrate()
     my_dht = DhtSensor(dht_pin)
     my_mq135 = CO2(mq135_pin)
