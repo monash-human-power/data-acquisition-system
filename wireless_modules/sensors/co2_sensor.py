@@ -12,8 +12,14 @@ class CO2(Sensor):
         # Change ADC resolution to 10 bits consistent with the ESP8266 in order to use the MQ135 library
         adc = ADC(pin)
         adc.width(ADC.WIDTH_10BIT)
+        adc.atten(ADC.ATTN_11DB)
 
-        self.mq135 = MQ135(pin)
+        self.mq135 = MQ135(adc)
+        # Replacing the load resistor on the MQ135 dev board
+        # leads to better measurements.
+        # See https://blog.robberg.net/mq-135-arduino/
+        self.mq135.RLOAD = 22
+
         self.dht = None
         self.temperature = None
         self.humidity = None
