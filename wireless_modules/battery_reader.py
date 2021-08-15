@@ -42,17 +42,17 @@ class BatteryReader(Sensor):
         adc_value = self.adc_battery_pin.read()
         print("ADC value for the battery pin: " + str(adc_value))
 
-        voltage_at_adc_pin = (self.max_readable_voltage * adc_value) / self.adc_resolution
+        voltage_at_adc_pin = (
+            self.max_readable_voltage * adc_value
+        ) / self.adc_resolution
         print("Voltage at pin: " + str(voltage_at_adc_pin))
 
         battery_voltage = voltage_at_adc_pin * self.voltage_factor * self.scale_factor
         print("Battery voltage calculated: " + str(battery_voltage))
 
-        return {
-            "voltage": battery_voltage
-        }
+        return {"voltage": battery_voltage}
 
 
-if __name__=='__main__':
+if __name__ == "__main__":
     my_battery_reader = BatteryReader()
     print(my_battery_reader.read())
