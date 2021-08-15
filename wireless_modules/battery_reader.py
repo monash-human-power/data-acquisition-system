@@ -22,7 +22,7 @@ class BatteryReader(Sensor):
         # The factor to multiply the voltage at the battery pin with to get the battery voltage
         self.voltage_factor = voltage_factor
         if voltage_factor is None:
-            self.voltage_factor = (self.R1 + self.R2) / self.R1
+            self.voltage_factor = (self.R1 + self.R2) / self.R2
 
         self.battery_pin = Pin(pin_num)
 
