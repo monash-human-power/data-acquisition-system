@@ -20,6 +20,7 @@ files=(
     "../battery_reader.py"
     "../sensors/sensor_base.py"
     "../sensors/co2_sensor.py"
+    "../sensors/dht_sensor.py"
     "../sensors/gps_sensor.py"
     "../sensors/reed_sensor.py"
     "../libraries/abc.py"
