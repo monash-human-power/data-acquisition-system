@@ -6,7 +6,7 @@ import atexit
 import paho.mqtt.client as mqtt
 from mhp import topics
 
-from das.utils import MockSensor
+from utils import MockSensor
 
 parser = argparse.ArgumentParser(
     description="MQTT wireless module test script that sends fake data",
@@ -185,8 +185,12 @@ def publish(client, topic, data={}):
     json_data = json.dumps(data)
 
     # Publish the data over MQTT
-    client.publish(str(topic), json_data)
-    print(topic, "--> ", json_data)
+    # count = 0
+    # client.publish(str(topic), json_data)
+    # if count > 5:
+    #     count = 0
+    #     print(topic, "--> ", json_data)
+    # count += 1
 
 
 def start_modules(args):
