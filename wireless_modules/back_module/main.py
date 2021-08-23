@@ -26,7 +26,15 @@ def battery_calibration(voltage):
     return 0.710 * voltage + 0.927
 
 
+# Pins for R, G, B channels of status LED
+STATUS_PINS = [14, 12, 13]
+
+
 async def main():
+    for pin_num in STATUS_PINS:
+        pin = machine.Pin(pin_num, machine.Pin.OUT)
+        pin.off()
+
     # Define all the Pin objects for each sensor
     dht_pin = machine.Pin(4)
     reed_pin = machine.Pin(5)
