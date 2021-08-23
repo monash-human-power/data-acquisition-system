@@ -20,9 +20,10 @@ RZERO = 6.1
 # Circumference of a 700x28 bike wheel in meters.
 WHEEL_CIRCUMFERENCE = 2.136
 
-# Define Voltage divider factor for this module or leave as None to use default voltage factor
-VOLTAGE_FACTOR = None
-SCALE_FACTOR = 4.13 / 4.64
+# Define a function to map measured voltages to "true" voltages.
+# See util/battery_lin_reg.py
+def battery_calibration(voltage):
+    return 0.710 * voltage + 0.927
 
 
 async def main():
@@ -47,9 +48,7 @@ async def main():
     my_mpu.calibrate()
 
     battery_pin = 32
-    battery_reader = BatteryReader(
-        battery_pin, scale=SCALE_FACTOR, voltage_factor=VOLTAGE_FACTOR
-    )
+    battery_reader = BatteryReader(battery_pin, battery_calibration)
 
     # Set up the wireless module
     back_module = WirelessModule(MODULE_NUM, battery_reader)
