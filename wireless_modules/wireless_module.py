@@ -104,9 +104,17 @@ class WirelessModule:
         sub_topics = [self.sub_start_topic, self.sub_stop_topic]
         self.mqtt.connect_and_subscribe(sub_topics, self.sub_cb)
 
+        # TODO: Publish battery voltage continuously while idle.
+        # Right now, will only publish once until logging starts.
+        if self.battery is not None:
+            battery_voltage = self.battery.read()
+            self.mqtt.publish(
+                self.battery_topic, ujson.dumps(battery_voltage), retain=True
+            )
+
         # get millisecond counter and initialise to some previous time to start data publication immediately
         prev_data_sent = time.ticks_ms() - data_rate
-        prev_battery_read = time.ticks_ms() - battery_data_rate
+        prev_battery_read = time.ticks_ms()
 
         while True:
             await self.wait_for_start()
