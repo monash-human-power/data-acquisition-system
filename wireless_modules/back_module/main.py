@@ -15,6 +15,9 @@ from battery_reader import BatteryReader
 MODULE_NUM = "3"
 
 # RZERO (for calibration of MQ135) found when the sensor was first 'activated'
+# This can be found by allowing the CO2 reading to stabilise in an atmosphere
+# known to be closish to 400ppm (i.e. outside) and reading the printed rzero
+# on serial.
 RZERO = 6.1
 
 # Circumference of a 700x28 bike wheel in meters.
