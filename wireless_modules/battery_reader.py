@@ -7,9 +7,8 @@ class BatteryReader(Sensor):
         """
         Initiate the battery reader algorithm
         :param pin_num: The pin number on the ESP32 to read off the battery voltage from
-        :param voltage_factor: The factor to multiply the voltage read from the given pin to get the actual battery
-        voltage (Use the voltage divider formula to find this factor)
-        :param scale: Integer to scale the voltage calculation by to get the correct voltage (due to the inaccuracy of
+        :param calibration_func: A function to transform this class's best guess at the
+        battery voltage into something closer. Accepts and returns a float.
         ESP32 ADC pins)
         """
         # Resistor values in the voltage divider design here:
