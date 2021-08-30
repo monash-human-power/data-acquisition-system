@@ -18,8 +18,8 @@ class Recorder:
 
     Parameters
     ----------
-    csv_folder_path : str
-        Filepath of the folder where the logs are to be stored
+    sqlite_database_path : str
+        Filepath to the *.db file that sqlite uses to save data
     topics : List(str)
         A list containing the topic strings that are to be subscribed to
     broker_address : str
@@ -33,19 +33,17 @@ class Recorder:
         List of topic names
     _recording : bool
         Whether the Recorder object is currently recording or not
-    _START_TIME : `time`
-        The current time used to produce time deltas
-    _LOG_FILE : `File`
-        Open log file object that can be written to
-    _LOG_FILE_WRITER : `csv.DictWriter`
-        Csv writter object that is used to write the data to the _LOG_FILE file
+    _LAST_RECORDED_TIME : `time`
+        The last recorded time so that new time deltas will always count forward and not start from 0 again
+    _CONN : `sqlite3`
+        Connection object that updates the database file located at sqlite_database_path
     _CLIENT : `paho.mqtt.client`
         MQTT client that connects to the broker and recives the messages
     """
 
     def __init__(
         self,
-        sqlite_database: str = "MQTT_log.db",
+        sqlite_database_path: str = "MQTT_log.db",
         topics: list = ["#"],
         broker_address: str = "localhost",
         verbose: bool = False,
@@ -56,7 +54,7 @@ class Recorder:
 
         # Connect to sqlite database
         # check_same_thread needs to be false as the MQTT callbacks run on a different thread
-        self._CONN = sqlite3.connect(sqlite_database, check_same_thread=False)
+        self._CONN = sqlite3.connect(sqlite_database_path, check_same_thread=False)
 
         # Check to see if the logging database has been initiated
         contains_LOG_table = self._CONN.execute(
@@ -130,7 +128,7 @@ class Recorder:
                 logging.error(f"{type(e)}: {e}")
 
     def log(self, mqtt_topic: str, message: str) -> None:
-        """Logs the time delta and message data to self._LOG_FILE in the csv format.
+        """Logs the time delta and message data to the local sqlite database.
 
         Parameters
         ----------
@@ -160,11 +158,12 @@ class Recorder:
         logging.info(f"Logging started!")
 
     def stop(self) -> None:
-        """Graceful exit for closing the file and stopping the MQTT client."""
+        """Graceful exit for closing the database connection and stopping the MQTT client."""
         self._recording = False
         self._CLIENT.loop_stop()
         self._CONN.close()
-        logging.info(f"Data saved to sqlite database")
+        logging.info(f"Connection to database closed")
+        logging.info(f"All data has been saved to the sqlite database")
 
 
 class Playback:
