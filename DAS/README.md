@@ -9,7 +9,7 @@ These steps assume that you are in the data-acquisition-system root directory an
 1. `cd DAS`
 2. `poetry install`
 3. `poetry shell`
-4. Run any DAS command, _e.g._ `python -m das.V3_mqtt_recorder`
+4. Run any DAS command, _e.g._ `python -m das.V3_mqtt_recorder -v`
 
 ## Run Tests
 These steps assume that you have done the basic setup.
@@ -47,13 +47,13 @@ This command line tool reads a raw csv log created from the V3 MQTT Recorder too
 ### Usage
 ```
 # General command
-python -m das.V3_mqtt_playback [FILEPATH] [FLAGS]
+python -m das.V3_mqtt_playback [FLAGS]
 
-# Playback of 1_log.csv
-python -m das.V3_mqtt_playback ./das/csv_data/1_log.csv  -v
+# Playback of all logs
+python -m das.V3_mqtt_playback -v
 
-# Playback of 2_log.csv at 60x speed 
-python -m das.V3_mqtt_playback ./das/csv_data/2_log.csv -s 60 -v
+# Playback of all logs at 60x speed 
+python -m das.V3_mqtt_playback -s 60 -v
 ```
 
 | Flag                          | Default Value |               Info               |
