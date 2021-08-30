@@ -171,8 +171,8 @@ class Playback:
 
     Parameters
     ----------
-    filepath : str
-        Filepath of the log file for playback
+    sqlite_database_path : str
+        Filepath to the *.db file that sqlite uses to save data
     broker_address : str
         The IP address that the MQTT broker lives on
     verbose : bool
@@ -189,28 +189,26 @@ class Playback:
     """
 
     def __init__(
-        self, filepath: str, broker_address: str = "localhost", verbose: bool = False
+        self,
+        sqlite_database_path: str = "MQTT_log.db",
+        broker_address: str = "localhost",
+        verbose: bool = False,
     ) -> None:
 
         # If set to verbose print info messages
         if verbose:
             logging.getLogger().setLevel(logging.INFO)
 
-        # Read in data from log file and save each row in _log_data list
-        log_file = open(filepath, "r")
-        csv_reader = csv.DictReader(
-            log_file,
-            delimiter=CsvConfig["delimiter"],
-            quotechar=CsvConfig["quotechar"],
-            quoting=CsvConfig["quoting"],
-            skipinitialspace=CsvConfig["skipinitialspace"],
-        )
+        # Connect to sqlite database and get all records from the LOG table
+        conn = sqlite3.connect(sqlite_database_path)
+        all_log_records = conn.execute("""SELECT * FROM LOG""").fetchall()
 
+        # Convert list of tuples in list of dicts
         self._log_data = []
-        for row in csv_reader:
-            # Convert time delta to float
-            row["time_delta"] = float(row["time_delta"])
-            self._log_data.append(row)
+        for record in all_log_records:
+            self._log_data.append(
+                {"time_delta": record[0], "mqtt_topic": record[1], "message": record[2]}
+            )
 
         # Connect to MQTT broker
         self._CLIENT = mqtt.Client()
@@ -241,7 +239,7 @@ class Playback:
         # Run the event loop to issue out all of the MQTT publishes
         asyncio.run(self._publish(speed))
 
-    async def _publish(self, speed) -> None:
+    async def _publish(self, speed: float) -> None:
         """Async function that collects all the necessary publish functions and gathers them to then be run by the
         event loop.
 
