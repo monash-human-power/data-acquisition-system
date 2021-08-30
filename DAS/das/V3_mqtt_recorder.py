@@ -40,6 +40,24 @@ parser.add_argument(
     help="""Length of time to record data (duration)""",
 )
 
+parser.add_argument(
+    "-u",
+    "--username",
+    action="store",
+    type=str,
+    default=None,
+    help="""Username for MQTT broker""",
+)
+
+parser.add_argument(
+    "-p",
+    "--password",
+    action="store",
+    type=str,
+    default=None,
+    help="""Password for MQTT broker""",
+)
+
 if __name__ == "__main__":
     CURRENT_FILEPATH = os.path.dirname(__file__)
     MQTT_LOG_FILEPATH = os.path.join(CURRENT_FILEPATH, "MQTT_log.db")
@@ -55,6 +73,8 @@ if __name__ == "__main__":
             topics=args.topics,
             broker_address=args.host,
             verbose=args.verbose,
+            username=args.username,
+            password=args.password,
         )
 
         # Start the logger

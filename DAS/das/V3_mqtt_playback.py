@@ -35,6 +35,24 @@ parser.add_argument(
     help="""Verbose logging output""",
 )
 
+parser.add_argument(
+    "-u",
+    "--username",
+    action="store",
+    type=str,
+    default=None,
+    help="""Username for MQTT broker""",
+)
+
+parser.add_argument(
+    "-p",
+    "--password",
+    action="store",
+    type=str,
+    default=None,
+    help="""Password for MQTT broker""",
+)
+
 if __name__ == "__main__":
     # Read command line arguments
     args = parser.parse_args()
@@ -48,6 +66,8 @@ if __name__ == "__main__":
             sqlite_database_path=MQTT_LOG_FILEPATH,
             broker_address=args.host,
             verbose=args.verbose,
+            username=args.username,
+            password=args.password,
         )
 
         main_playback.play(speed=args.speed)

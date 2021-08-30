@@ -225,7 +225,6 @@ class Playback:
         if username is not None and password is not None:
             self._CLIENT.username_pw_set(username, password)
         self._CLIENT.on_connect = self._on_connect
-
         self._CLIENT.connect(broker_address)
 
     def _on_connect(self, client, userdata, flags, rc) -> None:

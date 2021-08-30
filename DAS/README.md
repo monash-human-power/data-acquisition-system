@@ -37,6 +37,8 @@ python -m das.V3_mqtt_recorder /v3/wireless_module/# boost/# -v
 | `--host HOST`              |  `localhost`  |             Address of the MQTT broker              |
 | `-v ` or `--verbose`       |    `False`    |               Verbose logging output                |
 | `-t TIME` or `--time TIME` |     `inf`     | Length of time to record data (duration in seconds) |
+| `--username USERNAME`      |    `None`     |            Username for the MQTT broker             |
+| `--password PASSWORD`      |    `None`     |            Password for the MQTT broker             |
 | `-h` or `--help`           |               |                        Help                         |
 
 <br/>
@@ -61,6 +63,8 @@ python -m das.V3_mqtt_playback -s 60 -v
 | `--host HOST`                 |  `localhost`  |    Address of the MQTT broker    |
 | `-v ` or `--verbose`          |    `False`    |      Verbose logging output      |
 | `-s SPEED` or `--speed SPEED` |      `1`      | Playback speed up (x multiplier) |
+| `--username USERNAME`         |    `None`     |   Username for the MQTT broker   |
+| `--password PASSWORD`         |    `None`     |   Password for the MQTT broker   |
 | `-h` or `--help`              |               |               Help               |
 
 <br/>
