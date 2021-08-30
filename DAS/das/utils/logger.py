@@ -22,7 +22,11 @@ class Recorder:
         The IP address that the MQTT broker lives on
     verbose : bool
         Specifies whether the incoming MQTT data and warnings are printed
-
+    username : str
+        Username for mqtt broker
+    password : str
+        Password for mqtt broker
+        
     Attributes
     ----------
     TOPICS : List(str)
@@ -43,6 +47,8 @@ class Recorder:
         topics: list = ["#"],
         broker_address: str = "localhost",
         verbose: bool = False,
+        username: str = None,
+        password: str = None,
     ) -> None:
         # If set to verbose print info messages
         if verbose:
@@ -92,6 +98,8 @@ class Recorder:
         self._CLIENT = mqtt.Client()
         self._CLIENT.on_connect = self._on_connect
         self._CLIENT.on_message = self._on_message
+        if username is not None and password is not None:
+            self._CLIENT.username_pw_set(username, password)
         self._CLIENT.connect(broker_address)
         self._CLIENT.loop_start()  # Threaded execution loop
 
@@ -173,6 +181,10 @@ class Playback:
         The IP address that the MQTT broker lives on
     verbose : bool
         Specifies whether the outgoing MQTT data and warnings are printed
+    username : str
+        Username for mqtt broker
+    password : str
+        Password for mqtt broker
 
     Attributes
     ----------
@@ -189,6 +201,8 @@ class Playback:
         sqlite_database_path: str = "MQTT_log.db",
         broker_address: str = "localhost",
         verbose: bool = False,
+        username: str = None,
+        password: str = None,
     ) -> None:
 
         # If set to verbose print info messages
@@ -208,7 +222,10 @@ class Playback:
 
         # Connect to MQTT broker
         self._CLIENT = mqtt.Client()
+        if username is not None and password is not None:
+            self._CLIENT.username_pw_set(username, password)
         self._CLIENT.on_connect = self._on_connect
+
         self._CLIENT.connect(broker_address)
 
     def _on_connect(self, client, userdata, flags, rc) -> None:
