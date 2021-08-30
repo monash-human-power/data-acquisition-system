@@ -42,7 +42,7 @@ parser.add_argument(
 
 if __name__ == "__main__":
     CURRENT_FILEPATH = os.path.dirname(__file__)
-    CSV_FILEPATH = os.path.join(CURRENT_FILEPATH, "csv_data")
+    MQTT_LOG_FILEPATH = os.path.join(CURRENT_FILEPATH, "MQTT_log.db")
 
     # Read command line arguments
     args = parser.parse_args()
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     try:
         # Make logger object and initiate logging
         main_recorder = logger.Recorder(
-            CSV_FILEPATH,
+            MQTT_LOG_FILEPATH,
             topics=args.topics,
             broker_address=args.host,
             verbose=args.verbose,
