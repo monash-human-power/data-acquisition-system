@@ -45,7 +45,7 @@ def on_connect(client, userdata, flags, rc):
         print("Something went wrong! Result code: " + str(rc))
 
     # Subscribe to all of the wireless module topics
-    client.subscribe("/v3/wireless-module/#")
+    client.subscribe(str(topics.WirelessModule.id().module))
 
 
 def on_message(client, userdata, msg):

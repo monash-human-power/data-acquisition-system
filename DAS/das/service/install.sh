@@ -4,8 +4,6 @@ SERVICE_DIR=$HOME/.config/systemd/user
 DAS_DIR=$(dirname $(cd $(dirname "${BASH_SOURCE[0]}") && pwd))
 SERVICE_FILE=logger.service
 
-echo SERVICE_FILE
-
 # Create folder for service if it doesn't yet exist
 mkdir -p $SERVICE_DIR
 
