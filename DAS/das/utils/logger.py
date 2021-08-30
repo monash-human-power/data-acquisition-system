@@ -1,11 +1,7 @@
-from pathlib import Path
 import paho.mqtt.client as mqtt
-import csv
 import time
-import os
 import asyncio
 import logging
-import re
 import sqlite3
 
 
