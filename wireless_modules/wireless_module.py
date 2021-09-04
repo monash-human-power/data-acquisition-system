@@ -38,11 +38,11 @@ class WirelessModule:
         self.status_topic = b"/v3/wireless_module/{}/status".format(module_id)
 
         self.start_publish = False
-        status = {"online": False}
+        last_will_payload = {"online": False}
 
         # Generate a unique client_id used to set up MQTT Client
         client_id = ubinascii.hexlify(machine.unique_id())
-        self.mqtt = Client(client_id, config.MQTT_BROKER, self.status_topic, ujson.dumps(status))
+        self.mqtt = Client(client_id, config.MQTT_BROKER, self.status_topic, ujson.dumps(last_will_payload))
 
         self.battery = battery_reader
         self.status_led = status_led
