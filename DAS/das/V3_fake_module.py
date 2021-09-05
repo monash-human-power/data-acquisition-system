@@ -47,6 +47,11 @@ parser.add_argument(
     help="""Specify the modules to produce fake data. eg. --id 1 2 25 specifies
     that module 1, 2 and 25 will produce data.""",
 )
+parser.add_argument(
+    "-v",
+    action='store_true',
+    help="""Print the messages published to MQTT on stout as well (Every 5th message is printed)""",
+)
 
 # Generate a dict of the fake sensors with average values
 sensors = {
@@ -100,7 +105,7 @@ def generate_module_data(module_id_num, sensor_list):
     return module_data
 
 
-def send_fake_data(client, duration, rate, module_id_nums):
+def send_fake_data(client, duration, rate, module_id_nums, verbose_level=0):
     """ Send artificial data over MQTT for each module chanel. Sends [rate] per
     second for [duration] seconds
 
@@ -136,14 +141,15 @@ def send_fake_data(client, duration, rate, module_id_nums):
             battery_topic = topics.WirelessModule.id(module_id_num).battery
 
             # Publish data and battery if needed
-            publish(client, module_topic, module_data)
+            publish(client, module_topic, module_data, verbose_level)
             if publish_battery:
                 publish(client, battery_topic, battery_data)
 
         if publish_battery:
             battery_counter += 1
 
-        print("TIME:", current_time)
+        if verbose_level >= 1:
+            print("TIME:", current_time)
         for module_id_num in module_id_nums:
             # Wireless module 1 (Front)
             if module_id_num == 1:
@@ -170,11 +176,12 @@ def send_fake_data(client, duration, rate, module_id_nums):
                 module_data = generate_module_data(module_id_num, Mn_sensors)
                 publish_data_and_battery(module_id_num)
 
-        print()  # Newline for clarity
+        if verbose_level >= 1:
+            print()  # Newline for clarity
         time.sleep(1 / rate)
 
 
-def publish(client, topic, data={}):
+def publish(client, topic, data={}, verbose_level=0):
     """
     Publishes python dict data to a specific topic in JSON and prints it out
     client: MQTT client object
@@ -185,12 +192,10 @@ def publish(client, topic, data={}):
     json_data = json.dumps(data)
 
     # Publish the data over MQTT
-    # count = 0
-    # client.publish(str(topic), json_data)
-    # if count > 5:
-    #     count = 0
-    #     print(topic, "--> ", json_data)
-    # count += 1
+    client.publish(str(topic), json_data)
+
+    if verbose_level == 1:
+        print(topic, "--> ", json_data)
 
 
 def start_modules(args):
@@ -217,9 +222,13 @@ def stop_modules(args):
 
 
 def start_publishing(client, args):
+    if args.v:
+        verbose_level = 1
+    else:
+        verbose_level = 0
     print("\npublishing started...")
     start_modules(args)
-    send_fake_data(client, args.time, args.rate, args.id)
+    send_fake_data(client, args.time, args.rate, args.id, verbose_level)
     stop_modules(args)
     print("\npublishing finished")
 
