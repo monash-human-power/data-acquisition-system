@@ -18,7 +18,7 @@ These steps assume that you have done the basic setup.
 <br/>
 
 ## [V3 MQTT Recorder](/DAS/das/V3_mqtt_recorder.py)
-The command line tool allows for mqtt messages on any topic to be logged and recorded to a csv file. The saved csv files will be stored in the `das/csv_data`. 
+The command line tool allows for mqtt messages on any topic to be logged and recorded to a mysql file.
 
 ### Usage
 ```
@@ -44,7 +44,7 @@ python -m das.V3_mqtt_recorder /v3/wireless_module/# boost/# -v
 <br/>
 
 ## [V3 MQTT Playback](/DAS/das/V3_mqtt_playback.py)
-This command line tool reads a raw csv log created from the V3 MQTT Recorder tool and plays it back over MQTT. Simply specify the log and this tool will do the rest!
+This command line tool reads a sqlite database file created from the V3 MQTT Recorder tool and plays it back over MQTT. Simply specify the database file and this tool will do the rest!
 
 ### Usage
 ```
