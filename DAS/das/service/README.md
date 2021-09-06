@@ -8,25 +8,26 @@ Run `install.sh` to add `logger.service` to the `~/.config/systemd/user/` folder
 
 Enable the unit by running:
 ```
- systemctl --user enable logger.service
+systemctl --user enable logger.service
 ```
 
 To manually start/stop the unit, run
 ```
- systemctl --user <<start or stop>> logger.service
+systemctl --user <<start or stop>> logger.service
+```
+
+The PID of the unit can be found using
+```
+systemctl --user status logger.service
 ```
 
 To view the latest logs for the unit use
 ```
- journalctl _PID=<<pid of the unit>>
+journalctl _PID=<<pid of the unit>>
 ```
 
 Tip: Add the `-f` flag to continuously monitor new logs
 
-The PID of the unit can be found using
-```
- systemctl --user status logger.service
-```
 
 ## Requirements
 For poetry to correctly clone the `common/mhp` repository using SSH, the public key of the Pi must me shared with our 
