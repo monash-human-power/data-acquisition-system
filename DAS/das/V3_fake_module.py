@@ -1,6 +1,7 @@
 import argparse
 import json
 import time
+import atexit
 
 import paho.mqtt.client as mqtt
 from mhp import topics
@@ -205,7 +206,10 @@ def stop_modules(args):
 
     for module_id_num in args.id:
         publish(client, topics.WirelessModule.id(module_id_num).stop)
-        print("Stopped module", module_id_num)
+        print(f"Stopping module {module_id_num}...")
+
+    time.sleep(1)
+    print("Stopped all modules.")
 
 
 def start_publishing(client, args):
@@ -234,6 +238,8 @@ if __name__ == "__main__":
 
     client.on_connect = on_connect
     client.on_message = on_message
+
+    atexit.register(stop_modules, args)
 
     client.connect(broker_address)
     client.loop_start()
