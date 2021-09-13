@@ -58,6 +58,7 @@ class StatusLed:
     def set_warning_state(self, state):
         if state is not self.warning_state:
             self.warning_state = state
+            self.__set_leds_on(state)
 
     async def start_blink_loop(self):
         while True:

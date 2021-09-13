@@ -25,6 +25,9 @@ RZERO = 8.62
 # Circumference of a 700x28 bike wheel in meters.
 WHEEL_CIRCUMFERENCE = 2.136
 
+# Mutable global so we can write to the LED if a fatal error occurs
+status_led = StatusLed(STATUS_LED_PINS)
+
 # Define a function to map measured voltages to "true" voltages.
 # See util/battery_lin_reg.py
 def battery_calibration(voltage):
@@ -32,7 +35,6 @@ def battery_calibration(voltage):
 
 
 async def main():
-    status_led = StatusLed(STATUS_LED_PINS)
     status_led.set_state(WmState.InitialisingSensors)
     asyncio.create_task(status_led.start_blink_loop())
 
@@ -64,8 +66,6 @@ async def main():
     sensors = [my_dht, my_mq135, my_reed, my_gps, my_mpu]
     back_module.add_sensors(sensors)
 
-    await asyncio.sleep(5)
-
     print("Starting asyncio loop")
     asyncio.create_task(back_module.run())
 
@@ -81,5 +81,7 @@ except KeyboardInterrupt:
 except Exception as exc:
     sys.print_exception(exc)
     print("Detected crash, resetting in 5 seconds...")
+    status_led.set_warning_state(WmState.Error)
+
     time.sleep(5)
     machine.reset()
