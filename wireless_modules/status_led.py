@@ -53,12 +53,12 @@ class StatusLed:
         # the calling code is blocking, the color still changes
         if state is not self.state:
             self.state = state
-            self.__set_leds_on(state)
+            self.__set_leds_on(state) if state else self.__set_leds_off()
 
     def set_warning_state(self, state):
         if state is not self.warning_state:
             self.warning_state = state
-            self.__set_leds_on(state)
+            self.__set_leds_on(state) if state else self.__set_leds_off()
 
     async def start_blink_loop(self):
         while True:
