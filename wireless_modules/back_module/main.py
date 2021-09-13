@@ -18,7 +18,7 @@ MODULE_NUM = "3"
 # This can be found by allowing the CO2 reading to stabilise in an atmosphere
 # known to be closish to 400ppm (i.e. outside) and reading the printed rzero
 # on serial.
-RZERO = 6.1
+RZERO = 8.62
 
 # Circumference of a 700x28 bike wheel in meters.
 WHEEL_CIRCUMFERENCE = 2.136
