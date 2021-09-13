@@ -107,7 +107,7 @@ class WirelessModule:
         battery_data_rate = battery_data_rate * sec_to_ms
 
         sub_topics = [self.sub_start_topic, self.sub_stop_topic]
-        self.mqtt.connect_and_subscribe(sub_topics, self.sub_cb)
+        await self.mqtt.connect_and_subscribe(sub_topics, self.sub_cb)
 
         # TODO: Publish battery voltage continuously while idle.
         # Right now, will only publish once until logging starts.

@@ -1,4 +1,5 @@
 from umqtt.simple import MQTTClient
+import uasyncio as asyncio
 
 
 class Client:
@@ -12,7 +13,7 @@ class Client:
         self.client = MQTTClient(client_id, broker_address)
         self.mqtt_broker = broker_address
 
-    def connect_and_subscribe(self, topics_to_subscribe, callback_func):
+    async def connect_and_subscribe(self, topics_to_subscribe, callback_func):
         """
         Connects to the MQTT broker and subscribes to each topic in 'topics_to_subscribe' using QoS = 1
         :param topics_to_subscribe: An array of topics to subscribe to.
@@ -22,7 +23,22 @@ class Client:
         self.client.set_callback(callback_func)
 
         # Connect to MQTT broker
-        self.client.connect()
+        connection_success = False
+        while not connection_success:
+            connection_success = True
+            try:
+                print(
+                    "Attempting connection to MQTT broker at {}...".format(
+                        self.mqtt_broker
+                    )
+                )
+                self.client.connect()
+            except OSError as e:
+                connection_success = False
+                print("Failed to connect! {}".format(e))
+                print("Reattempting in 5 seconds.")
+                await asyncio.sleep(5)
+
         print("Connected to {}".format(self.mqtt_broker))
 
         # Subscribe to each topic
