@@ -4,6 +4,8 @@ import asyncio
 import logging
 import sqlite3
 
+# Define Constants
+MAIN_TABLE_NAME = "LOG"
 
 # Set logging to output all info by default (with a space for clarity)
 logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.WARNING)
@@ -60,19 +62,19 @@ class Recorder:
 
         # Check to see if the logging database has been initiated
         contains_LOG_table = self._CONN.execute(
-            """
-            SELECT name FROM sqlite_master WHERE type='table' AND name='LOG'
+            f"""
+            SELECT name FROM sqlite_master WHERE type='table' AND name='{MAIN_TABLE_NAME}'
             """
         ).fetchone()
 
         # Make a LOG table if none currently exists
         if contains_LOG_table is None:
             self._CONN.execute(
-                """
-                CREATE TABLE LOG
+                f"""
+                CREATE TABLE {MAIN_TABLE_NAME}
                 (TIME_DELTA DECIMAL(15,6)   PRIMARY KEY         NOT NULL,
-                TOPIC                       VARCHAR(250)        NOT NULL,
-                MESSAGE                     VARCHAR(500)        NOT NULL);
+                TOPIC                       VARCHAR             NOT NULL,
+                MESSAGE                     VARCHAR             NOT NULL);
                 """
             )
 
@@ -82,8 +84,8 @@ class Recorder:
         # Save last recorded time so that time always moves forward. This is so loggin can still function on a pi where
         # the real time clock may be reset
         self._LAST_RECORDED_TIME = self._CONN.execute(
-            """
-            SELECT MAX(TIME_DELTA) FROM LOG
+            f"""
+            SELECT MAX(TIME_DELTA) FROM {MAIN_TABLE_NAME}
             """
         ).fetchone()[0]
 
@@ -147,7 +149,7 @@ class Recorder:
         try:
             self._CONN.execute(
                 f"""
-                INSERT INTO LOG VALUES ({time_delta}, '{mqtt_topic}', '{message}')
+                INSERT INTO {MAIN_TABLE_NAME} VALUES ({time_delta}, '{mqtt_topic}', '{message}')
                 """
             )
             self._CONN.commit()
