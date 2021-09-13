@@ -106,6 +106,7 @@ class WirelessModule:
         data_rate = data_rate * sec_to_ms
         battery_data_rate = battery_data_rate * sec_to_ms
 
+        self.status_led.set_state(WmState.ConnectingToMqtt)
         sub_topics = [self.sub_start_topic, self.sub_stop_topic]
         await self.mqtt.connect_and_subscribe(sub_topics, self.sub_cb)
 

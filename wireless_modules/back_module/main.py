@@ -34,6 +34,7 @@ def battery_calibration(voltage):
 async def main():
     status_led = StatusLed(STATUS_LED_PINS)
     status_led.set_state(WmState.InitialisingSensors)
+    asyncio.create_task(status_led.start_blink_loop())
 
     # Define all the Pin objects for each sensor
     dht_pin = machine.Pin(4)
@@ -62,6 +63,8 @@ async def main():
     back_module = WirelessModule(MODULE_NUM, battery_reader, status_led)
     sensors = [my_dht, my_mq135, my_reed, my_gps, my_mpu]
     back_module.add_sensors(sensors)
+
+    await asyncio.sleep(5)
 
     print("Starting asyncio loop")
     asyncio.create_task(back_module.run())

@@ -1,4 +1,5 @@
 import machine
+import uasyncio as asyncio
 
 
 class LedState:
@@ -11,12 +12,15 @@ class LedState:
 
 class WmState:
     Undefined = LedState(1, 1, 1, True)
-    LowBattery = LedState(1, 0, 0, True)
-    ConnectingToNetwork = LedState(1, 1, 0, True)
-    ConnectingToMqtt = LedState(1, 1, 0, False)
-    InitialisingSensors = LedState(0, 0, 1, True)
+
+    ConnectingToNetwork = LedState(1, 1, 0, False)
+    InitialisingSensors = LedState(1, 1, 0, True)
+    ConnectingToMqtt = LedState(0, 0, 1, True)
     Idle = LedState(0, 0, 1, False)
     Publishing = LedState(0, 1, 0, False)
+
+    LowBattery = LedState(1, 0, 0, True)
+    Error = LedState(1, 0, 0, False)
 
 
 class StatusLed:
@@ -28,9 +32,28 @@ class StatusLed:
         self.state = None
         self.set_state(WmState.Undefined)
 
+    def __set_leds_on(self):
+        self.r_pin.on() if self.state.r else self.r_pin.off()
+        self.g_pin.on() if self.state.g else self.g_pin.off()
+        self.b_pin.on() if self.state.b else self.b_pin.off()
+
+    def __set_leds_off(self):
+        self.r_pin.off()
+        self.g_pin.off()
+        self.b_pin.off()
+
     def set_state(self, state):
+        # Turn LEDs on instantly regardless of `start_blink_loop` so that if
+        # the calling code is blocking, the color still changes
         if state is not self.state:
-            self.r_pin.on() if state.r else self.r_pin.off()
-            self.g_pin.on() if state.g else self.g_pin.off()
-            self.b_pin.on() if state.b else self.b_pin.off()
             self.state = state
+            self.__set_leds_on()
+
+    async def start_blink_loop(self):
+        while True:
+            self.__set_leds_on()
+            await asyncio.sleep_ms(200)
+
+            if self.state.blink:
+                self.__set_leds_off()
+                await asyncio.sleep_ms(200)
