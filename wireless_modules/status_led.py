@@ -9,6 +9,11 @@ class LedState:
         self.b = b
         self.blink = blink
 
+    def __str__(self):
+        return "{{ r: {}, g: {}, b: {}, blink: {}}}".format(
+            self.r, self.g, self.b, self.blink
+        )
+
 
 class WmState:
     Undefined = LedState(1, 1, 1, True)
@@ -30,12 +35,13 @@ class StatusLed:
         self.b_pin = machine.Pin(led_pins[2], machine.Pin.OUT)
 
         self.state = None
+        self.warning_state = None
         self.set_state(WmState.Undefined)
 
-    def __set_leds_on(self):
-        self.r_pin.on() if self.state.r else self.r_pin.off()
-        self.g_pin.on() if self.state.g else self.g_pin.off()
-        self.b_pin.on() if self.state.b else self.b_pin.off()
+    def __set_leds_on(self, state):
+        self.r_pin.on() if state.r else self.r_pin.off()
+        self.g_pin.on() if state.g else self.g_pin.off()
+        self.b_pin.on() if state.b else self.b_pin.off()
 
     def __set_leds_off(self):
         self.r_pin.off()
@@ -47,13 +53,29 @@ class StatusLed:
         # the calling code is blocking, the color still changes
         if state is not self.state:
             self.state = state
-            self.__set_leds_on()
+            self.__set_leds_on(state)
+
+    def set_warning_state(self, state):
+        if state is not self.warning_state:
+            self.warning_state = state
 
     async def start_blink_loop(self):
         while True:
-            self.__set_leds_on()
-            await asyncio.sleep_ms(200)
-
-            if self.state.blink:
-                self.__set_leds_off()
+            # A state flagged as a warning takes priority
+            if self.warning_state:
+                self.__set_leds_on(self.warning_state)
                 await asyncio.sleep_ms(200)
+
+                # Need to check that self.warning_state is still not None
+                # because it may have been changed during the sleep
+                if self.warning_state and self.warning_state.blink:
+                    self.__set_leds_off()
+                    await asyncio.sleep_ms(200)
+
+            else:
+                self.__set_leds_on(self.state)
+                await asyncio.sleep_ms(200)
+
+                if self.state and self.state.blink:
+                    self.__set_leds_off()
+                    await asyncio.sleep_ms(200)

@@ -12,6 +12,7 @@ class Client:
         """
         self.client = MQTTClient(client_id, broker_address)
         self.mqtt_broker = broker_address
+        self.connected = False
 
     async def connect_and_subscribe(self, topics_to_subscribe, callback_func):
         """
@@ -40,6 +41,7 @@ class Client:
                 await asyncio.sleep(5)
 
         print("Connected to {}".format(self.mqtt_broker))
+        self.connected = True
 
         # Subscribe to each topic
         for topic in topics_to_subscribe:
@@ -86,4 +88,5 @@ class Client:
         """
         Disconnect from the broker
         """
+        self.connected = False
         self.client.disconnect()

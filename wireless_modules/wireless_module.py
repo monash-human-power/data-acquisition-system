@@ -75,6 +75,27 @@ class WirelessModule:
         elif topic == self.sub_stop_topic:
             self.start_publish = False
 
+    async def start_battery_loop(self, interval):
+        """
+        Start publishing the battery voltage and if required show the battery warning
+        on the status LED.
+        :param interval: Integer representing number of seconds to wait before sending battery voltage data
+        """
+        if self.battery is None:
+            return
+
+        while True:
+            battery_voltage = self.battery.read()
+            if self.mqtt.connected:
+                self.mqtt.publish(
+                    self.battery_topic, ujson.dumps(battery_voltage), retain=True
+                )
+            self.status_led.set_warning_state(
+                WmState.LowBattery if battery_voltage["voltage"] <= 3.3 else None
+            )
+            print(self.status_led.state, self.status_led.warning_state)
+            await asyncio.sleep(interval)
+
     async def wait_for_start(self):
         """
         Asynchronously blocks until publishing is started.
@@ -95,39 +116,24 @@ class WirelessModule:
             for sensor in self.sensors:
                 sensor.on_start()
 
-    async def run(self, data_rate=1, battery_data_rate=300):
+    async def start_data_loop(self, interval):
         """
-        Start the wireless module process: Wait for start message, publish sensor data when start message
-        received and continuously check for a stop message - after which the process is repeated.
-        :param data_rate: Integer representing number of seconds to wait before sending data.
-        :param battery_data_rate: Integer representing number of seconds to wait before sending battery voltage data
+        Start the wireless module data publishing process: Wait for start message,
+        publish sensor data when start message received and continuously check for a
+        stop message - after which the process is repeated.
+        :param interval: Integer representing number of seconds to wait before sending data.
         """
-        sec_to_ms = 1000
-        data_rate = data_rate * sec_to_ms
-        battery_data_rate = battery_data_rate * sec_to_ms
-
-        self.status_led.set_state(WmState.ConnectingToMqtt)
-        sub_topics = [self.sub_start_topic, self.sub_stop_topic]
-        await self.mqtt.connect_and_subscribe(sub_topics, self.sub_cb)
-
-        # TODO: Publish battery voltage continuously while idle.
-        # Right now, will only publish once until logging starts.
-        if self.battery is not None:
-            battery_voltage = self.battery.read()
-            self.mqtt.publish(
-                self.battery_topic, ujson.dumps(battery_voltage), retain=True
-            )
-
+        secs_to_ms = 1000
+        interval *= secs_to_ms
         # get millisecond counter and initialise to some previous time to start data publication immediately
-        prev_data_sent = time.ticks_ms() - data_rate
-        prev_battery_read = time.ticks_ms()
+        prev_data_sent = time.ticks_ms() - interval
 
         while True:
             await self.wait_for_start()
 
             # Compute the time difference since the last sensor data was read
             time_taken = time.ticks_diff(time.ticks_ms(), prev_data_sent)
-            await asyncio.sleep_ms(data_rate - time_taken)
+            await asyncio.sleep_ms(interval - time_taken)
             prev_data_sent = time.ticks_ms()
 
             # Get and publish sensor data
@@ -136,14 +142,21 @@ class WirelessModule:
             self.mqtt.publish(self.pub_data_topic, ujson.dumps(sensor_data))
             print("MQTT data sent: {} on {}".format(sensor_data, self.pub_data_topic))
 
-            # Publish the battery voltage of this wireless module if the given delay (refer to `battery_data_rate`)
-            # has elapsed
-            ms_since_battery_read = time.ticks_diff(time.ticks_ms(), prev_battery_read)
-            if ms_since_battery_read >= battery_data_rate and self.battery is not None:
-                battery_voltage = self.battery.read()
-                self.mqtt.publish(
-                    self.battery_topic, ujson.dumps(battery_voltage), retain=True
-                )
-                prev_battery_read = time.ticks_ms()
-
             self.mqtt.check_for_message()
+
+    async def run(self, data_interval=1, battery_data_interval=5):
+        """
+        Start running the wireless module. Connects to MQTT and starts the data and battery loops.
+        :param data_interval: Integer representing number of seconds to wait before sending data.
+        :param battery_interval: Integer representing number of seconds to wait before sending battery voltage data
+        """
+        # Start publishing battery data straight away
+        asyncio.create_task(self.start_battery_loop(battery_data_interval))
+
+        # Attempt to connect to MQTT (will block until successful)
+        self.status_led.set_state(WmState.ConnectingToMqtt)
+        sub_topics = [self.sub_start_topic, self.sub_stop_topic]
+        await self.mqtt.connect_and_subscribe(sub_topics, self.sub_cb)
+
+        # Start the main publishing loop
+        asyncio.create_task(self.start_data_loop(data_interval))
