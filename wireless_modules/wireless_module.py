@@ -93,7 +93,6 @@ class WirelessModule:
             self.status_led.set_warning_state(
                 WmState.LowBattery if battery_voltage["voltage"] <= 3.3 else None
             )
-            print(self.status_led.state, self.status_led.warning_state)
             await asyncio.sleep(interval)
 
     async def wait_for_start(self):
@@ -144,7 +143,7 @@ class WirelessModule:
 
             self.mqtt.check_for_message()
 
-    async def run(self, data_interval=1, battery_data_interval=5):
+    async def run(self, data_interval=1, battery_data_interval=300):
         """
         Start running the wireless module. Connects to MQTT and starts the data and battery loops.
         :param data_interval: Integer representing number of seconds to wait before sending data.
