@@ -5,6 +5,7 @@ import ujson
 import time
 
 from mqtt_client import Client
+from status_led import WmState
 
 try:
     import config
@@ -17,7 +18,7 @@ class WirelessModule:
     A class structure to read and collate data from different sensors into a dictionary and send through MQTT.
     """
 
-    def __init__(self, module_id, battery_reader=None):
+    def __init__(self, module_id, battery_reader=None, status_led=None):
         """
         Initialises the wireless module.
         :param module_id: An integer representing the wireless module number.
@@ -38,6 +39,7 @@ class WirelessModule:
         self.mqtt = Client(client_id, config.MQTT_BROKER)
 
         self.battery = battery_reader
+        self.status_led = status_led
 
     def add_sensors(self, sensor_arr):
         """
@@ -83,8 +85,11 @@ class WirelessModule:
             print("Waiting for start message...")
 
             while not self.start_publish:
+                self.status_led.set_state(WmState.Idle)
                 self.mqtt.check_for_message()
                 await asyncio.sleep_ms(100)
+
+            self.status_led.set_state(WmState.Publishing)
 
             # Start message received, tell sensors to start
             for sensor in self.sensors:
