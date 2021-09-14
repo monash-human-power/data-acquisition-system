@@ -1,16 +1,13 @@
 import sys
 import argparse
 import socket
+import os
 from das.utils import logger
 
 parser = argparse.ArgumentParser(
     description="MQTT playback",
     add_help=True,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-)
-
-parser.add_argument(
-    "filepath", action="store", type=str, help="""Filepath of the csv log"""
 )
 
 parser.add_argument(
@@ -38,14 +35,39 @@ parser.add_argument(
     help="""Verbose logging output""",
 )
 
+parser.add_argument(
+    "-u",
+    "--username",
+    action="store",
+    type=str,
+    default=None,
+    help="""Username for MQTT broker""",
+)
+
+parser.add_argument(
+    "-p",
+    "--password",
+    action="store",
+    type=str,
+    default=None,
+    help="""Password for MQTT broker""",
+)
+
 if __name__ == "__main__":
     # Read command line arguments
     args = parser.parse_args()
 
+    CURRENT_FILEPATH = os.path.dirname(__file__)
+    MQTT_LOG_FILEPATH = os.path.join(CURRENT_FILEPATH, "MQTT_log.db")
+
     try:
         # Make logger object and initiate playback
         main_playback = logger.Playback(
-            filepath=args.filepath, broker_address=args.host, verbose=args.verbose
+            sqlite_database_path=MQTT_LOG_FILEPATH,
+            broker_address=args.host,
+            verbose=args.verbose,
+            username=args.username,
+            password=args.password,
         )
 
         main_playback.play(speed=args.speed)

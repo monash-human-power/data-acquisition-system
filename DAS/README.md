@@ -9,7 +9,7 @@ These steps assume that you are in the data-acquisition-system root directory an
 1. `cd DAS`
 2. `poetry install`
 3. `poetry shell`
-4. Run any DAS command, _e.g._ `python -m das.V3_mqtt_recorder`
+4. Run any DAS command, _e.g._ `python -m das.V3_mqtt_recorder -v`
 
 ## Run Tests
 These steps assume that you have done the basic setup.
@@ -18,7 +18,7 @@ These steps assume that you have done the basic setup.
 <br/>
 
 ## [V3 MQTT Recorder](/DAS/das/V3_mqtt_recorder.py)
-The command line tool allows for mqtt messages on any topic to be logged and recorded to a csv file. The saved csv files will be stored in the `das/csv_data`. 
+The command line tool allows for mqtt messages on any topic to be logged and recorded to a mysql file.
 
 ### Usage
 ```
@@ -37,23 +37,25 @@ python -m das.V3_mqtt_recorder /v3/wireless_module/# boost/# -v
 | `--host HOST`              |  `localhost`  |             Address of the MQTT broker              |
 | `-v ` or `--verbose`       |    `False`    |               Verbose logging output                |
 | `-t TIME` or `--time TIME` |     `inf`     | Length of time to record data (duration in seconds) |
+| `--username USERNAME`      |    `None`     |            Username for the MQTT broker             |
+| `--password PASSWORD`      |    `None`     |            Password for the MQTT broker             |
 | `-h` or `--help`           |               |                        Help                         |
 
 <br/>
 
 ## [V3 MQTT Playback](/DAS/das/V3_mqtt_playback.py)
-This command line tool reads a raw csv log created from the V3 MQTT Recorder tool and plays it back over MQTT. Simply specify the log and this tool will do the rest!
+This command line tool reads a sqlite database file created from the V3 MQTT Recorder tool and plays it back over MQTT. Simply specify the database file and this tool will do the rest!
 
 ### Usage
 ```
 # General command
-python -m das.V3_mqtt_playback [FILEPATH] [FLAGS]
+python -m das.V3_mqtt_playback [FLAGS]
 
-# Playback of 1_log.csv
-python -m das.V3_mqtt_playback ./das/csv_data/1_log.csv  -v
+# Playback of all logs
+python -m das.V3_mqtt_playback -v
 
-# Playback of 2_log.csv at 60x speed 
-python -m das.V3_mqtt_playback ./das/csv_data/2_log.csv -s 60 -v
+# Playback of all logs at 60x speed 
+python -m das.V3_mqtt_playback -s 60 -v
 ```
 
 | Flag                          | Default Value |               Info               |
@@ -61,6 +63,8 @@ python -m das.V3_mqtt_playback ./das/csv_data/2_log.csv -s 60 -v
 | `--host HOST`                 |  `localhost`  |    Address of the MQTT broker    |
 | `-v ` or `--verbose`          |    `False`    |      Verbose logging output      |
 | `-s SPEED` or `--speed SPEED` |      `1`      | Playback speed up (x multiplier) |
+| `--username USERNAME`         |    `None`     |   Username for the MQTT broker   |
+| `--password PASSWORD`         |    `None`     |   Password for the MQTT broker   |
 | `-h` or `--help`              |               |               Help               |
 
 <br/>

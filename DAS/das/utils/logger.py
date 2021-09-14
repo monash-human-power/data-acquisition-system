@@ -1,19 +1,11 @@
-from pathlib import Path
 import paho.mqtt.client as mqtt
-import csv
 import time
-import os
 import asyncio
 import logging
-import re
+import sqlite3
 
-CsvConfig = {
-    "delimiter": ",",
-    "quotechar": "`",
-    "quoting": csv.QUOTE_ALL,
-    "skipinitialspace": True,
-    "fieldnames": ["time_delta", "mqtt_topic", "message"],
-}
+# Define Constants
+MAIN_TABLE_NAME = "LOG"
 
 # Set logging to output all info by default (with a space for clarity)
 logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.WARNING)
@@ -24,54 +16,82 @@ class Recorder:
 
     Parameters
     ----------
-    csv_folder_path : str
-        Filepath of the folder where the logs are to be stored
+    sqlite_database_path : str
+        Filepath to the *.db file that sqlite uses to save data
     topics : List(str)
         A list containing the topic strings that are to be subscribed to
     broker_address : str
         The IP address that the MQTT broker lives on
     verbose : bool
         Specifies whether the incoming MQTT data and warnings are printed
-
+    username : str
+        Username for mqtt broker
+    password : str
+        Password for mqtt broker
+        
     Attributes
     ----------
     TOPICS : List(str)
         List of topic names
     _recording : bool
         Whether the Recorder object is currently recording or not
-    _START_TIME : `time`
-        The current time used to produce time deltas
-    _LOG_FILE : `File`
-        Open log file object that can be written to
-    _LOG_FILE_WRITER : `csv.DictWriter`
-        Csv writter object that is used to write the data to the _LOG_FILE file
+    _LAST_RECORDED_TIME : `time`
+        The last recorded time so that new time deltas will always count forward and not start from 0 again
+    _CONN : `sqlite3`
+        Connection object that updates the database file located at sqlite_database_path
     _CLIENT : `paho.mqtt.client`
         MQTT client that connects to the broker and recives the messages
     """
 
     def __init__(
         self,
-        csv_folder_path: str,
+        sqlite_database_path: str = "MQTT_log.db",
         topics: list = ["#"],
         broker_address: str = "localhost",
         verbose: bool = False,
+        username: str = None,
+        password: str = None,
     ) -> None:
-        # The logger object can subscribe to many topics (if none are selected then it will subscribe to all)
-        self.TOPICS = topics
-        self._START_TIME = time.monotonic()
-
         # If set to verbose print info messages
         if verbose:
             logging.getLogger().setLevel(logging.INFO)
 
-        # Create csv_folder_path folder if none exists
-        Path(csv_folder_path).mkdir(parents=True, exist_ok=True)
+        # Connect to sqlite database
+        # check_same_thread needs to be false as the MQTT callbacks run on a different thread
+        self._CONN = sqlite3.connect(sqlite_database_path, check_same_thread=False)
 
-        # Create the csv log and csv writter
-        self._create_log_file(csv_folder_path)
+        # Check to see if the logging database has been initiated
+        contains_LOG_table = self._CONN.execute(
+            f"""
+            SELECT name FROM sqlite_master WHERE type='table' AND name='{MAIN_TABLE_NAME}'
+            """
+        ).fetchone()
 
-        # Add headers for csv
-        self._LOG_FILE_WRITER.writeheader()
+        # Make a LOG table if none currently exists
+        if contains_LOG_table is None:
+            self._CONN.execute(
+                f"""
+                CREATE TABLE {MAIN_TABLE_NAME}
+                (TIME_DELTA DECIMAL(15,6)   PRIMARY KEY         NOT NULL,
+                TOPIC                       VARCHAR             NOT NULL,
+                MESSAGE                     VARCHAR             NOT NULL);
+                """
+            )
+
+        # The logger object can subscribe to many topics (if none are selected then it will subscribe to all)
+        self.TOPICS = topics
+
+        # Save last recorded time so that time always moves forward. This is so loggin can still function on a pi where
+        # the real time clock may be reset
+        self._LAST_RECORDED_TIME = self._CONN.execute(
+            f"""
+            SELECT MAX(TIME_DELTA) FROM {MAIN_TABLE_NAME}
+            """
+        ).fetchone()[0]
+
+        # This occurs when there are no records but the database has been setup
+        if self._LAST_RECORDED_TIME is None:
+            self._LAST_RECORDED_TIME = 0
 
         # Do not start logging when object is created (wait for start method)
         self._recording = False
@@ -80,43 +100,10 @@ class Recorder:
         self._CLIENT = mqtt.Client()
         self._CLIENT.on_connect = self._on_connect
         self._CLIENT.on_message = self._on_message
+        if username is not None and password is not None:
+            self._CLIENT.username_pw_set(username, password)
         self._CLIENT.connect(broker_address)
         self._CLIENT.loop_start()  # Threaded execution loop
-
-    def _create_log_file(self, csv_folder_path: str) -> None:
-        """Generates a log file ready to be written in.
-
-        Parameters
-        ----------
-        csv_folder_path : str
-            Filepath of the folder where the logs are to be stored
-        """
-
-        # Name the csv log file xxxx_log.csv where xxxx is a number
-        previous_log_num = 0
-        for filename in os.listdir(csv_folder_path):
-            try:
-                # Regular expression that extracts the decimal log number (group 1)
-                current_log_num = int(re.search("(\d*)_log.csv", filename).group(1))
-                if current_log_num > previous_log_num:
-                    previous_log_num = current_log_num
-
-            except AttributeError:
-                logging.warning(f"{filename} should not be in {csv_folder_path}")
-
-            except Exception as e:
-                logging.error(f"{type(e)}: {e}")
-
-        # Create the new log file and name it one more than the previous
-        filename = f"{previous_log_num + 1}_log.csv"
-        self._LOG_FILE = open(os.path.join(csv_folder_path, filename), "a")
-        self._LOG_FILE_WRITER = csv.DictWriter(
-            self._LOG_FILE,
-            delimiter=CsvConfig["delimiter"],
-            quotechar=CsvConfig["quotechar"],
-            quoting=CsvConfig["quoting"],
-            fieldnames=CsvConfig["fieldnames"],
-        )
 
     def _on_connect(self, client, userdata, flags, rc) -> None:
         """Callback function for MQTT broker on connection."""
@@ -147,7 +134,7 @@ class Recorder:
                 logging.error(f"{type(e)}: {e}")
 
     def log(self, mqtt_topic: str, message: str) -> None:
-        """Logs the time delta and message data to self._LOG_FILE in the csv format.
+        """Logs the time delta and message data to the local sqlite database.
 
         Parameters
         ----------
@@ -156,17 +143,16 @@ class Recorder:
         message : str
             Corresponding message to be recorded
         """
-        time_delta = time.monotonic() - self._START_TIME
+        time_delta = time.monotonic() + self._LAST_RECORDED_TIME
 
         # Write data to csv file
         try:
-            self._LOG_FILE_WRITER.writerow(
-                {
-                    "time_delta": time_delta,
-                    "mqtt_topic": mqtt_topic,
-                    "message": message,
-                }
+            self._CONN.execute(
+                f"""
+                INSERT INTO {MAIN_TABLE_NAME} VALUES ({time_delta}, '{mqtt_topic}', '{message}')
+                """
             )
+            self._CONN.commit()
             logging.info(f"{round(time_delta, 5): <10} | {mqtt_topic: <50} | {message}")
 
         except Exception as e:
@@ -178,11 +164,12 @@ class Recorder:
         logging.info(f"Logging started!")
 
     def stop(self) -> None:
-        """Graceful exit for closing the file and stopping the MQTT client."""
+        """Graceful exit for closing the database connection and stopping the MQTT client."""
         self._recording = False
         self._CLIENT.loop_stop()
-        self._LOG_FILE.close()
-        logging.info(f"Data saved in {self._LOG_FILE.name}")
+        self._CONN.close()
+        logging.info(f"Connection to database closed")
+        logging.info(f"All data has been saved to the sqlite database")
 
 
 class Playback:
@@ -190,12 +177,16 @@ class Playback:
 
     Parameters
     ----------
-    filepath : str
-        Filepath of the log file for playback
+    sqlite_database_path : str
+        Filepath to the *.db file that sqlite uses to save data
     broker_address : str
         The IP address that the MQTT broker lives on
     verbose : bool
         Specifies whether the outgoing MQTT data and warnings are printed
+    username : str
+        Username for mqtt broker
+    password : str
+        Password for mqtt broker
 
     Attributes
     ----------
@@ -208,31 +199,33 @@ class Playback:
     """
 
     def __init__(
-        self, filepath: str, broker_address: str = "localhost", verbose: bool = False
+        self,
+        sqlite_database_path: str = "MQTT_log.db",
+        broker_address: str = "localhost",
+        verbose: bool = False,
+        username: str = None,
+        password: str = None,
     ) -> None:
 
         # If set to verbose print info messages
         if verbose:
             logging.getLogger().setLevel(logging.INFO)
 
-        # Read in data from log file and save each row in _log_data list
-        log_file = open(filepath, "r")
-        csv_reader = csv.DictReader(
-            log_file,
-            delimiter=CsvConfig["delimiter"],
-            quotechar=CsvConfig["quotechar"],
-            quoting=CsvConfig["quoting"],
-            skipinitialspace=CsvConfig["skipinitialspace"],
-        )
+        # Connect to sqlite database and get all records from the LOG table
+        conn = sqlite3.connect(sqlite_database_path)
+        all_log_records = conn.execute("""SELECT * FROM LOG""").fetchall()
 
+        # Convert list of tuples in list of dicts
         self._log_data = []
-        for row in csv_reader:
-            # Convert time delta to float
-            row["time_delta"] = float(row["time_delta"])
-            self._log_data.append(row)
+        for record in all_log_records:
+            self._log_data.append(
+                {"time_delta": record[0], "mqtt_topic": record[1], "message": record[2]}
+            )
 
         # Connect to MQTT broker
         self._CLIENT = mqtt.Client()
+        if username is not None and password is not None:
+            self._CLIENT.username_pw_set(username, password)
         self._CLIENT.on_connect = self._on_connect
         self._CLIENT.connect(broker_address)
 
@@ -260,7 +253,7 @@ class Playback:
         # Run the event loop to issue out all of the MQTT publishes
         asyncio.run(self._publish(speed))
 
-    async def _publish(self, speed) -> None:
+    async def _publish(self, speed: float) -> None:
         """Async function that collects all the necessary publish functions and gathers them to then be run by the
         event loop.
 
