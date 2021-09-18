@@ -17,7 +17,7 @@ files=(
     "../boot.py"
     "../mqtt_client.py"
     "../sensors/sensor_base.py"
-    "../sensors/mpu.py"
+    "../sensors/mpu_sensor.py"
     "../sensors/dht_sensor.py"
     "../sensors/co2_sensor.py"
     "../libraries/abc.py"

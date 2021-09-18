@@ -12,8 +12,14 @@ class CO2(Sensor):
         # Change ADC resolution to 10 bits consistent with the ESP8266 in order to use the MQ135 library
         adc = ADC(pin)
         adc.width(ADC.WIDTH_10BIT)
+        adc.atten(ADC.ATTN_11DB)
 
-        self.mq135 = MQ135(pin)
+        self.mq135 = MQ135(adc)
+        # Replacing the load resistor on the MQ135 dev board
+        # leads to better measurements.
+        # See https://blog.robberg.net/mq-135-arduino/
+        self.mq135.RLOAD = 22
+
         self.dht = None
         self.temperature = None
         self.humidity = None
@@ -76,22 +82,25 @@ class CO2(Sensor):
         """
         self._read_temp_humidity()
 
+        ppm = 0
+
         # If the MQ135 is not heated up, the method to extract PPM will crash with a ValueError
         try:
-            if self.temperature is not None:
-                ppm = self.mq135.get_corrected_ppm(self.temperature, self.humidity)
+            total = 0
+            samples = 5
+            for _ in range(samples):
+                if self.temperature is not None:
+                    total += self.mq135.get_corrected_ppm(
+                        self.temperature, self.humidity
+                    )
+                else:
+                    total += self.mq135.get_ppm()
 
-                print("\t MQ135 Corrected PPM: " + str(ppm))
-
-            else:
-                ppm = self.mq135.get_ppm()
-
-                print("\t MQ135 PPM: " + str(ppm) + "\t rzero: " + str(self.mq135.get_rzero()))
+            ppm = total / samples
         except ValueError:
             # Since ppm cannot reasonably be 0, this can be used to mark that the sensor has not yet heated up
-            ppm = 0
+            pass
 
-        return [{
-            "type": "co2",
-            "value": ppm
-        }]
+        print("\t MQ135 PPM: " + str(ppm) + "\t rzero: " + str(self.mq135.get_rzero()))
+
+        return [{"type": "co2", "value": ppm}]

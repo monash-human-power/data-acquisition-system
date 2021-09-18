@@ -3,13 +3,12 @@ from sensor_base import Sensor
 
 
 class BatteryReader(Sensor):
-    def __init__(self, pin_num=33, scale=1, voltage_factor=None):
+    def __init__(self, pin_num=33, calibration_func=lambda x: x):
         """
         Initiate the battery reader algorithm
         :param pin_num: The pin number on the ESP32 to read off the battery voltage from
-        :param voltage_factor: The factor to multiply the voltage read from the given pin to get the actual battery
-        voltage (Use the voltage divider formula to find this factor)
-        :param scale: Integer to scale the voltage calculation by to get the correct voltage (due to the inaccuracy of
+        :param calibration_func: A function to transform this class's best guess at the
+        battery voltage into something closer. Accepts and returns a float.
         ESP32 ADC pins)
         """
         # Resistor values in the voltage divider design here:
@@ -17,18 +16,13 @@ class BatteryReader(Sensor):
         self.R1 = 33.2
         self.R2 = 100
 
-        self.scale_factor = scale
-
-        # The factor to multiply the voltage at the battery pin with to get the battery voltage
-        self.voltage_factor = voltage_factor
-        if voltage_factor is None:
-            self.voltage_factor = (self.R1 + self.R2) / self.R1
+        self.calibration_func = calibration_func
 
         self.battery_pin = Pin(pin_num)
 
         # Set up variables to calculate battery voltage
         self.adc_battery_pin = ADC(self.battery_pin)
-        self.adc_resolution = 4095
+        self.adc_resolution = 1024
 
         # Set maximum voltage readable by ADC pin to 3.6V
         self.adc_battery_pin.atten(ADC.ATTN_11DB)
@@ -42,17 +36,18 @@ class BatteryReader(Sensor):
         adc_value = self.adc_battery_pin.read()
         print("ADC value for the battery pin: " + str(adc_value))
 
-        voltage_at_adc_pin = (self.max_readable_voltage * adc_value) / self.adc_resolution
+        voltage_at_adc_pin = (
+            self.max_readable_voltage * adc_value
+        ) / self.adc_resolution
         print("Voltage at pin: " + str(voltage_at_adc_pin))
 
-        battery_voltage = voltage_at_adc_pin * self.voltage_factor * self.scale_factor
-        print("Battery voltage calculated: " + str(battery_voltage))
+        voltageDivFactor = (self.R1 + self.R2) / self.R2
+        battery_voltage = self.calibration_func(voltage_at_adc_pin * voltageDivFactor)
+        print("Battery voltage calibrated: " + str(battery_voltage))
 
-        return {
-            "voltage": battery_voltage
-        }
+        return {"voltage": battery_voltage}
 
 
-if __name__=='__main__':
+if __name__ == "__main__":
     my_battery_reader = BatteryReader()
     print(my_battery_reader.read())
