@@ -14,3 +14,11 @@ RUN poetry export -f requirements.txt --output requirements.txt
 RUN sed -i '/mhp/d' requirements.txt
 
 RUN pip install -r requirements.txt
+
+# Make Python search for modules in the home directory as well
+# This is because we cannot mount our `mhp` repository inside the mounted /boost folder as this
+# would create a mhp folder on the host boost/ folder as well. So we mount it in home directory and make python search for modules in that directory as well.
+RUN touch paths.pth
+RUN echo "/root" > paths.pth
+
+RUN eval 'cp ./paths.pth $(python -c "import sys; print(sys.path[-1])")'
