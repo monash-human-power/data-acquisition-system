@@ -12,7 +12,6 @@ class Client:
         """
         self.client = MQTTClient(client_id, broker_address)
         self.mqtt_broker = broker_address
-        self.connected = False
 
     async def connect_and_subscribe(self, topics_to_subscribe, callback_func):
         """
@@ -24,9 +23,7 @@ class Client:
         self.client.set_callback(callback_func)
 
         # Connect to MQTT broker
-        connection_success = False
-        while not connection_success:
-            connection_success = True
+        while not self.connected:
             try:
                 print(
                     "Attempting connection to MQTT broker at {}...".format(
@@ -34,8 +31,8 @@ class Client:
                     )
                 )
                 self.client.connect()
+                self.connected = True
             except OSError as e:
-                connection_success = False
                 print("Failed to connect! {}".format(e))
                 print("Reattempting in 5 seconds.")
                 await asyncio.sleep(5)
