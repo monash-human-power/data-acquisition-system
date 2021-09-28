@@ -12,6 +12,8 @@ try:
 except FileNotFoundError:
     print("Error importing config.py, ensure a local version of config.py exists")
 
+LOW_BATTERY_THRESHOLD = 3.3
+
 
 class WirelessModule:
     """
@@ -91,7 +93,7 @@ class WirelessModule:
                     self.battery_topic, ujson.dumps(battery_voltage), retain=True
                 )
             self.status_led.set_warning_state(
-                WmState.LowBattery if battery_voltage["voltage"] <= 3.3 else None
+                WmState.LowBattery if battery_voltage["voltage"] <= LOW_BATTERY_THRESHOLD else None
             )
             await asyncio.sleep(interval)
 
