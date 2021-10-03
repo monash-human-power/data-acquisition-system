@@ -109,7 +109,9 @@ class WirelessModule:
                     self.battery_topic, ujson.dumps(battery_voltage), retain=True
                 )
             self.status_led.set_warning_state(
-                WmState.LowBattery if battery_voltage["voltage"] <= LOW_BATTERY_THRESHOLD else None
+                WmState.LowBattery
+                if battery_voltage["voltage"] <= LOW_BATTERY_THRESHOLD
+                else None
             )
             await asyncio.sleep(interval)
 
