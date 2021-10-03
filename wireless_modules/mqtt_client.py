@@ -1,4 +1,4 @@
-from umqtt.simple import MQTTClient
+from umqtt.simple import MQTTException, MQTTClient
 import uasyncio as asyncio
 
 
@@ -10,8 +10,9 @@ class Client:
         :param broker_address: A string holding domain name or IP address of the broker to connect to, to send and
                             receive data.
         """
-        self.client = MQTTClient(client_id, broker_address)
+        self.client = MQTTClient(client_id, broker_address, keepalive=60)
         self.mqtt_broker = broker_address
+        self.connected = False
 
     async def connect_and_subscribe(self, topics_to_subscribe, callback_func):
         """
@@ -32,8 +33,8 @@ class Client:
                 )
                 self.client.connect()
                 self.connected = True
-            except OSError as e:
-                print("Failed to connect! {}".format(e))
+            except (OSError, MQTTException) as e:
+                print("Failed to connect! {}: {}".format(type(e), e))
                 print("Reattempting in 5 seconds.")
                 await asyncio.sleep(5)
 
