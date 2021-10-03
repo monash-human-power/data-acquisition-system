@@ -2,6 +2,7 @@ import uasyncio as asyncio
 import machine
 import ubinascii
 import ujson
+import sys
 import time
 
 from mqtt_client import Client
@@ -42,6 +43,21 @@ class WirelessModule:
 
         self.battery = battery_reader
         self.status_led = status_led
+
+        asyncio.get_event_loop().set_exception_handler(self.error_handler)
+
+    def error_handler(self, _loop, context):
+        self.status_led.set_state(WmState.Error)
+        print("An error occured in a uasyncio task!")
+        print(context["message"])
+        sys.print_exception(context["exception"])
+
+        # FIXME: A nicer solution would be to restart all running tasks rather than reset
+
+        print("Resetting in 5 seconds...")
+
+        time.sleep(5)
+        machine.reset()
 
     def add_sensors(self, sensor_arr):
         """
