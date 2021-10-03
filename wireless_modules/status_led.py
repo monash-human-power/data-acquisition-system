@@ -19,7 +19,7 @@ class WmState:
     Undefined = LedState(1, 1, 1, True)
 
     ConnectingToNetwork = LedState(1, 1, 0, False)
-    InitialisingSensors = LedState(1, 0, 1, True)
+    InitialisingSensors = LedState(0, 1, 1, True)
     ConnectingToMqtt = LedState(0, 0, 1, True)
     Idle = LedState(0, 0, 1, False)
     Publishing = LedState(0, 1, 0, False)
