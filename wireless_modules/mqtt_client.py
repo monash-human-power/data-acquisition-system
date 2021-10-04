@@ -10,7 +10,8 @@ class Client:
         :param broker_address: A string holding domain name or IP address of the broker to connect to, to send and
                             receive data.
         """
-        self.client = MQTTClient(client_id, broker_address, keepalive=60)
+        self.keep_alive_interval = 60
+        self.client = MQTTClient(client_id, broker_address, keepalive=self.keep_alive_interval)
         self.mqtt_broker = broker_address
         self.connected = False
 
@@ -46,7 +47,21 @@ class Client:
             self.client.subscribe(topic, qos=1)
             print("Subscribed to {} topic".format(topic))
 
+        # Start pingreq loop
+        asyncio.create_task(self.start_ping_loop())
+
         return True
+
+    async def start_ping_loop(self):
+        """
+        Sends a PINGREQ message to the broker at a regular interval so it knows we're
+        still connected. The server's response is handled by umqtt automatically.
+        """
+        while True:
+            if self.connected:
+                self.client.ping()
+            asyncio.sleep(self.keep_alive_interval)
+
 
     def _to_bytes_literal(self, data):
         """
