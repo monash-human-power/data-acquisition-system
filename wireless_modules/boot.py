@@ -1,8 +1,9 @@
-
 import esp
 import network
-import config
 from machine import Pin
+
+import config
+from status_led import StatusLed, WmState
 
 
 def do_connect(essid, password):
@@ -21,16 +22,19 @@ def do_connect(essid, password):
     station_interface.connect(essid, password)
 
     # Wait for the module to connect
-    while not station_interface.isconnected(): 
+    while not station_interface.isconnected():
         pass
-    
+
     print("Connected, network config:", station_interface.ifconfig())
 
+
+status_led = StatusLed(config.STATUS_LED_PINS)
+status_led.set_state(WmState.ConnectingToNetwork)
 
 # Allows the code to be uploaded with tools such as rshell / ampy
 esp.osdebug(None)
 do_connect(config.ESSID, config.PASSWORD)
 
 # Turn on the built in LED when booted and connected to WiFi (blue light)
-builtin_LED = Pin(config.led_pin, Pin.OUT)
-builtin_LED.on()
+builtin_led = Pin(config.BUILTIN_LED_PIN, Pin.OUT)
+builtin_led.on()

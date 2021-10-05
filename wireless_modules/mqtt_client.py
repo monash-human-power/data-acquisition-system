@@ -1,4 +1,5 @@
-from umqtt.simple import MQTTClient
+from umqtt.simple import MQTTException, MQTTClient
+import uasyncio as asyncio
 
 
 class Client:
@@ -9,10 +10,12 @@ class Client:
         :param broker_address: A string holding domain name or IP address of the broker to connect to, to send and
                             receive data.
         """
-        self.client = MQTTClient(client_id, broker_address)
+        self.keep_alive_interval = 60
+        self.client = MQTTClient(client_id, broker_address, keepalive=self.keep_alive_interval)
         self.mqtt_broker = broker_address
+        self.connected = False
 
-    def connect_and_subscribe(self, topics_to_subscribe, callback_func):
+    async def connect_and_subscribe(self, topics_to_subscribe, callback_func):
         """
         Connects to the MQTT broker and subscribes to each topic in 'topics_to_subscribe' using QoS = 1
         :param topics_to_subscribe: An array of topics to subscribe to.
@@ -22,15 +25,43 @@ class Client:
         self.client.set_callback(callback_func)
 
         # Connect to MQTT broker
-        self.client.connect()
+        while not self.connected:
+            try:
+                print(
+                    "Attempting connection to MQTT broker at {}...".format(
+                        self.mqtt_broker
+                    )
+                )
+                self.client.connect()
+                self.connected = True
+            except (OSError, MQTTException) as e:
+                print("Failed to connect! {}: {}".format(type(e), e))
+                print("Reattempting in 5 seconds.")
+                await asyncio.sleep(5)
+
         print("Connected to {}".format(self.mqtt_broker))
+        self.connected = True
 
         # Subscribe to each topic
         for topic in topics_to_subscribe:
             self.client.subscribe(topic, qos=1)
             print("Subscribed to {} topic".format(topic))
 
+        # Start pingreq loop
+        asyncio.create_task(self.start_ping_loop())
+
         return True
+
+    async def start_ping_loop(self):
+        """
+        Sends a PINGREQ message to the broker at a regular interval so it knows we're
+        still connected. The server's response is handled by umqtt automatically.
+        """
+        while True:
+            if self.connected:
+                self.client.ping()
+            asyncio.sleep(self.keep_alive_interval)
+
 
     def _to_bytes_literal(self, data):
         """
@@ -70,4 +101,5 @@ class Client:
         """
         Disconnect from the broker
         """
+        self.connected = False
         self.client.disconnect()

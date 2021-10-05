@@ -3,12 +3,14 @@ import time
 import uasyncio as asyncio
 import machine
 from wireless_module import WirelessModule
+from config import STATUS_LED_PINS
 from co2_sensor import CO2
 from dht_sensor import DhtSensor
 from gps_sensor import GpsSensor
 from mpu_sensor import MpuSensor
 from reed_sensor import ReedSensor
 from battery_reader import BatteryReader
+from status_led import StatusLed, WmState
 
 
 # Define module number
@@ -23,20 +25,18 @@ RZERO = 8.62
 # Circumference of a 700x28 bike wheel in meters.
 WHEEL_CIRCUMFERENCE = 2.136
 
+# Mutable global so we can write to the LED if a fatal error occurs
+status_led = StatusLed(STATUS_LED_PINS)
+
 # Define a function to map measured voltages to "true" voltages.
 # See util/battery_lin_reg.py
 def battery_calibration(voltage):
     return 0.710 * voltage + 0.927
 
 
-# Pins for R, G, B channels of status LED
-STATUS_PINS = [14, 12, 13]
-
-
 async def main():
-    for pin_num in STATUS_PINS:
-        pin = machine.Pin(pin_num, machine.Pin.OUT)
-        pin.off()
+    status_led.set_state(WmState.InitialisingSensors)
+    asyncio.create_task(status_led.start_blink_loop())
 
     # Define all the Pin objects for each sensor
     dht_pin = machine.Pin(4)
@@ -62,7 +62,7 @@ async def main():
     battery_reader = BatteryReader(battery_pin, battery_calibration)
 
     # Set up the wireless module
-    back_module = WirelessModule(MODULE_NUM, battery_reader)
+    back_module = WirelessModule(MODULE_NUM, battery_reader, status_led)
     sensors = [my_dht, my_mq135, my_reed, my_gps, my_mpu]
     back_module.add_sensors(sensors)
 
@@ -81,5 +81,7 @@ except KeyboardInterrupt:
 except Exception as exc:
     sys.print_exception(exc)
     print("Detected crash, resetting in 5 seconds...")
+    status_led.set_warning_state(WmState.Error)
+
     time.sleep(5)
     machine.reset()

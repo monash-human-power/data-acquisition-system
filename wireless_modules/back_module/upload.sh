@@ -24,6 +24,7 @@ files=(
     "../sensors/gps_sensor.py"
     "../sensors/mpu_sensor.py"
     "../sensors/reed_sensor.py"
+    "../status_led.py"
     "../libraries/abc.py"
     "../libraries/MQ135/mq135.py"
     "../libraries/micropyGPS/micropyGPS.py"

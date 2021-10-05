@@ -4,11 +4,13 @@ Wireless sensor firmware based on MicroPython.
 
 ## Getting Started
 
+For an overview of the wireless module usage from a user's view, see the [Notion manual](https://www.notion.so/Wireless-module-usage-manual-cd7e948418d040d991a50c91815e63e9).
+
 ### Set up development environment
 
 Make sure to use Visual Studio Code for the best development experience.
 
-```
+```bash
 # Install the required tools
 pipenv install
 pipenv shell
@@ -20,11 +22,11 @@ micropy
 
 You will need to create a local version of `config.py` (`cp src/config.example.py src/config.py`) and change some settings.
 
-| Name      | Description                        |
-| --------- | ---------------------------------- |
-| SENSOR_ID | Wireless module ID                 |
-| WIFI_SSID | Name of Wifi network to connect to |
-| WIFI_PASS | Wifi password                      |
+| Name        | Description                        |
+| ----------- | ---------------------------------- |
+| MQTT_BROKER | IP address of the MQTT broker      |
+| ESSID       | Name of WiFi network to connect to |
+| PASSWORD    | WiFi password                      |
 
 ### Flashing MicroPython to the ESP32
 
@@ -32,7 +34,7 @@ The ESP32 needs to be flashed with the base micropython firmware. This only need
 
 ## Uploading Code
 The `upload.sh` file in `middle_module` folder can be used to upload all relevant files on the ESP32.
-```
+```bash
 # Change this to the serial port of the ESP32
 ./upload.sh --port /dev/ttyUSB0
 ```
@@ -48,15 +50,3 @@ If using `picocom`:
 Note: This only works once in a `picocom` session, after that you'll need to close `picocom` and repeat from step 5.
 
 Use `Control-A` and then `Control-X` to terminate `picocom`.
-
-## TODOs
-
-*To remove once you have everything done!*
-
-- [x] `.env` file
-- [ ] Linters
-- [ ] travisCI files
-- [ ] Badges
-- [ ] Linting hooks
-- [ ] Basic unit tests
-- [x] Set `master` branch protection. Only allow Squash and Merge for PR's. At least 1 approval.
