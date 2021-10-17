@@ -174,7 +174,7 @@ def send_fake_data(client, duration, rate, module_id_nums):
         time.sleep(1 / rate)
 
 
-def publish(client, topic, data={}):
+def publish(client, topic, data={}, retain=False):
     """
     Publishes python dict data to a specific topic in JSON and prints it out
     client: MQTT client object
@@ -185,7 +185,7 @@ def publish(client, topic, data={}):
     json_data = json.dumps(data)
 
     # Publish the data over MQTT
-    client.publish(str(topic), json_data)
+    client.publish(str(topic), json_data, retain=retain)
     print(topic, "--> ", json_data)
 
 
@@ -196,6 +196,7 @@ def start_modules(args):
     # TODO: Add possibility to make modules by importing a file or generating
     # random modules. The modules should not be hard coded to this script.
     for module_id_num in args.id:
+        publish(client, topics.WirelessModule.id(module_id_num).status, {"online": True}, retain=True)
         publish(client, topics.WirelessModule.id(module_id_num).start)
         print("Started module", module_id_num)
 
@@ -205,8 +206,9 @@ def stop_modules(args):
     modules to stop """
 
     for module_id_num in args.id:
-        publish(client, topics.WirelessModule.id(module_id_num).stop)
         print(f"Stopping module {module_id_num}...")
+        publish(client, topics.WirelessModule.id(module_id_num).stop)
+        publish(client, topics.WirelessModule.id(module_id_num).status, {"online": False}, retain=True)
 
     time.sleep(1)
     print("Stopped all modules.")
