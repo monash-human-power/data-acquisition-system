@@ -12,7 +12,7 @@ class Client:
         :param will_topic: The topic to send a last will msg on
         :param will_msg: The msg to send on the will_topic when the client disconnects
         """
-        self.keep_alive_interval = 60
+        self.keep_alive_interval = 30
         self.client = MQTTClient(client_id, broker_address, keepalive=self.keep_alive_interval)
         self.mqtt_broker = broker_address
         self.connected = False
@@ -65,7 +65,7 @@ class Client:
         while True:
             if self.connected:
                 self.client.ping()
-            asyncio.sleep(self.keep_alive_interval)
+            await asyncio.sleep(self.keep_alive_interval)
 
 
     def _to_bytes_literal(self, data):
