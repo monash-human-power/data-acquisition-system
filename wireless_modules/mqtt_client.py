@@ -10,10 +10,18 @@ class Client:
         :param broker_address: A string holding domain name or IP address of the broker to connect to, to send and
                             receive data.
         """
-        self.keep_alive_interval = 60
+        self.keep_alive_interval = 30
         self.client = MQTTClient(client_id, broker_address, keepalive=self.keep_alive_interval)
         self.mqtt_broker = broker_address
         self.connected = False
+
+    def set_last_will(self, topic, msg):
+        """
+        Sets the last will and testament message for the client.
+        :param will_topic: The topic to send a last will msg on
+        :param will_msg: The msg to send on the will_topic when the client disconnects
+        """
+        self.client.set_last_will(topic, self._to_bytes_literal(msg), retain=True)
 
     async def connect_and_subscribe(self, topics_to_subscribe, callback_func):
         """
@@ -60,7 +68,7 @@ class Client:
         while True:
             if self.connected:
                 self.client.ping()
-            asyncio.sleep(self.keep_alive_interval)
+            await asyncio.sleep(self.keep_alive_interval)
 
 
     def _to_bytes_literal(self, data):
