@@ -22,7 +22,7 @@ GLOBAL_FILEPATH = os.path.dirname(__file__)
 
 # Global names
 TEMP_DIR = os.path.join(GLOBAL_FILEPATH, ".~temps")
-CSV_DIR = os.path.join(GLOBAL_FILEPATH, "csv_data")
+CSV_DIR = os.path.join(GLOBAL_FILEPATH, "../../../dashboard/server/data")
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless logger',
@@ -68,9 +68,6 @@ def on_message(client, userdata, msg):
     # Stop the recording of <module_id>
     elif topics.WirelessModule.id(module_id_num).stop == msg.topic:
         stop_recording(module_id_str)
-        print(module_id_str,
-              "STOPPED, RECORDED TO FILE:",
-              output_filepath[module_id_str])
 
     # Record data (battery, low-battery and sensor data)
     elif is_recording[module_id_str]:
@@ -112,14 +109,24 @@ def stop_recording(module_id_str):
     is_recording[module_id_str] = False
 
     # Find the temp files in the current folder for the current module
-    temp_filepaths = find_temp_csvs(module_id_str)
+    try:
+        temp_filepaths = find_temp_csvs(module_id_str)
 
-    # Merge the battery and sensor data into a single CSV
-    merge_and_save_temps(temp_filepaths, output_filepath[module_id_str])
+        # Merge the battery and sensor data into a single CSV
+        merge_and_save_temps(temp_filepaths, output_filepath[module_id_str])
 
-    # Remove the temp files for the specific module that where generated
-    for file in temp_filepaths:
-        os.remove(file)
+        # Remove the temp files for the specific module that where generated
+        for file in temp_filepaths:
+            os.remove(file)
+        
+        print(module_id_str,
+              "STOPPED, RECORDED TO FILE:",
+              output_filepath[module_id_str])
+    except ValueError as e:
+        # If the stop topic receives a signal but no data was recorded yet, there is no temps directory created, causing the Value Error.
+        # In such a case it's okay to terminate
+        print(module_id_str,
+              "STOPPED, No DATA was recorded")
 
 
 def find_temp_csvs(module_id_str=""):
