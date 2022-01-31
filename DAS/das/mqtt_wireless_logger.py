@@ -1,5 +1,6 @@
 import paho.mqtt.client as mqtt
 import os
+from dotenv import load_dotenv
 import pandas as pd
 from datetime import datetime
 import argparse
@@ -10,6 +11,8 @@ from mhp import topics
 
 from das.utils import DataToTempCSV
 
+
+load_dotenv()
 
 # Global dicts to store state
 # Dict structure is {<module_id_str> : <data>}
@@ -22,7 +25,7 @@ GLOBAL_FILEPATH = os.path.dirname(__file__)
 
 # Global names
 TEMP_DIR = os.path.join(GLOBAL_FILEPATH, ".~temps")
-CSV_DIR = os.path.join(GLOBAL_FILEPATH, "../../../dashboard/server/data")
+CSV_DIR = os.getenv('CSV_DIR') if os.getenv('CSV_DIR') else os.path.join(GLOBAL_FILEPATH, "../../../dashboard/server/data")
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless logger',
@@ -70,7 +73,7 @@ def on_message(client, userdata, msg):
         stop_recording(module_id_str)
 
     # Record data (battery, low-battery and sensor data)
-    elif is_recording[module_id_str]:
+    elif is_recording.get(module_id_str):
         DataToTempCSV(
             msg, module_start_time[module_id_str],
             module_id_str, module_id_num, TEMP_DIR)
