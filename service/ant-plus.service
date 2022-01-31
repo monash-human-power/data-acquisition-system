@@ -1,0 +1,9 @@
+[Unit]
+Description=MHP ANT+ mock wireless module
+
+[Install]
+WantedBy=default.target
+
+[Service]
+Restart=on-failure
+ExecStart=/bin/node ant_plus_logger
