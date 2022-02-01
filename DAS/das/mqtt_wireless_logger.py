@@ -25,7 +25,7 @@ GLOBAL_FILEPATH = os.path.dirname(__file__)
 
 # Global names
 TEMP_DIR = os.path.join(GLOBAL_FILEPATH, ".~temps")
-CSV_DIR = os.getenv('CSV_DIR') if os.getenv('CSV_DIR') else os.path.join(GLOBAL_FILEPATH, "../../../dashboard/server/data")
+CSV_DIR = os.getenv('CSV_DIR') or os.path.join(GLOBAL_FILEPATH, "csv_date")
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless logger',
