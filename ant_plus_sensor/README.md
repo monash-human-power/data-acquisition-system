@@ -10,6 +10,10 @@
 ### Setting up node.js libraries
 To install the necessary libraries for node.js you may need to manually install them instead of running `npm install`.
 
+Run the script with `node ant_plus_logger.js`.
+
+To start this script automatically, see [the services README.md](/services/README.md).
+
 ## **Legacy Code**
 + Teensy serial communication with the Ant+ can be found [here](https://github.com/monash-human-power/data-acquisition-system/blob/v2/Raspi/DAS.js)
 

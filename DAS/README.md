@@ -20,6 +20,8 @@ These steps assume that you have done the basic setup.
 ## [V3 MQTT Recorder](/DAS/das/V3_mqtt_recorder.py)
 The command line tool allows for mqtt messages on any topic to be logged and recorded to a mysql file.
 
+To start this script automatically, see [the services README.md](/services/README.md).
+
 ### Usage
 ```
 # General command
