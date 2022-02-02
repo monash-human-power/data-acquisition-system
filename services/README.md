@@ -43,5 +43,4 @@ Tip: Add the `-f` flag to continuously monitor new logs
 
 ## Requirements
 
-For poetry to correctly clone the `common/mhp` repository using SSH, the public key of the Pi must me shared with our
-github account
+For poetry to correctly clone the `common/mhp` repository using SSH, the public key of the Pi must me shared with a github account on the MHP organisation. In the case of deployments, use `mhp-deployment`.
