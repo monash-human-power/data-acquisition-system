@@ -1,5 +1,6 @@
 import paho.mqtt.client as mqtt
 import os
+from dotenv import load_dotenv
 import pandas as pd
 from datetime import datetime
 import argparse
@@ -10,6 +11,8 @@ from mhp import topics
 
 from das.utils import DataToTempCSV
 
+
+load_dotenv()
 
 # Global dicts to store state
 # Dict structure is {<module_id_str> : <data>}
@@ -22,7 +25,7 @@ GLOBAL_FILEPATH = os.path.dirname(__file__)
 
 # Global names
 TEMP_DIR = os.path.join(GLOBAL_FILEPATH, ".~temps")
-CSV_DIR = os.path.join(GLOBAL_FILEPATH, "csv_data")
+CSV_DIR = os.getenv('CSV_DIR') or os.path.join(GLOBAL_FILEPATH, "csv_date")
 
 parser = argparse.ArgumentParser(
     description='MQTT wireless logger',
@@ -68,12 +71,9 @@ def on_message(client, userdata, msg):
     # Stop the recording of <module_id>
     elif topics.WirelessModule.id(module_id_num).stop == msg.topic:
         stop_recording(module_id_str)
-        print(module_id_str,
-              "STOPPED, RECORDED TO FILE:",
-              output_filepath[module_id_str])
 
     # Record data (battery, low-battery and sensor data)
-    elif is_recording[module_id_str]:
+    elif is_recording.get(module_id_str):
         DataToTempCSV(
             msg, module_start_time[module_id_str],
             module_id_str, module_id_num, TEMP_DIR)
@@ -112,14 +112,24 @@ def stop_recording(module_id_str):
     is_recording[module_id_str] = False
 
     # Find the temp files in the current folder for the current module
-    temp_filepaths = find_temp_csvs(module_id_str)
+    try:
+        temp_filepaths = find_temp_csvs(module_id_str)
 
-    # Merge the battery and sensor data into a single CSV
-    merge_and_save_temps(temp_filepaths, output_filepath[module_id_str])
+        # Merge the battery and sensor data into a single CSV
+        merge_and_save_temps(temp_filepaths, output_filepath[module_id_str])
 
-    # Remove the temp files for the specific module that where generated
-    for file in temp_filepaths:
-        os.remove(file)
+        # Remove the temp files for the specific module that where generated
+        for file in temp_filepaths:
+            os.remove(file)
+        
+        print(module_id_str,
+              "STOPPED, RECORDED TO FILE:",
+              output_filepath[module_id_str])
+    except ValueError as e:
+        # If the stop topic receives a signal but no data was recorded yet, there is no temps directory created, causing the Value Error.
+        # In such a case it's okay to terminate
+        print(module_id_str,
+              "STOPPED, No DATA was recorded")
 
 
 def find_temp_csvs(module_id_str=""):
