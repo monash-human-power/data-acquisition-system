@@ -11,8 +11,8 @@ mkdir -p $SERVICE_DIR
 echo "✓ Successfully created $SERVICE_DIR"
 
 # Copy service files to service directory
-cp $DAS_DIR/service/$LOGGER_SERVICE_FILE $SERVICE_DIR
-cp $DAS_DIR/service/$ANT_PLUS_SERVICE_FILE $SERVICE_DIR
+cp $DAS_DIR/services/$LOGGER_SERVICE_FILE $SERVICE_DIR
+cp $DAS_DIR/services/$ANT_PLUS_SERVICE_FILE $SERVICE_DIR
 echo "✓ Coppied service files to $SERVICE_DIR"
 
 # Append working directory to end of service file
