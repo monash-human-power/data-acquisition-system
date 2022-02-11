@@ -160,20 +160,10 @@ async function heartRateConnect(antPlus) {
     if (isRecording) {
       const power = Math.round(powerAverage.average() * 100) / 100;
       const payload = {
-        'module-id': moduleID,
         sensors: [
-          {
-            type: 'power',
-            value: power,
-          },
-          {
-            type: 'cadence',
-            value: cadence,
-          },
-          {
-            type: 'heartRate',
-            value: heartRate,
-          },
+          ...(power ? [{ type: 'power', value: power }] : []),
+          ...(cadence ? [{ type: 'cadence', value: cadence }] : []),
+          ...(heartRate ? [{ type: 'heartRate', value: heartRate }] : []),
         ],
       };
       const data = JSON.stringify(payload);
