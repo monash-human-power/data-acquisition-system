@@ -38,6 +38,7 @@ winston.info(`Wireless module ID: ${moduleID}`);
 const startTopic = `/v3/wireless_module/${moduleID}/start`;
 const stopTopic = `/v3/wireless_module/${moduleID}/stop`;
 const dataTopic = `/v3/wireless_module/${moduleID}/data`;
+const statusTopic = `/v3/wireless_module/${moduleID}/status`;
 
 /**
  * Connect to the MQTT broker
@@ -47,10 +48,21 @@ const dataTopic = `/v3/wireless_module/${moduleID}/data`;
 async function mqttConnect() {
   return new Promise((resolve) => {
     winston.info('Connecting to MQTT broker...');
+    // Set the will for the mqtt connection so that we send an offline
+    // status message upon disconnecting from the broker.
+    const willPayload = { online: false };
+    const will = {
+      topic: statusTopic,
+      payload: JSON.stringify(willPayload),
+      retain: true,
+    };
+
     const mqttOptions = {
       reconnectPeriod: 1000,
       connectTimeout: 5000,
+      will,
     };
+
     const mqttClient = mqtt.connect(mqttAddress, mqttOptions);
     mqttClient.on('connect', () => {
       winston.info('Connected to MQTT broker');
@@ -118,9 +130,13 @@ async function heartRateConnect(antPlus) {
   const powerAverage = new RollingAverage(3000);
   let cadence = 0;
   let heartRate = 0;
+  const onlineMsg = { online: true };
 
   const mqttClient = await mqttConnect();
   const antPlus = await antplusConnect();
+
+  // Announce we're online once ANT+ stick is also connected
+  mqttClient.publish(statusTopic, JSON.stringify(onlineMsg), { retain: true });
 
   mqttClient.subscribe([startTopic, stopTopic]);
   mqttClient.on('message', (topic) => {
