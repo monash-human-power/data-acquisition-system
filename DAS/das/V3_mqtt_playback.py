@@ -2,7 +2,7 @@ import sys
 import argparse
 import socket
 import os
-from das.utils import logger
+import mqtt_logger
 
 parser = argparse.ArgumentParser(
     description="MQTT playback",
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     try:
         # Make logger object and initiate playback
-        main_playback = logger.Playback(
+        main_playback = mqtt_logger.Playback(
             sqlite_database_path=MQTT_LOG_FILEPATH,
             broker_address=args.host,
             verbose=args.verbose,
@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     except socket.timeout as e:
         print(f"{type(e)}: {e}")
-        print(f"The IP address of the MQTT broker is probably wrong")
+        print("The IP address of the MQTT broker is probably wrong")
 
     except Exception as e:
         print(f"{type(e)}: {e}")

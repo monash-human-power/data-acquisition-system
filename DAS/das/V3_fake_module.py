@@ -67,7 +67,7 @@ sensors = {
         ("longitude", 145),
         ("altitude", 50),
         ("course", 0),
-        ("datetime", "2017-11-28 23:55:59.342380")
+        ("datetime", "2017-11-28 23:55:59.342380"),
     ),
     "power": MockSensor(200, percent_range=0.8),
     "cadence": MockSensor(90, percent_range=0.2),
@@ -101,7 +101,7 @@ def generate_module_data(module_id_num, sensor_list):
 
 
 def send_fake_data(client, duration, rate, module_id_nums):
-    """ Send artificial data over MQTT for each module chanel. Sends [rate] per
+    """Send artificial data over MQTT for each module chanel. Sends [rate] per
     second for [duration] seconds
 
     client:         MQTT client
@@ -190,8 +190,8 @@ def publish(client, topic, data={}):
 
 
 def start_modules(args):
-    """ Sends a null message on the start channels for all of the selected
-    modules to start """
+    """Sends a null message on the start channels for all of the selected
+    modules to start"""
 
     # TODO: Add possibility to make modules by importing a file or generating
     # random modules. The modules should not be hard coded to this script.
@@ -201,8 +201,8 @@ def start_modules(args):
 
 
 def stop_modules(args):
-    """ Sends a null message on the stop channels for all of the selected
-    modules to stop """
+    """Sends a null message on the stop channels for all of the selected
+    modules to stop"""
 
     for module_id_num in args.id:
         publish(client, topics.WirelessModule.id(module_id_num).stop)
