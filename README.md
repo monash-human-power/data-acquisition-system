@@ -7,7 +7,16 @@ The Data Acquisition System (DAS) allows us to collect and store data from vario
 This repository contains all the code related to Monash Human Power's Data Acquisition System (DAS).
 
 ## Getting Started
-Type `git clone https://github.com/monash-human-power/data-acquisition-system.git --recurse-submodules` on the command line to download the whole repository and submodules.
+
+Clone the repo and install submodules.
+
+```bash
+# HTTPS
+git clone https://github.com/monash-human-power/data-acquisition-system.git --recurse-submodules
+
+# SSH
+git clone git@github.com:monash-human-power/data-acquisition-system.git --recurse-submodules
+```
 
 ## Contents
 
