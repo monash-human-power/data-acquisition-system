@@ -82,13 +82,29 @@ async function mqttConnect() {
  */
 async function antplusConnect() {
   return new Promise((resolve) => {
-    const antPlus = new Ant.GarminStick3();
+    const antPlus = new Ant.GarminStick2();
     winston.info('Finding ant-plus USB...');
     antPlus.openAsync(() => {
       antPlus.on('startup', () => {
         winston.info('ant-plus stick initialized');
         resolve(antPlus);
       });
+    });
+  });
+}
+
+/**
+ * Connect to the bicycle speed sensor
+ *
+ * @param {GarminStick3} antPlus ANT+ stick instance
+ */
+async function bicycleSpeedConnect(antPlus) {
+  return new Promise((resolve) => {
+    const bicycleSpeedScanner = new Ant.SpeedCadenceScanner(antPlus);
+    bicycleSpeedScanner.scan();
+    bicycleSpeedScanner.on('attached', () => {
+      winston.info('Speed sensor attached');
+      resolve(bicycleSpeedScanner);
     });
   });
 }
@@ -127,6 +143,7 @@ async function heartRateConnect(antPlus) {
 
 (async () => {
   let isRecording = false;
+  let speed = 0;
   const powerAverage = new RollingAverage(3000);
   let cadence = 0;
   let heartRate = 0;
@@ -156,6 +173,13 @@ async function heartRateConnect(antPlus) {
     }
   });
 
+  const bicycleSpeedScanner = await bicycleSpeedConnect(antPlus);
+  bicycleSpeedScanner.on('speedData', (data) => {
+    // Store speed into global variable
+    speed = data.speed;
+    winston.info(`ID: ${data.DeviceID}, Speed: ${speed}`);
+  });
+
   const bicyclePowerScanner = await bicyclePowerConnect(antPlus);
   bicyclePowerScanner.on('powerData', (data) => {
     // Store power meter into global variable
@@ -177,6 +201,7 @@ async function heartRateConnect(antPlus) {
       const power = Math.round(powerAverage.average() * 100) / 100;
       const payload = {
         sensors: [
+          ...(speed ? [{ type: 'antPlusSpeed', value: speed }] : []),
           ...(power ? [{ type: 'power', value: power }] : []),
           ...(cadence ? [{ type: 'cadence', value: cadence }] : []),
           ...(heartRate ? [{ type: 'heartRate', value: heartRate }] : []),
