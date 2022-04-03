@@ -5,14 +5,14 @@ description = ""
 authors = ["Blake <bhay0010@student.monash.edu>"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.9"
 paho-mqtt = "^1.5.0"
 urllib3 = "^1.25.9"
 pandas = "^1.0.3"
 argparse = "^1.4.0"
 mhp = {git = "git@github.com:monash-human-power/common.git", rev = "202012.9"}
 python-dotenv = "^0.19.2"
-mqtt-logger = "^0.2.0"
+mqtt-logger = "^0.3.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"
