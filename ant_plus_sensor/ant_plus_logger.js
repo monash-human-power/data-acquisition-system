@@ -82,7 +82,7 @@ async function mqttConnect() {
  */
 async function antplusConnect() {
   return new Promise((resolve) => {
-    const antPlus = new Ant.GarminStick2();
+    const antPlus = new Ant.GarminStick3();
     winston.info('Finding ant-plus USB...');
     antPlus.openAsync(() => {
       antPlus.on('startup', () => {
@@ -176,7 +176,8 @@ async function heartRateConnect(antPlus) {
   const bicycleSpeedScanner = await bicycleSpeedConnect(antPlus);
   bicycleSpeedScanner.on('speedData', (data) => {
     // Store speed into global variable
-    speed = data.speed;
+    const kmphToMps = 1 / 3.6;
+    speed = data.speed * kmphToMps;
     winston.info(`ID: ${data.DeviceID}, Speed: ${speed}`);
   });
 
