@@ -3,17 +3,38 @@
 *This directory contains scripts to log and test various components of the data-acquisition-system*
 
 
+- [DAS](#das)
+  - [Basic Setup and Usage](#basic-setup-and-usage)
+  - [Unit Tests](#unit-tests)
+  - [V3 MQTT Recorder](#v3-mqtt-recorder)
+    - [Usage](#usage)
+  - [V3 MQTT Playback](#v3-mqtt-playback)
+    - [Usage](#usage-1)
+  - [V3 Fake Module](#v3-fake-module)
+    - [Usage](#usage-2)
+  - [V2 MQTT Playback](#v2-mqtt-playback)
+    - [Usage](#usage-3)
+
 
 ## Basic Setup and Usage
-These steps assume that you are in the data-acquisition-system root directory and poetry installed.
-1. `cd DAS`
-2. `poetry install`
-3. `poetry shell`
-4. Run any DAS command, _e.g._ `python -m das.V3_mqtt_recorder -v`
+These steps assume that you have [poetry](https://python-poetry.org/) installed.
 
-## Run Tests
-These steps assume that you have done the basic setup.
-1. `pytest`
+```bash
+# Move into DAS directory
+cd DAS
+
+# Install dependencies using poetry
+poetry install
+
+# Enter into poetry shell [OPTIONAL] 
+poetry shell
+```
+
+## Unit Tests
+
+```bash
+poetry run pytest
+```
 
 <br/>
 
@@ -25,13 +46,13 @@ To start this script automatically, see [the services README.md](/services/READM
 ### Usage
 ```
 # General command
-python -m das.V3_mqtt_recorder [TOPICS] [FLAGS]
+poetry run python -m das.V3_mqtt_recorder [TOPICS] [FLAGS]
 
 # Subscribe to all topics on the V3 bike
-python -m das.V3_mqtt_recorder /v3/#  -v
+poetry run python -m das.V3_mqtt_recorder /v3/#  -v
 
 # Subscribe just BOOST and wireless module topics
-python -m das.V3_mqtt_recorder /v3/wireless_module/# boost/# -v
+poetry run python -m das.V3_mqtt_recorder /v3/wireless_module/# boost/# -v
 ```
 
 | Flag                       | Default Value |                        Info                         |
@@ -49,15 +70,15 @@ python -m das.V3_mqtt_recorder /v3/wireless_module/# boost/# -v
 This command line tool reads a sqlite database file created from the V3 MQTT Recorder tool and plays it back over MQTT. Simply specify the database file and this tool will do the rest!
 
 ### Usage
-```
+```bash
 # General command
-python -m das.V3_mqtt_playback [FLAGS]
+poetry run python -m das.V3_mqtt_playback [FLAGS]
 
 # Playback of all logs
-python -m das.V3_mqtt_playback -v
+poetry run python -m das.V3_mqtt_playback -v
 
 # Playback of all logs at 60x speed 
-python -m das.V3_mqtt_playback -s 60 -v
+poetry run python -m das.V3_mqtt_playback -s 60 -v
 ```
 
 | Flag                          | Default Value |               Info               |
@@ -75,15 +96,15 @@ python -m das.V3_mqtt_playback -s 60 -v
 This script mocks module data over MQTT similar to the real sensors on V3.
 
 ### Usage
-```
+```bash
 # General command
-python -m das.V3_fake_module [FLAGS]
+poetry run python -m das.V3_fake_module [FLAGS]
 
 # Fake sensor output for 10s at 3 messages per second
-python -m das.V3_fake_module -t 10 -r 3
+poetry run python -m das.V3_fake_module -t 10 -r 3
 
 # Fake sensor output for just module 1 and 2
-python -m das.V3_fake_module --id 1 2
+poetry run python -m das.V3_fake_module --id 1 2
 ```
 
 | Flag                                    | Default Value  |                        Info                         |
@@ -100,18 +121,18 @@ python -m das.V3_fake_module --id 1 2
 This command line tool plays back MQTT data by reading a V2 csv log or making up fake data.
 
 ### Usage
-```
+```bash
 # General command (with file)
-python -m das.V2_mqtt_playback --file [FILEPATH] [FLAGS]
+poetry run python -m das.V2_mqtt_playback --file [FILEPATH] [FLAGS]
 
 # General command (without file)
-python -m das.V2_mqtt_playback [FLAGS]
+poetry run python -m das.V2_mqtt_playback [FLAGS]
 
 # Playback of 1_log.csv for 30 seconds
-python -m das.V2_mqtt_playback ./das/V2_csv_data/1_log.csv -t 30
+poetry run python -m das.V2_mqtt_playback ./das/V2_csv_data/1_log.csv -t 30
 
 # Playback of 2_log.csv at 60x speed 
-python -m das.V2_mqtt_playback ./das/V2_csv_data/2_log.csv -s 60 
+poetry run python -m das.V2_mqtt_playback ./das/V2_csv_data/2_log.csv -s 60 
 ```
 
 | Flag                          | Default Value |                           Info                           |
