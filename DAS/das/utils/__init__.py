@@ -1,4 +1,3 @@
-from .DataToTempCSV import DataToTempCSV
-from .MockSensor import MockSensor
+from .mock_sensor import MockSensor
 
-__all__ = ["DataToTempCSV", "MockSensor"]
+__all__ = ["MockSensor"]
