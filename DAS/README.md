@@ -25,6 +25,9 @@ cd DAS
 
 # Install dependencies using poetry
 poetry install
+
+# Enter into poetry shell [OPTIONAL] 
+poetry shell
 ```
 
 ## Unit Tests
