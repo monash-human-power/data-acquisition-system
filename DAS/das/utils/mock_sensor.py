@@ -2,7 +2,7 @@ import random
 
 
 class MockSensor:
-    """ Base class to make a mock sensor that produces random data"""
+    """Base class to make a mock sensor that produces random data"""
 
     def __init__(self, *average_value, percent_range=0.05, decimals=2, increment=False):
         """
@@ -27,23 +27,22 @@ class MockSensor:
         self.increment = increment
 
         if len(average_value) == 1:
-            if (not isinstance(average_value[0], int)
-                    and not isinstance(average_value[0], float)):
-                raise TypeError("""Single values must be either and int or a
-                                 float""")
+            if not isinstance(average_value[0], int) and not isinstance(
+                average_value[0], float
+            ):
+                raise TypeError("""Single values must be either and int or a float""")
             self.single_val = True
 
         else:
             for sub_value in average_value:
                 if not isinstance(sub_value, tuple):
-                    raise TypeError("""Sub values must be stored as a tuple
-                                    in the form (sub_valueue_name,
-                                    average_value)""")
+                    raise TypeError(
+                        """Sub values must be stored as a tuple in the form (sub_valueue_name, average_value)"""
+                    )
             self.single_val = False
 
     def get_value(self):
-        """ Generates the random data as a float for a single val and a dict
-            for multiple sub values"""
+        """Generates the random data as a float for a single val and a dict for multiple sub values"""
 
         if self.single_val:
             return self.gen_single_value(self.average_value[0])
@@ -53,21 +52,26 @@ class MockSensor:
             for sub_value in self.average_value:
                 sub_value_name = sub_value[0]
                 sub_average_value = sub_value[1]
-                if isinstance(sub_average_value, int) or isinstance(sub_average_value, float):
-                    sensor_dict[sub_value_name] = self.gen_single_value(sub_average_value)
+                if isinstance(sub_average_value, int) or isinstance(
+                    sub_average_value, float
+                ):
+                    sensor_dict[sub_value_name] = self.gen_single_value(
+                        sub_average_value
+                    )
                 else:
                     sensor_dict[sub_value_name] = sub_average_value
 
             return sensor_dict
 
     def gen_single_value(self, average_value):
-        """ Generates a single value given an average value"""
+        """Generates a single value given an average value"""
         sensor_val = average_value
-        sensor_val += average_value * random.uniform(-self.percent_range,
-                                                     self.percent_range)
+        sensor_val += average_value * random.uniform(
+            -self.percent_range, self.percent_range
+        )
         sensor_val = round(sensor_val, self.decimals)
         if self.increment and self.single_val:
             new_value = average_value + abs(average_value - sensor_val)
-            self.average_value = (new_value, )
+            self.average_value = (new_value,)
             return new_value
         return sensor_val
