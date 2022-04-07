@@ -45,6 +45,9 @@ const stopTopic = `/v3/wireless_module/${moduleID}/stop`;
 const dataTopic = `/v3/wireless_module/${moduleID}/data`;
 const statusTopic = `/v3/wireless_module/${moduleID}/status`;
 
+// 700c 23mm tyre: https://www.bikecalc.com/wheel_size_math
+const wheelCircumference = 2.09858; // m
+
 /**
  * Connect to the MQTT broker
  *
@@ -106,6 +109,7 @@ async function antplusConnect() {
 async function bicycleSpeedConnect(antPlus) {
   return new Promise((resolve) => {
     const bicycleSpeedScanner = new Ant.SpeedCadenceScanner(antPlus);
+    bicycleSpeedScanner.setWheelCircumference(wheelCircumference);
     bicycleSpeedScanner.scan();
     bicycleSpeedScanner.on('attached', () => {
       winston.info('Speed sensor attached');
