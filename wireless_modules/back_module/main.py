@@ -51,7 +51,8 @@ async def main():
     my_mq135 = CO2(mq135_pin)
     my_mq135.set_rzero(RZERO)
 
-    my_reed = ReedSensor(reed_pin, WHEEL_CIRCUMFERENCE)
+    # Disabled in preference of ANT+ speed sensor.
+    # my_reed = ReedSensor(reed_pin, WHEEL_CIRCUMFERENCE)
 
     my_gps = GpsSensor(2)
 
@@ -63,7 +64,7 @@ async def main():
 
     # Set up the wireless module
     back_module = WirelessModule(MODULE_NUM, battery_reader, status_led)
-    sensors = [my_dht, my_mq135, my_reed, my_gps, my_mpu]
+    sensors = [my_dht, my_mq135, my_gps, my_mpu]
     back_module.add_sensors(sensors)
 
     print("Starting asyncio loop")

@@ -4,6 +4,11 @@ const Ant = require('ant-plus');
 const winston = require('./config/winston');
 const RollingAverage = require('./utils/average');
 
+// Required to detect speed sensor.
+// The GitHub code has a SpeedScanner class which isn't accessible here for some reason.
+// It uses a deviceType of 0x7b (SpeedCadenceScanner uses 0x79), and replacing it seems to work.
+Ant.SpeedCadenceScanner.deviceType = 0x7b;
+
 const argumentParser = new ArgumentParser({
   version: '1.0.0',
   addHelp: true,
@@ -39,6 +44,9 @@ const startTopic = `/v3/wireless_module/${moduleID}/start`;
 const stopTopic = `/v3/wireless_module/${moduleID}/stop`;
 const dataTopic = `/v3/wireless_module/${moduleID}/data`;
 const statusTopic = `/v3/wireless_module/${moduleID}/status`;
+
+// 700c 23mm tyre: https://www.bikecalc.com/wheel_size_math
+const wheelCircumference = 2.09858; // m
 
 /**
  * Connect to the MQTT broker
@@ -94,6 +102,23 @@ async function antplusConnect() {
 }
 
 /**
+ * Connect to the bicycle speed sensor
+ *
+ * @param {GarminStick3} antPlus ANT+ stick instance
+ */
+async function bicycleSpeedConnect(antPlus) {
+  return new Promise((resolve) => {
+    const bicycleSpeedScanner = new Ant.SpeedCadenceScanner(antPlus);
+    bicycleSpeedScanner.setWheelCircumference(wheelCircumference);
+    bicycleSpeedScanner.scan();
+    bicycleSpeedScanner.on('attached', () => {
+      winston.info('Speed sensor attached');
+      resolve(bicycleSpeedScanner);
+    });
+  });
+}
+
+/**
  * Connect to the bicycle power sensor
  *
  * @param {GarminStick3} antPlus ANT+ stick instance
@@ -127,6 +152,10 @@ async function heartRateConnect(antPlus) {
 
 (async () => {
   let isRecording = false;
+  let speed = 0;
+  // The number of wheel revolutions according to the sensor when we start recording
+  let startWheelRevolutions = null;
+  let distance = 0;
   const powerAverage = new RollingAverage(3000);
   let cadence = 0;
   let heartRate = 0;
@@ -144,6 +173,8 @@ async function heartRateConnect(antPlus) {
     switch (topic) {
       case startTopic:
         isRecording = true;
+        distance = 0;
+        startWheelRevolutions = null;
         winston.info('Start publishing data');
         break;
       case stopTopic:
@@ -154,6 +185,21 @@ async function heartRateConnect(antPlus) {
         winston.error(`Unexpected topic: ${topic}`);
         break;
     }
+  });
+
+  const bicycleSpeedScanner = await bicycleSpeedConnect(antPlus);
+  bicycleSpeedScanner.on('speedData', (data) => {
+    // Store speed into global variable
+    speed = data.CalculatedSpeed;
+    if (startWheelRevolutions === null) {
+      startWheelRevolutions = data.CumulativeSpeedRevolutionCount;
+    }
+    distance = (data.CumulativeSpeedRevolutionCount - startWheelRevolutions)
+      * wheelCircumference;
+
+    winston.info(
+      `ID: ${data.DeviceID}, Speed: ${speed}, Distance: ${distance}`,
+    );
   });
 
   const bicyclePowerScanner = await bicyclePowerConnect(antPlus);
@@ -177,6 +223,8 @@ async function heartRateConnect(antPlus) {
       const power = Math.round(powerAverage.average() * 100) / 100;
       const payload = {
         sensors: [
+          ...(speed ? [{ type: 'antSpeed', value: speed }] : []),
+          ...(distance ? [{ type: 'antDistance', value: distance }] : []),
           ...(power ? [{ type: 'power', value: power }] : []),
           ...(cadence ? [{ type: 'cadence', value: cadence }] : []),
           ...(heartRate ? [{ type: 'heartRate', value: heartRate }] : []),
