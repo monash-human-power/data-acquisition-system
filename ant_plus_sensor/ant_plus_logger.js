@@ -153,6 +153,9 @@ async function heartRateConnect(antPlus) {
 (async () => {
   let isRecording = false;
   let speed = 0;
+  // The number of wheel revolutions according to the sensor when we start recording
+  let startWheelRevolutions = null;
+  let distance = 0;
   const powerAverage = new RollingAverage(3000);
   let cadence = 0;
   let heartRate = 0;
@@ -170,6 +173,8 @@ async function heartRateConnect(antPlus) {
     switch (topic) {
       case startTopic:
         isRecording = true;
+        distance = 0;
+        startWheelRevolutions = null;
         winston.info('Start publishing data');
         break;
       case stopTopic:
@@ -185,9 +190,16 @@ async function heartRateConnect(antPlus) {
   const bicycleSpeedScanner = await bicycleSpeedConnect(antPlus);
   bicycleSpeedScanner.on('speedData', (data) => {
     // Store speed into global variable
-    const kmphToMps = 1 / 3.6;
-    speed = data.speed * kmphToMps;
-    winston.info(`ID: ${data.DeviceID}, Speed: ${speed}`);
+    speed = data.CalculatedSpeed;
+    if (startWheelRevolutions === null) {
+      startWheelRevolutions = data.CumulativeSpeedRevolutionCount;
+    }
+    distance = (data.CumulativeSpeedRevolutionCount - startWheelRevolutions)
+      * wheelCircumference;
+
+    winston.info(
+      `ID: ${data.DeviceID}, Speed: ${speed}, Distance: ${distance}`,
+    );
   });
 
   const bicyclePowerScanner = await bicyclePowerConnect(antPlus);
@@ -211,7 +223,8 @@ async function heartRateConnect(antPlus) {
       const power = Math.round(powerAverage.average() * 100) / 100;
       const payload = {
         sensors: [
-          ...(speed ? [{ type: 'antPlusSpeed', value: speed }] : []),
+          ...(speed ? [{ type: 'antSpeed', value: speed }] : []),
+          ...(distance ? [{ type: 'antDistance', value: distance }] : []),
           ...(power ? [{ type: 'power', value: power }] : []),
           ...(cadence ? [{ type: 'cadence', value: cadence }] : []),
           ...(heartRate ? [{ type: 'heartRate', value: heartRate }] : []),
