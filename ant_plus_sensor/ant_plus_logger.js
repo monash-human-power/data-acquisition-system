@@ -4,6 +4,11 @@ const Ant = require('ant-plus');
 const winston = require('./config/winston');
 const RollingAverage = require('./utils/average');
 
+// Required to detect speed sensor.
+// The GitHub code has a SpeedScanner class which isn't accessible here for some reason.
+// It uses a deviceType of 0x7b (SpeedCadenceScanner uses 0x79), and replacing it seems to work.
+Ant.SpeedCadenceScanner.deviceType = 0x7b;
+
 const argumentParser = new ArgumentParser({
   version: '1.0.0',
   addHelp: true,
