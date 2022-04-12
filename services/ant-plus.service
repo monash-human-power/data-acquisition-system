@@ -5,5 +5,7 @@ Description=MHP ANT+ mock wireless module
 WantedBy=default.target
 
 [Service]
+# ANT+ dongle doesn't seem to work if we start too soon after boot
+ExecStartPre=/bin/sleep 20
 Restart=on-failure
 ExecStart=/bin/node ant_plus_logger
