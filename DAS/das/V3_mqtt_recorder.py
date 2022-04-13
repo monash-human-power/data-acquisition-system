@@ -83,6 +83,7 @@ if __name__ == "__main__":
 
         # Start the logger
         main_recorder.start()
+        print(f"Logging all data on topic/s {args.topics}")
 
         if args.time != float("Inf"):
             time.sleep(args.time)

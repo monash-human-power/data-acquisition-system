@@ -41,7 +41,7 @@ class module:
         """ Decrease battery % by 1 and convert to JSON string """
         
         self.battery_pc -= 1
-        battery_dict = {"percentage": self.battery_pc}
+        battery_dict = {"voltage": self.battery_pc}
         return ujson.dumps(battery_dict)
 
 

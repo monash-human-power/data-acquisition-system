@@ -94,7 +94,7 @@ def parse_module_battery(module_id: int, cur: sqlite3.Cursor) -> pd.DataFrame:
             {
                 "unix_time": unix_time,
                 "run_id": run_id,
-                f"{module_id}_percentage": json_data["percentage"],
+                f"{module_id}_voltage": json_data["voltage"],
             }
         )
 

@@ -129,7 +129,7 @@ def send_fake_data(client, duration, rate, module_id_nums):
         def publish_data_and_battery(module_id_num):
             battery_data = {
                 "module-id": module_id_num,
-                "percentage": sensors["battery"].get_value(),
+                "voltage": sensors["battery"].get_value(),
             }
 
             module_topic = topics.WirelessModule.id(module_id_num).data
