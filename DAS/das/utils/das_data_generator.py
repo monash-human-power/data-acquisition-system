@@ -4,10 +4,11 @@ import random
 import time
 import math
 
+
 def send_fake_data(send_data_func, duration, rate, immitate_teensy=False):
-    """ Send artificial data over MQTT if no file is specified. Sends [rate] per second for [duration] seconds
-        Some fields are filled in by DAS.js, so if data will go through DAS.js (i.e. serial_test.py)
-        we don't want to send that data """
+    """Send artificial data over MQTT if no file is specified. Sends [rate] per second for [duration] seconds
+    Some fields are filled in by DAS.js, so if data will go through DAS.js (i.e. serial_test.py)
+    we don't want to send that data"""
     start_time = round(time.time(), 2)
     gps_speed = 0
     # MHP Workshop location
@@ -51,10 +52,11 @@ def send_fake_data(send_data_func, duration, rate, immitate_teensy=False):
         if total_time >= duration:
             break
 
+
 def send_csv_data(send_data_func, csv_path, jump, immitate_teensy=False, speedup=1):
-    """ Replays a ride recorded to a csv located at csv_path. Starts from [jump] seconds
-        Some fields are filled in by DAS.js, so if data will go through DAS.js (i.e. serial_test.py)
-        we don't want to send that data """
+    """Replays a ride recorded to a csv located at csv_path. Starts from [jump] seconds
+    Some fields are filled in by DAS.js, so if data will go through DAS.js (i.e. serial_test.py)
+    we don't want to send that data"""
     with open(csv_path) as csv_data:
         reader = csv.DictReader(csv_data)
 
@@ -83,7 +85,9 @@ def send_csv_data(send_data_func, csv_path, jump, immitate_teensy=False, speedup
             data += "&gX={}&gY={}&gZ={}".format(line["gX"], line["gY"], line["gZ"])
             data += "&thermoC={}&thermoF={}".format(line["thermoC"], line["thermoF"])
             data += "&pot={}".format(line["pot"])
-            data += "&reed_velocity={}&reed_distance={}".format(line["reed_velocity"], line["reed_distance"])
+            data += "&reed_velocity={}&reed_distance={}".format(
+                line["reed_velocity"], line["reed_distance"]
+            )
 
             if not immitate_teensy:
                 data += "&filename={}".format(os.path.basename(csv_path))
@@ -91,15 +95,25 @@ def send_csv_data(send_data_func, csv_path, jump, immitate_teensy=False, speedup
                 data += "&power={}&cadence={}".format(line["power"], line["cadence"])
 
             if line["gps"] != "0":
-                data += "&gps={}&gps_course={}&gps_speed={}&gps_satellites={}" \
-                    .format(line["gps"], line["gps_course"], line["gps_speed"], line["gps_satellites"])
-                
+                data += "&gps={}&gps_course={}&gps_speed={}&gps_satellites={}".format(
+                    line["gps"],
+                    line["gps_course"],
+                    line["gps_speed"],
+                    line["gps_satellites"],
+                )
+
                 # Mid July 2019 - field gps_location split into three separate columns
                 if "gps_location" in reader.fieldnames:
                     [gps_lat, gps_long, gps_alt] = line["gps_location"].split(",")
                 else:
-                    gps_lat, gps_long, gps_alt = line["gps_lat"], line["gps_long"], line["gps_alt"]
-                data += "&gps_lat={}&gps_long={}&gps_alt={}".format(gps_lat, gps_long, gps_alt)
+                    gps_lat, gps_long, gps_alt = (
+                        line["gps_lat"],
+                        line["gps_long"],
+                        line["gps_alt"],
+                    )
+                data += "&gps_lat={}&gps_long={}&gps_alt={}".format(
+                    gps_lat, gps_long, gps_alt
+                )
 
             send_data_func(data)
             print(data)

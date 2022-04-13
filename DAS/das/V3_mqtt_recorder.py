@@ -3,7 +3,7 @@ import os
 import time
 import sys
 import socket
-from das.utils import logger
+import mqtt_logger
 
 parser = argparse.ArgumentParser(
     description="MQTT logger",
@@ -12,7 +12,11 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument(
-    "topics", nargs="*", action="store", default=["#"], help="""MQTT topics""",
+    "topics",
+    nargs="*",
+    action="store",
+    default=["#"],
+    help="""MQTT topics""",
 )
 
 parser.add_argument(
@@ -68,7 +72,7 @@ if __name__ == "__main__":
     # Logger can run forever or for a specific time
     try:
         # Make logger object and initiate logging
-        main_recorder = logger.Recorder(
+        main_recorder = mqtt_logger.Recorder(
             MQTT_LOG_FILEPATH,
             topics=args.topics,
             broker_address=args.host,
@@ -79,6 +83,7 @@ if __name__ == "__main__":
 
         # Start the logger
         main_recorder.start()
+        print(f"Logging all data on topic/s {args.topics}")
 
         if args.time != float("Inf"):
             time.sleep(args.time)

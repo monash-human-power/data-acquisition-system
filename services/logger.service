@@ -8,4 +8,4 @@ WantedBy=default.target
 Environment=PYTHONUNBUFFERED=1
 Restart=on-failure
 # Source Poetry env path and run mqtt_wireless_logger.py without spawning a new shell
-ExecStart=/bin/bash -c 'eval "$($HOME/.pyenv/bin/pyenv init -)" && $($HOME/.poetry/bin/poetry env info -p)/bin/python mqtt_wireless_logger.py'
+ExecStart=/bin/bash -c 'eval "$($HOME/.pyenv/bin/pyenv init -)" && $($HOME/.poetry/bin/poetry env info -p)/bin/python V3_mqtt_recorder.py /v3/wireless_module/+/#'
