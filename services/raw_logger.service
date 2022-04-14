@@ -1,0 +1,9 @@
+[Unit]
+Description=MHP MQTT raw logger
+
+[Install]
+WantedBy=default.target
+
+[Service]
+Restart=on-failure
+ExecStart=/bin/bash mosquitto_sub -t '#' -v >> ~/log.txt
