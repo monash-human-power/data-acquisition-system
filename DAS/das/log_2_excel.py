@@ -135,19 +135,24 @@ if __name__ == "__main__":
 
     with pd.ExcelWriter(EXCEL_LOG_FILE, engine="xlsxwriter") as writer:
         for module_id in [1, 2, 3, 4]:
-            logging.info(f"Exporting wireless module {module_id} sensor data")
-            parse_module_data(module_id, cur).to_excel(
-                writer,
-                sheet_name=f"module_{module_id}_data",
-                index=False,
-            )
+            module_data = parse_module_data(module_id, cur)
+            module_battery = parse_module_battery(module_id, cur)
 
-            logging.info(f"Exporting wireless module {module_id} battery data")
-            parse_module_battery(module_id, cur).to_excel(
-                writer,
-                sheet_name=f"module_{module_id}_battery",
-                index=False,
-            )
+            if not module_data.empty:
+                logging.info(f"Exporting wireless module {module_id} sensor data")
+                module_data.to_excel(
+                    writer,
+                    sheet_name=f"module_{module_id}_data",
+                    index=False,
+                )
+
+            if not module_battery.empty:
+                logging.info(f"Exporting wireless module {module_id} battery data")
+                module_battery.to_excel(
+                    writer,
+                    sheet_name=f"module_{module_id}_battery",
+                    index=False,
+                )
 
         logging.info(f"Exporting all data to excel")
         parse_all_raw(cur).to_excel(writer, sheet_name="raw_data", index=False)
