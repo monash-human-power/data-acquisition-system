@@ -161,11 +161,55 @@ async function heartRateConnect(antPlus) {
   let heartRate = 0;
   const onlineMsg = { online: true };
 
+  let bicycleSpeedScanner;
+  let bicyclePowerScanner;
+  let heartRateScanner;
+
   const mqttClient = await mqttConnect();
-  const antPlus = await antplusConnect();
+  let antPlus = await antplusConnect();
 
   // Announce we're online once ANT+ stick is also connected
   mqttClient.publish(statusTopic, JSON.stringify(onlineMsg), { retain: true });
+
+  /**
+   *
+   */
+  async function initialize() {
+    antPlus = await antplusConnect();
+
+    bicycleSpeedScanner = await bicycleSpeedConnect(antPlus);
+    bicycleSpeedScanner.on('speedData', (data) => {
+      // Store speed into global variable
+      speed = data.CalculatedSpeed;
+      if (startWheelRevolutions === null) {
+        startWheelRevolutions = data.CumulativeSpeedRevolutionCount;
+      }
+      distance = (data.CumulativeSpeedRevolutionCount - startWheelRevolutions)
+        * wheelCircumference;
+
+      winston.info(
+        `ID: ${data.DeviceID}, Speed: ${speed}, Distance: ${distance}`,
+      );
+    });
+
+    bicyclePowerScanner = await bicyclePowerConnect(antPlus);
+    bicyclePowerScanner.on('powerData', (data) => {
+      // Store power meter into global variable
+      cadence = data.Cadence;
+      const power = data.Power;
+      powerAverage.add(power);
+      winston.info(
+        `ID: ${data.DeviceID}, Cadence: ${cadence}, Power: ${power}`,
+      );
+    });
+
+    heartRateScanner = await heartRateConnect(antPlus);
+    heartRateScanner.on('hbData', (data) => {
+      // Store heart rate into global variable
+      heartRate = data.ComputedHeartRate;
+      winston.info(`ID: ${data.DeviceID}, Heart Rate: ${heartRate}`);
+    });
+  }
 
   mqttClient.subscribe([startTopic, stopTopic]);
   mqttClient.on('message', (topic) => {
@@ -175,7 +219,11 @@ async function heartRateConnect(antPlus) {
         isRecording = true;
         distance = 0;
         startWheelRevolutions = null;
-        winston.info('Start publishing data');
+        winston.info(
+          'Start publishing data after re-initializing sensor classes',
+        );
+        initialize();
+        winston.info('Restarted all sensor classes');
         break;
       case stopTopic:
         isRecording = false;
@@ -185,37 +233,6 @@ async function heartRateConnect(antPlus) {
         winston.error(`Unexpected topic: ${topic}`);
         break;
     }
-  });
-
-  const bicycleSpeedScanner = await bicycleSpeedConnect(antPlus);
-  bicycleSpeedScanner.on('speedData', (data) => {
-    // Store speed into global variable
-    speed = data.CalculatedSpeed;
-    if (startWheelRevolutions === null) {
-      startWheelRevolutions = data.CumulativeSpeedRevolutionCount;
-    }
-    distance = (data.CumulativeSpeedRevolutionCount - startWheelRevolutions)
-      * wheelCircumference;
-
-    winston.info(
-      `ID: ${data.DeviceID}, Speed: ${speed}, Distance: ${distance}`,
-    );
-  });
-
-  const bicyclePowerScanner = await bicyclePowerConnect(antPlus);
-  bicyclePowerScanner.on('powerData', (data) => {
-    // Store power meter into global variable
-    cadence = data.Cadence;
-    const power = data.Power;
-    powerAverage.add(power);
-    winston.info(`ID: ${data.DeviceID}, Cadence: ${cadence}, Power: ${power}`);
-  });
-
-  const heartRateScanner = await heartRateConnect(antPlus);
-  heartRateScanner.on('hbData', (data) => {
-    // Store heart rate into global variable
-    heartRate = data.ComputedHeartRate;
-    winston.info(`ID: ${data.DeviceID}, Heart Rate: ${heartRate}`);
   });
 
   setInterval(() => {
