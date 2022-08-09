@@ -100,7 +100,7 @@ class WirelessModule:
         #     self.start_publish = False
         if topic == self.v3_start:
             msg_data = json.loads(str(msg.payload.decode("utf-8")))
-            self.start_publish = msg_data
+            self.start_publish = msg_data["start"]
 
     async def start_battery_loop(self, interval):
         """
