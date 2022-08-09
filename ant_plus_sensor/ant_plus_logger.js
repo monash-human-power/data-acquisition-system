@@ -40,8 +40,9 @@ const args = argumentParser.parseArgs();
 const { id: moduleID, host: mqttAddress, rate } = args;
 winston.info(`Wireless module ID: ${moduleID}`);
 
-const startTopic = `/v3/wireless_module/${moduleID}/start`;
-const stopTopic = `/v3/wireless_module/${moduleID}/stop`;
+// const startTopic = `/v3/wireless_module/${moduleID}/start`;
+// const stopTopic = `/v3/wireless_module/${moduleID}/stop`;
+const v3StartTopic = 'v3/start';
 const dataTopic = `/v3/wireless_module/${moduleID}/data`;
 const statusTopic = `/v3/wireless_module/${moduleID}/status`;
 
@@ -167,23 +168,46 @@ async function heartRateConnect(antPlus) {
   // Announce we're online once ANT+ stick is also connected
   mqttClient.publish(statusTopic, JSON.stringify(onlineMsg), { retain: true });
 
-  mqttClient.subscribe([startTopic, stopTopic]);
-  mqttClient.on('message', (topic) => {
+  // mqttClient.subscribe([startTopic, stopTopic]);
+  // mqttClient.on('message', (topic) => {
+  //   winston.info(`Topic fired: ${topic}`);
+  //   switch (topic) {
+  //     case startTopic:
+  //       isRecording = true;
+  //       distance = 0;
+  //       startWheelRevolutions = null;
+  //       winston.info('Start publishing data');
+  //       break;
+  //     case stopTopic:
+  //       isRecording = false;
+  //       winston.info('Stop publishing data');
+  //       break;
+  //     default:
+  //       winston.error(`Unexpected topic: ${topic}`);
+  //       break;
+  //   }
+  // });
+  mqttClient.subscribe(v3StartTopic);
+  mqttClient.on('message', (topic, payload) => {
     winston.info(`Topic fired: ${topic}`);
-    switch (topic) {
-      case startTopic:
+
+    if (topic === v3StartTopic) {
+      const msg = JSON.parse(payload);
+      winston.info(
+        `Received data from topic ${topic}: ${JSON.stringify(msg.start)}.`,
+      );
+
+      if (msg.start) {
         isRecording = true;
         distance = 0;
         startWheelRevolutions = null;
         winston.info('Start publishing data');
-        break;
-      case stopTopic:
+      } else {
         isRecording = false;
         winston.info('Stop publishing data');
-        break;
-      default:
-        winston.error(`Unexpected topic: ${topic}`);
-        break;
+      }
+    } else {
+      winston.error(`Unexpected topic: ${topic}`);
     }
   });
 
