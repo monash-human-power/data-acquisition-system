@@ -2,9 +2,8 @@ from machine import I2C
 from mpu6050 import accel
 from sensor_base import Sensor
 
-
 class MpuSensor(Sensor):
-    def __init__(self, scl_pin, sda_pin, samples=10):
+    def __init__(self, scl_pin, sda_pin, samples=10, rolling_samples=5):
         """
         Initialise the MPU6050 sensor to read accelerometer and gyroscope data.
         :param scl_pin: A Pin object connected to SCL on the sensor.
@@ -15,6 +14,9 @@ class MpuSensor(Sensor):
         self.accelerometer = accel(i2c)
         self.calibrated_values = []
         self.samples = samples
+        self.rolling_samples = rolling_samples
+        self.rolling_accel= []
+        self.normal = ""
 
     def get_smoothed_values(self, n_samples=10, calibration=None):
         """
@@ -38,10 +40,10 @@ class MpuSensor(Sensor):
                 # over n_samples, with default of 0 for first loop.
                 result[key] = result.get(key, 0) + (data[key] / n_samples)
 
-        if calibration:
-            # Remove calibration adjustment.
-            for key in calibration.keys():
-                result[key] -= calibration[key]
+        # if calibration:
+        #     # Remove calibration adjustment.
+        #     for key in calibration.keys():
+        #         result[key] -= calibration[key]
 
         return result
 
@@ -64,6 +66,15 @@ class MpuSensor(Sensor):
                 self.calibrated_values = v1
                 return v1  # Calibrated.
             print("in calibration, keep device at rest...")
+
+    def get_max_accel(self, accel_values):
+        v = list(accel_values.values())
+        k = list(accel_values.keys())
+        max_val = max(v, key=abs)
+        return [k[v.index(max_val)], abs(max_val)]
+
+    def get_mode_list(self, List):
+        return max(set(List), key = List.count)
 
     def read(self):
         """
@@ -89,8 +100,16 @@ class MpuSensor(Sensor):
             "y": all_data["GyY"] / lsb_to_deg,
             "z": all_data["GyZ"] / lsb_to_deg,
         }
-
+        if len(self.rolling_accel) == self.rolling_samples-1:
+            self.normal = self.get_mode_list(self.rolling_accel)
+        if len(self.rolling_accel) < self.rolling_samples:
+            self.rolling_accel.append(self.get_max_accel(accel_values)[0])
+        else:
+            self.rolling_accel.pop(0)
+            self.rolling_accel.append(self.get_max_accel(accel_values)[0])
+        
         return [
             {"type": "accelerometer", "value": accel_values},
             {"type": "gyroscope", "value": gyro_values},
+            {"type": "crashed", "values": self.get_mode_list(self.rolling_accel) != self.normal if len(self.rolling_accel) == self.rolling_samples else False}
         ]
