@@ -12,9 +12,6 @@ pandas = "^1.0.3"
 argparse = "^1.4.0"
 mhp = {git = "git@github.com:monash-human-power/common.git", rev = "202012.9"}
 python-dotenv = "^0.19.2"
-mqtt-logger = "^0.3.1"
-rich = "^12.2.0"
-XlsxWriter = "^3.0.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"
