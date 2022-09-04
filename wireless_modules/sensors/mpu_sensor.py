@@ -68,6 +68,11 @@ class MpuSensor(Sensor):
             print("in calibration, keep device at rest...")
 
     def get_max_accel(self, accel_values):
+        """
+        Get the index of the maximum acceleration value from the acceleration dictionary and return
+        the key to that value.
+        :param: The acceleration value dictionary
+        """
         v = list(accel_values.values())
         k = list(accel_values.keys())
         max_val = max(v, key=abs)
@@ -107,9 +112,15 @@ class MpuSensor(Sensor):
         else:
             self.rolling_accel.pop(0)
             self.rolling_accel.append(self.get_max_accel(accel_values)[0])
-        
+
+        if (len(self.rolling_accel) == self.rolling_samples):
+            if (self.get_mode_list(self.rolling_accel) != self.normal):
+                isCrashed = True
+        else:
+            isCrashed = False
+
         return [
             {"type": "accelerometer", "value": accel_values},
             {"type": "gyroscope", "value": gyro_values},
-            {"type": "crashed", "values": self.get_mode_list(self.rolling_accel) != self.normal if len(self.rolling_accel) == self.rolling_samples else False}
+            {"type": "crashed", "values": isCrashed}
         ]
