@@ -6,7 +6,7 @@ import atexit
 import paho.mqtt.client as mqtt
 from mhp import topics
 
-from das.utils import MockSensor
+from utils import MockSensor
 
 parser = argparse.ArgumentParser(
     description="MQTT wireless module test script that sends fake data",
