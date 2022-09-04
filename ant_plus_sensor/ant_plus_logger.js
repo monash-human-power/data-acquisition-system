@@ -172,9 +172,6 @@ async function heartRateConnect(antPlus) {
 
     if (topic === v3StartTopic) {
       const msg = JSON.parse(payload);
-      winston.info(
-        `Received data from topic ${topic}: ${JSON.stringify(msg.start)}.`,
-      );
 
       if (msg.start) {
         isRecording = true;
