@@ -146,7 +146,7 @@ class WirelessModule:
         stop message - after which the process is repeated.
         :param interval: Integer representing number of seconds to wait before sending data.
         """
-        secs_to_ms = 1000
+        secs_to_ms = 200
         interval *= secs_to_ms
 
         status = {"online": True}
@@ -155,6 +155,7 @@ class WirelessModule:
         # get millisecond counter and initialise to some previous time to start data publication immediately
         prev_data_sent = time.ticks_ms() - interval
 
+        count = 0
         while True:
             await self.wait_for_start()
 
@@ -166,9 +167,12 @@ class WirelessModule:
             # Get and publish sensor data
             sensor_data = self._read_sensors()
 
-            self.mqtt.publish(self.pub_data_topic, ujson.dumps(sensor_data))
-            print("MQTT data sent: {} on {}".format(sensor_data, self.pub_data_topic))
-
+            if count == 5:
+                self.mqtt.publish(self.pub_data_topic, ujson.dumps(sensor_data))
+                print("MQTT data sent: {} on {}".format(sensor_data, self.pub_data_topic))
+                count = 0
+            
+            count += 1
             self.mqtt.check_for_message()
 
     async def run(self, data_interval=1, battery_data_interval=300):
