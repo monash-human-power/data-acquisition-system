@@ -96,6 +96,8 @@ class WirelessModule:
         if topic == self.v3_start:
             msg_data = json.loads(str(msg.decode("utf-8")))
             self.start_publish = msg_data["start"]
+            #Fix for changing LED when a true is retained
+            self.status_led.set_state(WmState.Publishing)
 
     async def start_battery_loop(self, interval):
         """
@@ -137,12 +139,7 @@ class WirelessModule:
 
             # Start message received, tell sensors to start
             for sensor in self.sensors:
-                sensor.on_start()
-        
-        #Fix for changing LED when a true is retained
-        if self.start_publish and self.status_led.state != WmState.Publishing:
-            self.status_led.set_state(WmState.Publishing)
-
+                sensor.on_start()         
 
     async def start_data_loop(self, interval):
         """
