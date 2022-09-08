@@ -81,13 +81,16 @@ class MpuSensor(Sensor):
     def get_mode_list(self, List):
         return max(set(List), key = List.count)
 
-    def read(self):
+    def read(self, crash_only = False):
         """
         Read averaged and calibrated sensor data for the accelerometer and gyroscope.
-        :return: An array of length 2 containing a dictionary of acceleration values and a dictionary for
-                gyroscope values. Each contains a `type` key associated with a string of the measurement type and a
+        :param crash_only: If True, function will only return the crash detection data.
+        :return: An array of length 3 containing a dictionary of acceleration values, a dictionary for
+                gyroscope values and a boolean if there has been a crash detected. 
+                Each contains a `type` key associated with a string of the measurement type and a
                 `value` key associated with another dictionary containing (key, value) pair of the axis and it's
                 relevant data.
+                
                 The gyroscope values are in degrees/sec and accelerometer values are in Gs.
         """
         lsb_to_g = 16384
@@ -113,14 +116,17 @@ class MpuSensor(Sensor):
             self.rolling_accel.pop(0)
             self.rolling_accel.append(self.get_max_accel(accel_values)[0])
 
+        isCrashed = False
         if (len(self.rolling_accel) == self.rolling_samples):
             if (self.get_mode_list(self.rolling_accel) != self.normal):
                 isCrashed = True
-        else:
-            isCrashed = False
+            
 
-        return [
-            {"type": "accelerometer", "value": accel_values},
-            {"type": "gyroscope", "value": gyro_values},
-            {"type": "crashed", "values": isCrashed}
-        ]
+        if not crash_only:
+            return [
+                {"type": "accelerometer", "value": accel_values},
+                {"type": "gyroscope", "value": gyro_values},
+                {"type": "crashed", "values": isCrashed}
+            ]
+        else:
+            return [{"type": "crashed", "values": isCrashed}]
