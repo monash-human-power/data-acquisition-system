@@ -7,7 +7,7 @@ class SlackMessageSender(MessageSender):
         Initialises a message sending object for Slack.
         """
         self.name = "Slack"
-        self.webhook = 'https://hooks.slack.com/services/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'
+        self.webhook = ''
 
         # test message
         # self.send_test_message()
