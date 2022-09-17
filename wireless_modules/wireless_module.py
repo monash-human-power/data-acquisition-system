@@ -96,8 +96,12 @@ class WirelessModule:
         if topic == self.v3_start:
             msg_data = json.loads(str(msg.decode("utf-8")))
             self.start_publish = msg_data["start"]
-            #Fix for changing LED when a true is retained
-            self.status_led.set_state(WmState.Publishing)
+
+            if msg_data["start"]:
+                self.status_led.set_state(WmState.Publishing)
+            else:
+                self.status_led.set_state(WmState.Idle)
+
 
     async def start_battery_loop(self, interval):
         """
