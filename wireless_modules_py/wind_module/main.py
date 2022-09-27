@@ -1,6 +1,7 @@
 import sys
 sys.path.insert(1, '../sensors')
 from wind_sensor import WindSensor
+sys.path.insert(2, '../')
 from wireless_module import WirelessModule
 import asyncio
 import logging
