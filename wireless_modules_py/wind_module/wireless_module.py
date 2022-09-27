@@ -3,6 +3,8 @@ import asyncio
 import random
 import json
 import time
+import config
+import logging
 
 
 class WirelessModule:
@@ -10,26 +12,23 @@ class WirelessModule:
     A class structure to read and collate data from different sensors into a dictionary and send through MQTT.
     """
 
-    def __init__(self, module_id, mqtt_broker):
+    def __init__(self, module_id):
         """
         Initialise the wireless module.
         :param module_id: An integer representing the wireless module number.
-        :param battery_reader: A `BatteryReader` class to read the battery voltage from.
         """
         self.sensors = []
         
         self.pub_data_topic = "/v3/wireless_module/{}/data".format(module_id)
         
-        self.sub_start_topic = "/v3/wireless_module/{}/start".format(module_id)
-        self.sub_stop_topic = "/v3/wireless_module/{}/stop".format(module_id)
+        self.v3_start = "v3/start"
         
         self.status_topic = "/v3/wireless_module/{}/status".format(module_id)
         
         self.start_publish = False
-        self.mqtt_broker = mqtt_broker
         last_will_payload = {"online": False}
         
-        # Generate a unique client_id used to set up MQTT Client
+        # generate a unique client_id used to set up MQTT Client
         client_id = f'python-mqtt-{random.randint(0, 1000)}'
         self.mqtt = mqtt_client.Client(client_id)
         self.mqtt.will_set(self.status_topic, json.dumps(last_will_payload))
@@ -50,7 +49,7 @@ class WirelessModule:
         :pre-requisite: The read() method for each sensor must return a dictionary.
         """
         readings = {"sensors": []}
-
+        
         for sensor in self.sensors:
             sensor_data = sensor.read()
             for data in sensor_data:
@@ -59,26 +58,18 @@ class WirelessModule:
         return readings
     
     
-    def sub_cb(self, topic, msg):
+    def on_message(self, client, userdata, msg):
         """
         Process any message received from one of the subscribed topics.
-        :param topic: The topic on which the message is received.
+        :param client: TODO
+        :param userdata: TODO
         :param msg: The message received.
         """
-        print("Successfully received message: ", msg, "on:", topic)
-
-        if topic == self.sub_start_topic:
-            self.start_publish = True
-        elif topic == self.sub_stop_topic:
-            self.start_publish = False
-    
-
-    def on_connect(client, userdata, flags, rc):
-        print("Connected with result code " + str(rc))
-
-
-    def on_message(client, userdata, msg):
-        print(msg.topic + " " + str(msg.payload.decode("utf-8")))
+        logging.debug("Successfully received message: {} on: {}".format(msg.payload.decode("utf-8"), msg.topic))
+        
+        if msg.topic == self.v3_start:
+            msg_data = json.loads(str(msg.payload.decode("utf-8")))
+            self.start_publish = msg_data["start"]
     
     
     async def wait_for_start(self):
@@ -90,14 +81,12 @@ class WirelessModule:
         MS_TO_SEC = 1/1000
         
         if not self.start_publish:
-            print("Waiting for start message...")
+            logging.info("Waiting for start message...")
             
             while not self.start_publish:
-                self.sub_cb = self.sub_cb
-                self.mqtt.on_message = self.on_message
                 await asyncio.sleep(100*MS_TO_SEC)
             
-            # start message received, tell sensors to start
+            # tell sensors to start reading once start message received
             for sensor in self.sensors:
                 sensor.on_start()
     
@@ -111,7 +100,7 @@ class WirelessModule:
         NS_TO_MS = 1000000
         SEC_TO_MS = 1000
         MS_TO_SEC = 1/1000
-
+        
         interval *= SEC_TO_MS
         
         status = {"online": True}
@@ -135,16 +124,26 @@ class WirelessModule:
             
             # publish sensor data
             self.mqtt.publish(self.pub_data_topic, json.dumps(sensor_data))
-            print("MQTT data sent: {} on {}".format(sensor_data, self.pub_data_topic))
-            print("\n")
-            
-            self.mqtt.on_message = self.on_message
-            self.mqtt.on_connect = self.on_connect
-        
-
+            logging.info("MQTT data sent: {} on {}\n".format(sensor_data, self.pub_data_topic))
+    
+    
     async def run(self, data_interval=1):
         """
         Start running the wireless module. Connect to MQTT and start the data loop.
         :param data_interval: An integer representing the number of seconds to wait before sending data.
         """
-        # TODO
+        # set callback function
+        self.mqtt.on_message = self.on_message
+        
+        # connect to broker
+        self.mqtt.connect(config.MQTT_BROKER)
+        # self.mqtt.username_pw_set(config.USERNAME, config.PASSWORD)
+        
+        # subscribe to start topic
+        sub_topics = [self.v3_start]
+        for topic in sub_topics:
+            self.mqtt.subscribe(topic, qos=1)
+            logging.debug("Subscribed to {} topic".format(topic))
+        
+        asyncio.create_task(self.start_data_loop(data_interval))
+        self.mqtt.loop_start()

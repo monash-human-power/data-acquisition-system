@@ -1,4 +1,4 @@
-from rpi_sensor_base import Sensor
+from sensor_base import Sensor
 import serial
 import time
 
