@@ -1,36 +1,77 @@
-import paho_mqtt.src.paho.mqtt.client as mqtt #import the client1
+from paho.mqtt import client as mqtt #import the client
 from crash_alert import CrashAlert
-import time
-from distutils.util import strtobool
-############
-crash_alert = CrashAlert(5)
+import argparse
+import logging
+import os
+import json
+from dotenv import load_dotenv
 
-def on_message(client, userdata, message):
-    string_received = str(message.payload.decode("utf-8"))
-    boolean = strtobool(string_received)
-    if boolean:
-        print(crash_alert.alert())
-    print("message received", string_received)
-    print("message time=",time.strftime("%H:%M:%S"))
-    print("message topic=",message.topic)
-    print("message qos=",message.qos)
-    print("message retain flag=",message.retain)
+class CrashAlertDriver():
+    """
+    """
+    def __init__(self, host, topic, cooldown, port=1883):
+        """
+        """
+        self.host = host
+        self.port = port
+        self.topic = topic
+        self.client = None
+        self.crash_alert = CrashAlert(cooldown)
 
-########################################
-broker_address="localhost"
-#broker_address=local
-print("creating new instance")
-client = mqtt.Client("P1") #create new instance
-client.on_message=on_message #attach function to callback
-print("connecting to broker")
-client.connect(broker_address) #connect to broker
-client.loop_start() #start the loop
-print("Subscribing to topic","crash_alert")
-client.subscribe("crash_alert")
-msg = input("Enter message: ")
-while msg != "stop":
-    print("Publishing message to topic","crash_alert")
-    client.publish("crash_alert", msg)
-    time.sleep(0.5)
-    msg = input("Enter message: ")
-client.loop_stop() #stop the loop
+    @staticmethod
+    def get_args(argv=None):
+        """Get arguments passed into Python script.
+        Parameters
+        ----------
+        argv : list(str), optional
+            A list of arguments to manually input, by default None
+        Returns
+        -------
+        {str : str}
+            A dictionary containing all arguments passed from command line
+        """
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--host", type=str, default="localhost", help="ip address")
+        parsed_args = parser.parse_args(argv)
+        return parsed_args
+
+    def on_connect(self):
+        """
+        """
+        self.client.subscribe(self.topic)
+
+    def on_message(self, client, userdata, message):
+        """
+        """
+        decoded_message = str(message.payload.decode("utf-8"))
+        value = json.loads(decoded_message)
+        logging.info(f"MQTT message received: {value}")
+        if value:
+            return_msg = self.crash_alert.alert()
+            logging.debug(return_msg) 
+
+    def start(self):
+        """
+        """
+        self.client = mqtt.Client()
+        self.client.enable_logger()
+        self.client.on_connect = self.on_connect 
+        self.client.on_message = self.on_message 
+        self.mqtt_client.connect_async(self.host, self.port)
+        self.client.loop_forever(retry_first_connection = True)
+
+
+if __name__ == "__main__":
+    load_dotenv()
+
+    logging.basicConfig(
+        format="%(levelname)-8s [%(filename)s] %(message)s", level=logging.DEBUG
+    )
+
+    slack_webhook = os.getenv("SLACK_WEBHOOK")
+    host = os.getenv("MQTT_HOST")
+    topic = "/v3/wireless_module/3/crash_detection"
+    cooldown = 5
+
+    CRASH_ALERT = CrashAlertDriver(host, topic, cooldown)
+    CRASH_ALERT.start()
