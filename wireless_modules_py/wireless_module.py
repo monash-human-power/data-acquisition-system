@@ -11,7 +11,7 @@ class WirelessModule:
     """
     A class structure to read and collate data from different sensors into a dictionary and send through MQTT.
     """
-
+    
     def __init__(self, module_id):
         """
         Initialise the wireless module.
@@ -58,25 +58,24 @@ class WirelessModule:
         return readings
     
     
-    def on_message(self, client, userdata, msg):
+    def on_message(self, client, userdata, message):
         """
         Process any message received from one of the subscribed topics.
-        :param client: TODO
-        :param userdata: TODO
-        :param msg: The message received.
+        :param client: The client instance for this callback.
+        :param userdata: The private user data as set in Client() or user_data_set().
+        :param message: The instance of MQTTMessage received, with members topic, payload, qos, retain.
         """
-        logging.debug("Successfully received message: {} on: {}".format(msg.payload.decode("utf-8"), msg.topic))
+        logging.debug("Successfully received message: {} on: {}".format(message.payload.decode("utf-8"), message.topic))
         
-        if msg.topic == self.v3_start:
-            msg_data = json.loads(str(msg.payload.decode("utf-8")))
+        if message.topic == self.v3_start:
+            msg_data = json.loads(str(message.payload.decode("utf-8")))
             self.start_publish = msg_data["start"]
     
     
     async def wait_for_start(self):
         """
         Asynchronously blocks until publishing is started.
-        If at the time of calling the function the module is not publishing,
-        each sensor will be told to start when publishing begins.
+        If at the time of calling the function the module is not publishing, each sensor will be told to start when publishing begins.
         """
         MS_TO_SEC = 1/1000
         

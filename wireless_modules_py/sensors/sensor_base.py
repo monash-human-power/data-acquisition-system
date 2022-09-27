@@ -3,9 +3,9 @@ from abc import abstractmethod
 
 class Sensor:
     """
-    An abstract base class for all Raspberry Pi based sensors.
+    An abstract base class for all sensors.
     """
-
+    
     def __init__(self):
         pass
     
