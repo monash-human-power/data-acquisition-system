@@ -1,22 +1,23 @@
+from dotenv import load_dotenv
 from paho.mqtt import client as mqtt #import the client
 from crash_alert import CrashAlert
 import argparse
 import logging
 import os
 import json
-from dotenv import load_dotenv
 
 class CrashAlertDriver():
     """
     """
-    def __init__(self, host, topic, cooldown, port=1883):
+    def __init__(self, host, topic, cooldown, slack_webhook, port=1883):
         """
         """
         self.host = host
         self.port = port
         self.topic = topic
         self.client = None
-        self.crash_alert = CrashAlert(cooldown)
+        self.crash_alert = CrashAlert(cooldown, slack_webhook)
+        self.true_count = 0
 
     @staticmethod
     def get_args(argv=None):
@@ -35,7 +36,7 @@ class CrashAlertDriver():
         parsed_args = parser.parse_args(argv)
         return parsed_args
 
-    def on_connect(self):
+    def on_connect(self, client, userdata, flags, connection_result):
         """
         """
         self.client.subscribe(self.topic)
@@ -44,11 +45,14 @@ class CrashAlertDriver():
         """
         """
         decoded_message = str(message.payload.decode("utf-8"))
-        value = json.loads(decoded_message)
-        logging.info(f"MQTT message received: {value}")
-        if value:
+        payload = json.loads(decoded_message)
+        logging.info(f"MQTT message received: {payload}")
+        if payload["value"]:
+        #     self.true_count += 1
+        # if self.true_count == 5:
             return_msg = self.crash_alert.alert()
             logging.debug(return_msg) 
+            # self.true_count = 0
 
     def start(self):
         """
@@ -57,7 +61,7 @@ class CrashAlertDriver():
         self.client.enable_logger()
         self.client.on_connect = self.on_connect 
         self.client.on_message = self.on_message 
-        self.mqtt_client.connect_async(self.host, self.port)
+        self.client.connect_async(self.host, self.port)
         self.client.loop_forever(retry_first_connection = True)
 
 
@@ -69,9 +73,10 @@ if __name__ == "__main__":
     )
 
     slack_webhook = os.getenv("SLACK_WEBHOOK")
-    host = os.getenv("MQTT_HOST")
+    ARGS = CrashAlertDriver.get_args()
+    host = ARGS.host #os.getenv("MQTT_HOST") or 
     topic = "/v3/wireless_module/3/crash_detection"
-    cooldown = 5
+    cooldown = 10
 
-    CRASH_ALERT = CrashAlertDriver(host, topic, cooldown)
+    CRASH_ALERT = CrashAlertDriver(host, topic, cooldown, slack_webhook)
     CRASH_ALERT.start()
