@@ -1,14 +1,14 @@
-from slack_message_sender import SlackMessageSender
-from sns_message_sender import SnsMessageSender
+from message_senders.slack_message_sender import SlackMessageSender
+from message_senders.sns_message_sender import SnsMessageSender
 import time
 
 class CrashAlert():
-    def __init__(self, t):
+    def __init__(self, t, slack_webhook):
         """
         """
         self.last_received_time = 0.0
         self.cooldown_time = t
-        self.apis = [SlackMessageSender()]
+        self.apis = [SlackMessageSender(slack_webhook)]
 
     def alert(self):
         """
