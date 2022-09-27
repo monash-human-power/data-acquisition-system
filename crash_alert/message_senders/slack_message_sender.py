@@ -1,13 +1,13 @@
-from message_sender_base import MessageSender
+from message_senders.message_sender_base import MessageSender
 import requests
 
 class SlackMessageSender(MessageSender):
-    def __init__(self):
+    def __init__(self, webhook):
         """
         Initialises a message sending object for Slack.
         """
         self.name = "Slack"
-        self.webhook = ''
+        self.webhook = webhook
 
         # test message
         # self.send_test_message()

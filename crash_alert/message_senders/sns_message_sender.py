@@ -1,4 +1,4 @@
-from message_sender_base import MessageSender
+from message_senders.message_sender_base import MessageSender
 import json
 import boto3
 from botocore.exceptions import ClientError
