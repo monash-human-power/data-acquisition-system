@@ -1,13 +1,13 @@
 [[package]]
 name = "boto3"
-version = "1.24.81"
+version = "1.24.85"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 
 [package.dependencies]
-botocore = ">=1.27.81,<1.28.0"
+botocore = ">=1.27.85,<1.28.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -16,7 +16,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.27.81"
+version = "1.27.85"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -153,17 +153,17 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.10"
-content-hash = "c392c810d5954e50ef8f39ff7da3805f24dc688be659e3a8046902696ca8893a"
+python-versions = "^3.7"
+content-hash = "9a34add3aa1200378d895085d4af454ab176085adc0b5cf106aab401e275b6a6"
 
 [metadata.files]
 boto3 = [
-    {file = "boto3-1.24.81-py3-none-any.whl", hash = "sha256:a84f11ba5d369ee4bb3e6d4c9595fe05c8c804ab9b817e578f87d956b803dcfc"},
-    {file = "boto3-1.24.81.tar.gz", hash = "sha256:75defbacdeb48b7fb321c2e283bc57b270595467e873c401b7914a79efd372c7"},
+    {file = "boto3-1.24.85-py3-none-any.whl", hash = "sha256:714b06755bd76b2001f7099a8e406604c0a0e76a8ff0425480bf1555bcbecee1"},
+    {file = "boto3-1.24.85.tar.gz", hash = "sha256:2c9004c1f0a47807c73247abe8cb2b8a7054c34b9cf6e90f448d51560de20ca1"},
 ]
 botocore = [
-    {file = "botocore-1.27.81-py3-none-any.whl", hash = "sha256:ad789bfc36ade270671c6846e314193c1968cc3523828aec1e12d012c900652f"},
-    {file = "botocore-1.27.81.tar.gz", hash = "sha256:b6b54560b110666e6f0248c0d39e0588589410186c35f4cee44be847d83fec07"},
+    {file = "botocore-1.27.85-py3-none-any.whl", hash = "sha256:06b3ebacbe9a532074db4ad68040235e3c7bd52741e3ff6710cef8ab144ecdfe"},
+    {file = "botocore-1.27.85.tar.gz", hash = "sha256:2b4c86178b5a5a2baa0a065aaf9ef9d33a7ac67bf3f30e39005de151b0408cac"},
 ]
 certifi = [
     {file = "certifi-2022.9.24-py3-none-any.whl", hash = "sha256:90c1a32f1d68f940488354e36370f6cca89f0f106db09518524c88d6ed83f382"},
