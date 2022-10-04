@@ -8,9 +8,17 @@ import json
 
 class CrashAlertDriver():
     """
+    Class that runs the crash alert. Listens to messages from the crash detection.
     """
     def __init__(self, host, topic, cooldown, slack_webhook, port=1883):
         """
+        Constructor for the class.
+
+        :param host: a string representing the MQTT host
+        :param topic: a string representing the MQTT topic to subscribe to
+        :param cooldown: an integer representing the cooldown time in seconds for the crash alert
+        :param slack_webhook: a string representing the webhook url for the slack api
+        :param port: an optional integer representing the MQTT port, default to 1883
         """
         self.host = host
         self.port = port
@@ -21,15 +29,11 @@ class CrashAlertDriver():
 
     @staticmethod
     def get_args(argv=None):
-        """Get arguments passed into Python script.
-        Parameters
-        ----------
-        argv : list(str), optional
-            A list of arguments to manually input, by default None
-        Returns
-        -------
-        {str : str}
-            A dictionary containing all arguments passed from command line
+        """
+        Get arguments passed into Python script.
+
+        :param argv: an optional list of strings to manually input, by default None
+        :returns: a dictionary containing all arguments passed from command line
         """
         parser = argparse.ArgumentParser()
         parser.add_argument("--host", type=str, default="localhost", help="ip address")
