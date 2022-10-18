@@ -8,7 +8,7 @@ import logging
 
 
 # define module number
-MODULE_NUM = 4
+MODULE_NUM = 5
 
 
 async def main():

@@ -5,6 +5,7 @@ import json
 import time
 import config
 import logging
+from mhp import topics
 
 
 class WirelessModule:
@@ -19,11 +20,11 @@ class WirelessModule:
         """
         self.sensors = []
         
-        self.pub_data_topic = "/v3/wireless_module/{}/data".format(module_id)
+        self.pub_data_topic = str(topics.WirelessModule.id(module_id).data)
         
-        self.v3_start = "v3/start"
+        self.v3_start = str(topics.V3.start)
         
-        self.status_topic = "/v3/wireless_module/{}/status".format(module_id)
+        self.status_topic = str(topics.WirelessModule.id(module_id).status)
         
         self.start_publish = False
         last_will_payload = {"online": False}
@@ -135,8 +136,8 @@ class WirelessModule:
         self.mqtt.on_message = self.on_message
         
         # connect to broker
+        self.mqtt.username_pw_set(config.USERNAME, config.PASSWORD)
         self.mqtt.connect(config.MQTT_BROKER)
-        # self.mqtt.username_pw_set(config.USERNAME, config.PASSWORD)
         
         # subscribe to start topic
         sub_topics = [self.v3_start]

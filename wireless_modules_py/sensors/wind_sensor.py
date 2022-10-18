@@ -57,7 +57,7 @@ class WindSensor(Sensor):
                 "value": {
                     "minDirection": min_direction,
                     "avgDirection": avg_direction,
-                    "maxDirction": max_direction
+                    "maxDirection": max_direction
                 }
             },
             {
