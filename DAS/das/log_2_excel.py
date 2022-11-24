@@ -2,6 +2,7 @@ import logging
 import os
 import sqlite3
 import json
+import time
 
 import numpy as np
 import pandas as pd
@@ -128,6 +129,48 @@ def parse_all_raw(cur: sqlite3.Cursor) -> pd.DataFrame:
 
     return pd.DataFrame(data_arr)
 
+# Create a class that on start and stop commands will start and stop logging
+# Need to connect to mqtt Service, requires mqtt imports
+
+class DataLogger:
+
+    def __init__(self, broker_ip, port=1883) -> None:
+        self.v3_start = topics.V3.start
+        self.broker_ip = broker_ip
+        self.port = port
+        self.mqtt_client = None
+
+    
+    def on_connect(self, client, userdata, flags, rc):
+        """Callback for when cleint receives a CONNNACK response."""
+        print("Connected with result code " + str(rc))
+
+        client.subscribe(self.v3_start)
+    
+    def on_disconnect(self, client, userdata, msg):
+        """Callback called when user is disconnected from the broker."""
+        print("Disconnected from broker")
+    
+    def on_log(self, client, userdata, level, buf):
+        """The callback to log all MQTT information"""
+        print("\nlog: ", buf)
+
+    def on_message(self, client, userdata, msg):
+        """The callback for when a PUBLISH message is received."""
+        print(msg.topic + " " + str(msg.payload))
+
+    def start(self):
+        """Start Data Logger"""
+        self.mqtt_client = mqtt.Client()
+        self.mqtt_client.on_connect = self.on_connect
+        self.mqtt_client.on_message = self.on_message
+        self.mqtt_client.on_log = self.on_log
+        self.mqtt_client.on_disconnect = self.on_disconnect
+        self.mqtt_client.connect_async(self.broker_ip, self.port, 60)
+
+        self.mqtt_client.loop_start()
+        while True:
+            time.sleep(1)
 
 if __name__ == "__main__":
     # Connect to the sqlite database that has all of the MQTT logs
@@ -160,23 +203,11 @@ if __name__ == "__main__":
 
     con.close()
 
+    BROKER_IP = "192.168.100.100" #create a config file?
+    data_logger = DataLogger(BROKER_IP)
 
+    #start
+    data_logger.start()
 
-# Create a class that on start and stop commands will start and stop logging
-# Need to connect to mqtt Service, requires mqtt imports
-
-class DataLogger:
-
-    def __init__(self) -> None:
-        v3_start = topics.V3.start
-
-    
-    def on_connect(self, client, userdata, flags, rc):
-        pass
-
-    def on_message(self, client, userdata, msg):
-        pass
-
-    
 
         
