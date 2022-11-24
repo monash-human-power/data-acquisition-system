@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from rich.logging import RichHandler
 
 from mhp import topics
+import paho.mqtt.client as mqtt
 
 
 # Load env variables
@@ -158,3 +159,24 @@ if __name__ == "__main__":
         parse_all_raw(cur).to_excel(writer, sheet_name="raw_data", index=False)
 
     con.close()
+
+
+
+# Create a class that on start and stop commands will start and stop logging
+# Need to connect to mqtt Service, requires mqtt imports
+
+class DataLogger:
+
+    def __init__(self) -> None:
+        v3_start = topics.V3.start
+
+    
+    def on_connect(self, client, userdata, flags, rc):
+        pass
+
+    def on_message(self, client, userdata, msg):
+        pass
+
+    
+
+        
