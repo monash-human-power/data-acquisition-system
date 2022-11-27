@@ -173,36 +173,37 @@ class DataLogger:
             time.sleep(1)
 
 if __name__ == "__main__":
-    # Connect to the sqlite database that has all of the MQTT logs
-    con = sqlite3.connect(MQTT_LOG_FILE)
-    cur = con.cursor()
+    # # Connect to the sqlite database that has all of the MQTT logs
+    # con = sqlite3.connect(MQTT_LOG_FILE)
+    # cur = con.cursor()
 
-    with pd.ExcelWriter(EXCEL_LOG_FILE, engine="xlsxwriter") as writer:
-        for module_id in [1, 2, 3, 4]:
-            module_data = parse_module_data(module_id, cur)
-            module_battery = parse_module_battery(module_id, cur)
+    # with pd.ExcelWriter(EXCEL_LOG_FILE, engine="xlsxwriter") as writer:
+    #     for module_id in [1, 2, 3, 4]:
+    #         module_data = parse_module_data(module_id, cur)
+    #         module_battery = parse_module_battery(module_id, cur)
 
-            if not module_data.empty:
-                logging.info(f"Exporting wireless module {module_id} sensor data")
-                module_data.to_excel(
-                    writer,
-                    sheet_name=f"module_{module_id}_data",
-                    index=False,
-                )
+    #         if not module_data.empty:
+    #             logging.info(f"Exporting wireless module {module_id} sensor data")
+    #             module_data.to_excel(
+    #                 writer,
+    #                 sheet_name=f"module_{module_id}_data",
+    #                 index=False,
+    #             )
 
-            if not module_battery.empty:
-                logging.info(f"Exporting wireless module {module_id} battery data")
-                module_battery.to_excel(
-                    writer,
-                    sheet_name=f"module_{module_id}_battery",
-                    index=False,
-                )
+    #         if not module_battery.empty:
+    #             logging.info(f"Exporting wireless module {module_id} battery data")
+    #             module_battery.to_excel(
+    #                 writer,
+    #                 sheet_name=f"module_{module_id}_battery",
+    #                 index=False,
+    #             )
 
-        logging.info(f"Exporting all data to excel")
-        parse_all_raw(cur).to_excel(writer, sheet_name="raw_data", index=False)
+    #     logging.info(f"Exporting all data to excel")
+    #     parse_all_raw(cur).to_excel(writer, sheet_name="raw_data", index=False)
 
-    con.close()
+    # con.close()
 
+    #Need to change the IP address
     BROKER_IP = "192.168.100.100" #create a config file?
     data_logger = DataLogger(BROKER_IP)
 
