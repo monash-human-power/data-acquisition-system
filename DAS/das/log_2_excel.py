@@ -204,7 +204,7 @@ if __name__ == "__main__":
     # con.close()
 
     #Need to change the IP address
-    BROKER_IP = "192.168.100.100" #create a config file?
+    BROKER_IP = "20.243.33.45" #create a config file?
     data_logger = DataLogger(BROKER_IP)
 
     #start
