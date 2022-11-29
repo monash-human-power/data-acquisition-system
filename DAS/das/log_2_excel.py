@@ -54,6 +54,14 @@ class DataLogger:
         """The callback for when a PUBLISH message is received."""
         print(msg.topic + " " + str(msg.payload))
 
+        if msg.topic == self.v3_start:
+
+            received_data = str(msg.payload.decode("utf-8"))
+            dict_data = json.loads(received_data)
+
+            if not dict_data["start"]:
+                self.convertXL()
+
     def start(self):
         """Start Data Logger"""
         self.mqtt_client = mqtt.Client()
