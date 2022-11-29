@@ -145,7 +145,7 @@ class DataLogger:
         """Callback for when cleint receives a CONNNACK response."""
         print("Connected with result code " + str(rc))
 
-        client.subscribe(self.v3_start)
+        client.subscribe(str(self.v3_start))
     
     def on_disconnect(self, client, userdata, msg):
         """Callback called when user is disconnected from the broker."""
