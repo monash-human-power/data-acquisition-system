@@ -205,7 +205,7 @@ if __name__ == "__main__":
 
     #Need to change the IP address
     BROKER_IP = "20.243.33.45" #create a config file?
-    data_logger = DataLogger(BROKER_IP)
+    data_logger = DataLogger('localhost')
 
     #start
     data_logger.start()
