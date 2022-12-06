@@ -5,7 +5,7 @@ import argparse
 import logging
 import os
 import json
-from mhp.topics import topics
+from mhp import topics
 
 class CrashAlertDriver():
     """
