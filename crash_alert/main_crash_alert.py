@@ -22,8 +22,7 @@ class CrashAlertDriver():
         """
         self.host = host
         self.port = port
-        self.topic = topics.WirelessModule.id(3).crash_alert
-        # self.topic = "/v3/wireless_module/3/crash_detection"
+        self.topic = str(topics.WirelessModule.id(3).crash_alert)
         self.client = None
         self.crash_alert = CrashAlert(cooldown, slack_webhook)
         self.true_count = 0
