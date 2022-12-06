@@ -58,7 +58,10 @@ class DataLogger:
 
             received_data = str(msg.payload.decode("utf-8"))
             dict_data = json.loads(received_data)
-
+            """
+            mosquitto_pub -t 'v3/start' -m '{\"start\":true}'
+            mosquitto_pub -t 'v3/start' -m '{\"start\":false}'
+            """
             if dict_data["start"]:
                 os.system('python V3_mqtt_recorder.py')
             else:
