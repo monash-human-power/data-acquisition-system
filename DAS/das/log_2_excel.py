@@ -59,7 +59,9 @@ class DataLogger:
             received_data = str(msg.payload.decode("utf-8"))
             dict_data = json.loads(received_data)
 
-            if not dict_data["start"]:
+            if dict_data["start"]:
+                os.system('python V3_mqtt_recorder.py')
+            else:
                 self.convertXL()
 
     def start(self):
