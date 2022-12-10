@@ -70,9 +70,10 @@ class DataLogger:
             dict_data = json.loads(received_data)
 
             if dict_data["start"]:
-                self.recorder.start()
+                # self.recorder.start()
+                pass
             else:
-                self.recorder.stop()
+                # self.recorder.stop()
                 self.convertXL()
 
     def start(self):
@@ -85,6 +86,7 @@ class DataLogger:
         self.mqtt_client.on_log = self.on_log
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.connect_async(self.broker_ip, self.port, 60)
+        self.recorder.start()
 
         self.mqtt_client.loop_start()
         while True:
