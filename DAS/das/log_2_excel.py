@@ -16,12 +16,16 @@ import paho.mqtt.client as mqtt
 
 class DataLogger:
 
-    def __init__(self, broker_ip='localhost', port=1883) -> None:
+    def __init__(self, broker_ip='localhost', port=1883, verbose=False, username=None, password=None) -> None:
         self.v3_start = topics.V3.start
         self.broker_ip = broker_ip
         self.port = port
         self.mqtt_client = None
+        self.uname = username
+        self.pword = password
         self.recorder = mqtt_logger.Recorder()
+
+
 
         #Data for log conversions
         # Load env variables
@@ -72,6 +76,8 @@ class DataLogger:
         self.mqtt_client = mqtt.Client()
         self.mqtt_client.on_connect = self.on_connect
         self.mqtt_client.on_message = self.on_message
+        if self.uname is not None and self.pword is not None:
+            self.mqtt_client.username_pw_set(self.uname, self.pword)
         self.mqtt_client.on_log = self.on_log
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.connect_async(self.broker_ip, self.port, 60)
