@@ -3,6 +3,7 @@ import os
 import sqlite3
 import json
 import time
+import argparse
 import mqtt_logger
 
 import numpy as np
@@ -16,23 +17,26 @@ import paho.mqtt.client as mqtt
 
 class DataLogger:
 
-    def __init__(self, broker_ip='localhost', port=1883, verbose=False, username=None, password=None) -> None:
+    def __init__(self, db_file, xl_file, broker_ip='localhost', port=1883, verbose=False, username=None, password=None) -> None:
         self.v3_start = topics.V3.start
         self.broker_ip = broker_ip
         self.port = port
         self.mqtt_client = None
         self.uname = username
         self.pword = password
-        self.recorder = mqtt_logger.Recorder()
 
 
 
-        #Data for log conversions
-        # Load env variables
-        load_dotenv()
+        self.MQTT_LOG_FILE = db_file 
+        self.EXCEL_LOG_FILE = xl_file  
 
-        self.MQTT_LOG_FILE = os.getenv("MQTT_LOG_FILE")
-        self.EXCEL_LOG_FILE = os.getenv("EXCEL_LOG_FILE")
+        self.recorder = mqtt_logger.Recorder(
+            sqlite_database_path=self.MQTT_LOG_FILE, 
+            broker_address=self.broker_ip,
+            verbose=verbose,
+            username=self.uname,
+            password=self.pword
+            )
 
         # Set logging to output all info by default
         logging.basicConfig(
@@ -219,10 +223,66 @@ class DataLogger:
         con.close()
 
 
+parser = argparse.ArgumentParser(
+    description="Data Logger",
+    add_help=True,
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+)
+
+parser.add_argument(
+    "--host",
+    action="store",
+    type=str,
+    default="localhost",
+    help="""Address of the MQTT broker""",
+)
+
+parser.add_argument(
+    "-v",
+    "--verbose",
+    action="store_true",
+    default=False,
+    help="""Verbose logging output""",
+)
+
+parser.add_argument(
+    "-u",
+    "--username",
+    action="store",
+    type=str,
+    default=None,
+    help="""Username for MQTT broker""",
+)
+
+parser.add_argument(
+    "-p",
+    "--password",
+    action="store",
+    type=str,
+    default=None,
+    help="""Password for MQTT broker""",
+)
+
+
     
 
 
 if __name__ == "__main__":
-    
-    data_logger = DataLogger()
+
+    # Load env variables
+    load_dotenv()
+    mqtt_log_file = os.getenv("MQTT_LOG_FILE")
+    excel_log_file = os.getenv("EXCEL_LOG_FILE")
+
+    # Read command line arguments
+    args = parser.parse_args()
+
+    data_logger = DataLogger(
+        db_file=mqtt_log_file,
+        xl_file=excel_log_file,
+        broker_ip=args.host,
+        verbose=args.verbose,
+        username=args.username,
+        password=args.password
+    )
     data_logger.start()
