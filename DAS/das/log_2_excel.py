@@ -3,6 +3,7 @@ import os
 import sqlite3
 import json
 import time
+import mqtt_logger
 
 import numpy as np
 import pandas as pd
@@ -20,6 +21,7 @@ class DataLogger:
         self.broker_ip = broker_ip
         self.port = port
         self.mqtt_client = None
+        self.recorder = mqtt_logger.Recorder()
 
         #Data for log conversions
         # Load env variables
@@ -58,13 +60,11 @@ class DataLogger:
 
             received_data = str(msg.payload.decode("utf-8"))
             dict_data = json.loads(received_data)
-            """
-            mosquitto_pub -t 'v3/start' -m '{\"start\":true}'
-            mosquitto_pub -t 'v3/start' -m '{\"start\":false}'
-            """
+
             if dict_data["start"]:
-                os.system('python V3_mqtt_recorder.py')
+                self.recorder.start()
             else:
+                self.recorder.stop()
                 self.convertXL()
 
     def start(self):
