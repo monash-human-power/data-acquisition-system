@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from paho.mqtt import client as mqtt #import the client
+from paho.mqtt import client as mqtt
 from crash_alert import CrashAlert
 import argparse
 import logging
@@ -54,12 +54,8 @@ class CrashAlertDriver():
         payload = json.loads(decoded_message)
         logging.info(f"MQTT message received: {payload}")
         if payload["value"]:
-        # check for five true results
-        #     self.true_count += 1
-        # if self.true_count == 5:
             return_msg = self.crash_alert.alert()
             logging.debug(return_msg) 
-            # self.true_count = 0
 
     def start(self):
         """
