@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     slack_webhook = os.getenv("SLACK_WEBHOOK")
     ARGS = CrashAlertDriver.get_args()
-    host = ARGS.host #os.getenv("MQTT_HOST")
+    host = os.getenv("MQTT_HOST") or ARGS.host
     cooldown = 10
 
     CRASH_ALERT = CrashAlertDriver(host, cooldown, slack_webhook)
