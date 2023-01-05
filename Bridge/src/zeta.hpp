@@ -6,7 +6,7 @@
 
 #include <ZetaRf.hpp>
 
-#include "frame.hpp"
+#include "radio.hpp"
 #include "thread_queue.hpp"
 
 // This can be replaced with any other config, but you must ensure both ends of
@@ -20,15 +20,15 @@
 
 /**
  * Class to handle all communication with the ZetaRF radio module.
- * 
+ *
  * Once initialised, the class will listen for new packets and process outgoing
  * messages in a background thread. This thead will be terminated on
  * destruction of the class.
  */
-class ZetaRfRadio
+class ZetaRfRadio : public Radio
 {
 public:
-	/** Smart/shared pointer to this class. */
+    /** Smart/shared pointer to this class. */
     using ptr_t = std::shared_ptr<ZetaRfRadio>;
 
 private:
@@ -52,10 +52,10 @@ private:
      * All interfacing with the module is performed through this member.
      */
     ZetaRfConfig<RadioConfig, ZetaRfEZRadio::EZRadioSi4455<SpiHal<
-        SpiChipSelectPin,
-        ShutdownPin,
-        InteruptRequestPin
-    >>> zeta_;
+                                  SpiChipSelectPin,
+                                  ShutdownPin,
+                                  InteruptRequestPin>>>
+        zeta_;
 
     /** Queue of packets which have not yet been transmitted. */
     ThreadQueue<Frame> send_queue_;
@@ -88,9 +88,9 @@ private:
     void transmit_packet(const Frame packet);
 
     // Class is non-copyable
-    ZetaRfRadio(const ZetaRfRadio& that) = delete;
-    ZetaRfRadio& operator=(const ZetaRfRadio& that) = delete;
-    
+    ZetaRfRadio(const ZetaRfRadio &that) = delete;
+    ZetaRfRadio &operator=(const ZetaRfRadio &that) = delete;
+
 public:
     /**
      * Create a ZetaRfRadio which can be used to transmit and receive radio
