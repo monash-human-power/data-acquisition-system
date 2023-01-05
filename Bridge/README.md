@@ -32,7 +32,11 @@ The `.xml` file is for use in Silicon Labs' [EZRadio Wireless Development Suite]
     ```bash
     git submodule update --init
     ```
-2. Download and install the Paho MQTT C library with (this can be done from any folder)
+2. Install `wiringpi`:
+   ```bash
+   sudo apt install wiringpi
+   ```
+3. Download and install the Paho MQTT C library with (this can be done from any folder)
     ```bash
     git clone https://github.com/eclipse/paho.mqtt.c.git
     cd paho.mqtt.c
@@ -42,7 +46,7 @@ The `.xml` file is for use in Silicon Labs' [EZRadio Wireless Development Suite]
     sudo cmake --build build/ --target install
     sudo ldconfig
     ```
-3. `cd` back to this `Bridge` directory, and run the following to configure and build.
+4. `cd` back to this `Bridge` directory, and run the following to configure and build.
     ```bash
     cmake .
     cmake --build . --config Release
