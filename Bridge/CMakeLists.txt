@@ -19,6 +19,7 @@ set(SOURCES
     "src/frame.cpp"
     "src/main.cpp"
     "src/mqtt.cpp"
+    "src/nrf24.cpp"
     "src/protocol.cpp"
     "src/radio.cpp"
     "src/zeta.cpp"
@@ -28,6 +29,7 @@ set(SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} zetarf)
 target_link_libraries(${PROJECT_NAME} paho-mqttpp3)
+target_link_libraries(${PROJECT_NAME} rf24 pigpio)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 # Add compile definition MQTT_BRIDGE_DEBUG if we're building debug
 target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:MQTT_BRIDGE_DEBUG>")
