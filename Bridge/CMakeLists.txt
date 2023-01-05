@@ -20,6 +20,7 @@ set(SOURCES
     "src/main.cpp"
     "src/mqtt.cpp"
     "src/protocol.cpp"
+    "src/radio.cpp"
     "src/zeta.cpp"
     "src/rf_config/si4455_revb1_bidir_fixed_crc_pre10_sync3MHP_pay8_433mhz_40kbps.cpp"
 )

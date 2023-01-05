@@ -21,54 +21,9 @@ ZetaRfRadio::ZetaRfRadio()
     std::cout << "ZetaRf init done." << std::endl;
 }
 
-ZetaRfRadio::~ZetaRfRadio()
-{
-    if (this->worker_.joinable())
-    {
-        this->should_worker_join_ = true;
-        this->worker_.join();
-    }
-}
-
-void ZetaRfRadio::set_on_received(std::function<void(Frame)> callback)
-{
-    this->on_receive_ = callback;
-}
-
-void ZetaRfRadio::send_packets(const std::vector<Frame> frames)
-{
-    this->send_queue_.push(frames);
-}
-
-void ZetaRfRadio::rx_tx_loop()
-{
-    while (!this->should_worker_join_)
-    {
-        // Receive packet
-        this->process_zeta_events();
-        if (this->zeta_.hasDataAvailable())
-            this->read_packet();
-
-        // Transmit next queued packet.
-        // We could send all queue packets, but we don't want to overwhelm the
-        // receiver's rx fifo if it is also transmitting.
-        if (auto packet = this->send_queue_.pop())
-        {
-            debug << "Sending packet: " << &*packet << std::endl;
-            this->transmit_packet(*packet);
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(2));
-    }
-    debug << "ZetaRf worker thread exiting..." << std::endl;
-}
-
-void ZetaRfRadio::process_zeta_events()
+void ZetaRfRadio::loop_tick()
 {
     const auto event = this->zeta_.checkForEvent();
-
-    if (!event)
-        return;
 
     if (event & ZetaRf::Event::DeviceBusy)
     {
@@ -85,13 +40,16 @@ void ZetaRfRadio::process_zeta_events()
         // We'll read data later
         // Get RSSI (only valid in single packet RX, before going back to RX)
         // See https://www.silabs.com/documents/public/data-sheets/Si4455.pdf
-        const auto rssi = (float) this->zeta_.latchedRssiValue() / 2 - 130;
+        const auto rssi = (float)this->zeta_.latchedRssiValue() / 2 - 130;
 
         // Restart listening on the same channel
         this->zeta_.restartListeningSinglePacket();
 
         debug << "Packet received with RSSI: " << rssi << " dBm" << std::endl;
     }
+
+    if (this->zeta_.hasDataAvailable())
+        this->read_packet();
 }
 
 void ZetaRfRadio::read_packet()

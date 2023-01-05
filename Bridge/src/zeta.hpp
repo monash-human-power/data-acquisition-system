@@ -1,13 +1,11 @@
 #pragma once
 
 #include <functional>
-#include <thread>
 #include <vector>
 
 #include <ZetaRf.hpp>
 
 #include "radio.hpp"
-#include "thread_queue.hpp"
 
 // This can be replaced with any other config, but you must ensure both ends of
 // the bridge use the same config. The configurations built in to the ZetaRf
@@ -57,39 +55,21 @@ private:
                                   InteruptRequestPin>>>
         zeta_;
 
-    /** Queue of packets which have not yet been transmitted. */
-    ThreadQueue<Frame> send_queue_;
-
-    /** Callback which is called when a packet is successfully received. */
-    std::function<void(Frame)> on_receive_;
-
-    /** Background thread which receives/transmits packets after initialisation. */
-    std::thread worker_;
-    /** Specifies if the worker thread should stop. */
-    bool should_worker_join_ = false;
-
-    /**
-     * Start a loop which repeatedly checks for received packets (which are
-     * then processed) and check for queued packets to be sent (which are will
-     * then sent). The loop will run until `this->should_worker_join` is true.
-     */
-    void rx_tx_loop();
-    /** Update the ZetaRF library and process any events that occur. */
-    void process_zeta_events();
     /**
      * Read a packet from the Zeta module's rx fifo and if successful, pass
      * the packet to the `on_received_` callback.
      */
     void read_packet();
     /**
+     * Called in the rx_tx_loop. Performs any periodically required actions
+     * (e.g. receiving packets).
+     */
+    void loop_tick();
+    /**
      * Transmit a packet using the Zeta radio module.
      * @param packet The Frame to be sent.
      */
     void transmit_packet(const Frame packet);
-
-    // Class is non-copyable
-    ZetaRfRadio(const ZetaRfRadio &that) = delete;
-    ZetaRfRadio &operator=(const ZetaRfRadio &that) = delete;
 
 public:
     /**
@@ -97,20 +77,6 @@ public:
      * messages.
      */
     ZetaRfRadio();
-    /** Stop all background processors for the ZetaRfRadio */
-    ~ZetaRfRadio();
-
-    /**
-     * Set the function to be called when a radio packet is received.
-     * @param callback The function which accepts a Frame to be called.
-     */
-    void set_on_received(std::function<void(Frame)> callback);
-    /**
-     * Add a collection of packets/frames to the transmit queue.
-     * @param frames The packets to be sent, in the order that they should be
-     *               transmitted.
-     */
-    void send_packets(const std::vector<Frame> frames);
 };
 
 /** Smart/shared pointer to a ZetaRfRadio */
