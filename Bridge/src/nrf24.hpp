@@ -11,6 +11,9 @@ class Nrf24Radio : public Radio
 private:
     RF24 nrf24_;
 
+    void loop_tick();
+    void transmit_packet(const Frame packet);
+
 public:
     /** Smart/shared pointer to this class. */
     using ptr_t = std::shared_ptr<Nrf24Radio>;

@@ -1,13 +1,13 @@
 #include "bridge.hpp"
 
-const std::string Bridge::MQTT_HASH_SEPARATOR = "ZetaBridgeSeparator";
+const std::string Bridge::MQTT_HASH_SEPARATOR = "RadioBridgeSeparator";
 
 Bridge::Bridge(MqttBridgeClient_ptr mqttClient)
     : mqtt_client_(mqttClient)
 {
     using namespace std::placeholders;
     this->mqtt_client_->set_on_message(std::bind(&Bridge::mqtt_message_received_callback, this, _1));
-    this->zeta_radio_->set_on_received(std::bind(&Bridge::zetarf_packet_received_callback, this, _1));
+    this->radio_->set_on_received(std::bind(&Bridge::radio_packet_received_callback, this, _1));
 }
 
 void Bridge::mqtt_message_received_callback(mqtt::const_message_ptr message)
@@ -18,10 +18,10 @@ void Bridge::mqtt_message_received_callback(mqtt::const_message_ptr message)
         return;
 
     const auto packets = this->tx_.pack_message(message);
-    this->zeta_radio_->send_packets(packets);
+    this->radio_->send_packets(packets);
 }
 
-void Bridge::zetarf_packet_received_callback(const Frame packet)
+void Bridge::radio_packet_received_callback(const Frame packet)
 {
     if (auto message = this->rx_.receive_packet(packet))
     {

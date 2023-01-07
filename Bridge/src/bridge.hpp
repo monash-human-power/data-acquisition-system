@@ -2,7 +2,7 @@
 
 #include "protocol.hpp"
 #include "ring_buffer.hpp"
-#include "zeta.hpp"
+#include "nrf24.hpp"
 
 /**
  * Manages and runs the MQTT Bridge.
@@ -20,10 +20,10 @@ class Bridge
      */
     MqttBridgeClient_ptr mqtt_client_;
     /**
-     * The Zeta radio to transmit all received MQTT messages with, and from
+     * The radio to transmit all received MQTT messages with, and from
      * which to receive packets for publishing to MQTT.
      */
-    ZetaRfRadio_ptr zeta_radio_ = std::make_shared<ZetaRfRadio>();
+    Radio_ptr radio_ = std::make_shared<Nrf24Radio>();
 
     /**
      * Contains the hashes of recent messages.
@@ -43,7 +43,7 @@ class Bridge
     /** Transmit an MQTT message by radio (if it is not one we published). */
     void mqtt_message_received_callback(mqtt::const_message_ptr message);
     /** Process a received radio packet for publishing. */
-    void zetarf_packet_received_callback(const Frame packet);
+    void radio_packet_received_callback(const Frame packet);
 
     /**
      * Compute a hash of an MQTT message which will be unique for a unique
@@ -56,8 +56,8 @@ class Bridge
 public:
     /**
      * Create a new Bridge to manage the MQTT radio bridge.
-     * Will initialise the Zeta module and set up appropriate callbacks to
-     * handle forwarding data between the Zeta radio and the supplied MQTT
+     * Will initialise the radio module and set up appropriate callbacks to
+     * handle forwarding data between the radio radio and the supplied MQTT
      * client.
      * @param mqttClient The MQTT client to send/receive MQTT messages with.
      */

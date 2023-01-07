@@ -12,6 +12,8 @@ Nrf24Radio::Nrf24Radio()
 {
     std::cout << "Starting NRF24 Radio..." << std::endl;
 
+    this->nrf24_ = RF24(25, 0, 100000);
+
     if (!this->nrf24_.begin())
         throw "NRF24 begin failed. Check wiring?";
 
@@ -25,4 +27,9 @@ Nrf24Radio::Nrf24Radio()
     this->worker_ = std::thread(&Nrf24Radio::rx_tx_loop, this);
 
     std::cout << "NRF24 init done." << std::endl;
+
+    this->nrf24_.printPrettyDetails();
 }
+
+void Nrf24Radio::loop_tick(){}
+void Nrf24Radio::transmit_packet(const Frame packet){}
