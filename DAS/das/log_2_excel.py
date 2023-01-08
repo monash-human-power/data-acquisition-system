@@ -25,7 +25,7 @@ class DataLogger:
         self.uname = username
         self.pword = password
 
-
+        self.run  = 1
 
         self.MQTT_LOG_FILE = db_file 
         self.EXCEL_LOG_FILE = xl_file  
@@ -75,6 +75,7 @@ class DataLogger:
             else:
                 # self.recorder.stop()
                 self.convertXL()
+                self.run += 1
 
     def start(self):
         """Start Data Logger"""
@@ -198,7 +199,7 @@ class DataLogger:
         con = sqlite3.connect(self.MQTT_LOG_FILE)
         cur = con.cursor()
 
-        with pd.ExcelWriter(self.EXCEL_LOG_FILE, engine="xlsxwriter") as writer:
+        with pd.ExcelWriter(self.EXCEL_LOG_FILE+"_"+str(self.run), engine="xlsxwriter") as writer:
             for module_id in [1, 2, 3, 4]:
                 module_data = self.parse_module_data(module_id, cur)
                 module_battery = self.parse_module_battery(module_id, cur)
