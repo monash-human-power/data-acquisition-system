@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 from rich.logging import RichHandler
+from datetime import date
 
 from mhp import topics
 import paho.mqtt.client as mqtt
@@ -17,7 +18,7 @@ import paho.mqtt.client as mqtt
 
 class DataLogger:
 
-    def __init__(self, db_file, xl_file, broker_ip='localhost', port=1883, verbose=False, username=None, password=None) -> None:
+    def __init__(self, db_file, xl_file, broker_ip='localhost', port=1883, verbose=False, username=None, password=None, fname=str(date.today().strftime("%d-%m-%Y"))) -> None:
         self.v3_start = topics.V3.start
         self.broker_ip = broker_ip
         self.port = port
@@ -25,7 +26,9 @@ class DataLogger:
         self.uname = username
         self.pword = password
 
-        self.run  = 1
+        self.run = 1
+        self.fname = fname
+        print(self.fname)
 
         self.MQTT_LOG_FILE = db_file 
         self.EXCEL_LOG_FILE = xl_file  
@@ -224,7 +227,9 @@ class DataLogger:
         con = sqlite3.connect(self.MQTT_LOG_FILE)
         cur = con.cursor()
 
-        with pd.ExcelWriter(self.EXCEL_LOG_FILE, engine="xlsxwriter") as writer:
+        excel_f = self.EXCEL_LOG_FILE + self.fname + "_" + str(self.run) + ".xlsx"
+
+        with pd.ExcelWriter(excel_f, engine="xlsxwriter") as writer:
             for module_id in [1, 2, 3, 4]:
                 module_data = self.parse_module_data(module_id, cur)
                 module_battery = self.parse_module_battery(module_id, cur)
@@ -291,6 +296,15 @@ parser.add_argument(
     help="""Password for MQTT broker""",
 )
 
+parser.add_argument(
+    "-f",
+    "--filename",
+    action="store",
+    type=str,
+    default=None,
+    help="""File naming system for excel conversion.""",
+)
+
 
     
 
@@ -311,6 +325,7 @@ if __name__ == "__main__":
         broker_ip=args.host,
         verbose=args.verbose,
         username=args.username,
-        password=args.password
+        password=args.password,
+        fname=args.filename
     )
     data_logger.start()
