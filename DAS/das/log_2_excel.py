@@ -69,13 +69,35 @@ class DataLogger:
             received_data = str(msg.payload.decode("utf-8"))
             dict_data = json.loads(received_data)
 
+            """
+            mosquitto_pub -t 'v3/start' -m '{\"start\":true}'
+            mosquitto_pub -t 'v3/start' -m '{\"start\":false}'
+            """
+
             if dict_data["start"]:
                 # self.recorder.start()
                 pass
             else:
-                # self.recorder.stop()
+                
                 self.convertXL()
+                self.clear_d()
                 self.run += 1
+
+
+    def clear_d(self):
+        """Clear the Database for relogging"""
+
+        con = None
+        try:
+            con = sqlite3.connect(self.MQTT_LOG_FILE)
+        except sqlite3.Error as e:
+            print(e)
+        
+        sql = "DELETE FROM LOG"
+        cur = con.cursor()
+        cur.execute(sql)
+        con.commit()
+
 
     def start(self):
         """Start Data Logger"""
@@ -92,6 +114,9 @@ class DataLogger:
         self.mqtt_client.loop_start()
         while True:
             time.sleep(1)
+    
+    def stop(self):
+        self.recorder.stop()
     
     #Functions for log conversion
     def parse_module_data(self, module_id: int, cur: sqlite3.Cursor) -> pd.DataFrame:
@@ -199,7 +224,7 @@ class DataLogger:
         con = sqlite3.connect(self.MQTT_LOG_FILE)
         cur = con.cursor()
 
-        with pd.ExcelWriter(self.EXCEL_LOG_FILE+"_"+str(self.run), engine="xlsxwriter") as writer:
+        with pd.ExcelWriter(self.EXCEL_LOG_FILE, engine="xlsxwriter") as writer:
             for module_id in [1, 2, 3, 4]:
                 module_data = self.parse_module_data(module_id, cur)
                 module_battery = self.parse_module_battery(module_id, cur)
