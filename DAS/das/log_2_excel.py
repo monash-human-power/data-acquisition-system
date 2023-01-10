@@ -301,7 +301,7 @@ parser.add_argument(
     "--filename",
     action="store",
     type=str,
-    default=None,
+    default=str(date.today().strftime("%d-%m-%Y")),
     help="""File naming system for excel conversion.""",
 )
 
