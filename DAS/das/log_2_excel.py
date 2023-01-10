@@ -27,9 +27,7 @@ class DataLogger:
         self.uname = username
         self.pword = password
 
-        self.run = 1
         self.fname = fname
-        print(self.fname)
 
         self.MQTT_LOG_FILE = db_file 
         self.EXCEL_LOG_FILE = xl_file  
@@ -78,14 +76,9 @@ class DataLogger:
             mosquitto_pub -t 'v3/start' -m '{\"start\":false}'
             """
 
-            if dict_data["start"]:
-                # self.recorder.start()
-                pass
-            else:
-                
+            if not dict_data["start"]:              
                 self.convertXL()
                 self.clear_d()
-                # self.run += 1
 
 
     def clear_d(self):
@@ -114,6 +107,7 @@ class DataLogger:
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.connect_async(self.broker_ip, self.port, 60)
         self.recorder.start()
+        self.clear_d()
 
         self.mqtt_client.loop_start()
         while True:
@@ -224,6 +218,8 @@ class DataLogger:
         return pd.DataFrame(data_arr)
     
     def convertXL(self):
+        """
+        """
         # Connect to the sqlite database that has all of the MQTT logs
         con = sqlite3.connect(self.MQTT_LOG_FILE)
         cur = con.cursor()
