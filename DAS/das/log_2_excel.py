@@ -10,7 +10,8 @@ import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 from rich.logging import RichHandler
-from datetime import date
+from datetime import date, datetime
+import time
 
 from mhp import topics
 import paho.mqtt.client as mqtt
@@ -84,7 +85,7 @@ class DataLogger:
                 
                 self.convertXL()
                 self.clear_d()
-                self.run += 1
+                # self.run += 1
 
 
     def clear_d(self):
@@ -227,7 +228,8 @@ class DataLogger:
         con = sqlite3.connect(self.MQTT_LOG_FILE)
         cur = con.cursor()
 
-        excel_f = self.EXCEL_LOG_FILE + self.fname + "_" + str(self.run) + ".xlsx"
+        log_time = datetime.now().strftime("%H-%M-%S")
+        excel_f = self.EXCEL_LOG_FILE + self.fname + "_" + log_time + ".xlsx"
 
         with pd.ExcelWriter(excel_f, engine="xlsxwriter") as writer:
             for module_id in [1, 2, 3, 4]:
