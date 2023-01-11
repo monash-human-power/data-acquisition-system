@@ -19,7 +19,7 @@ import paho.mqtt.client as mqtt
 
 class DataLogger:
 
-    def __init__(self, db_file, xl_file, broker_ip='localhost', port=1883, verbose=False, username=None, password=None, fname=str(date.today().strftime("%d-%m-%Y"))) -> None:
+    def __init__(self, db_file, xl_file, broker_ip='localhost', port=1883, verbose=False, username=None, password=None, fname="runfile") -> None:
         self.v3_start = topics.V3.start
         self.broker_ip = broker_ip
         self.port = port
@@ -223,9 +223,9 @@ class DataLogger:
         # Connect to the sqlite database that has all of the MQTT logs
         con = sqlite3.connect(self.MQTT_LOG_FILE)
         cur = con.cursor()
-
-        log_time = datetime.now().strftime("%H-%M-%S")
-        excel_f = self.EXCEL_LOG_FILE + self.fname + "_" + log_time + ".xlsx"
+        
+        log_time = datetime.now().strftime("%d-%b-%Y_%H-%M-%S")
+        excel_f = self.EXCEL_LOG_FILE + log_time + ".xlsx"
 
         with pd.ExcelWriter(excel_f, engine="xlsxwriter") as writer:
             for module_id in [1, 2, 3, 4]:
@@ -299,7 +299,7 @@ parser.add_argument(
     "--filename",
     action="store",
     type=str,
-    default=str(date.today().strftime("%d-%m-%Y")),
+    default="runfile",
     help="""File naming system for excel conversion.""",
 )
 
