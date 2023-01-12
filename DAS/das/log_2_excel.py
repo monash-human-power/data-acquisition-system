@@ -23,6 +23,7 @@ class DataLogger:
         """
         """
         self.v3_start = topics.V3.start
+
         self.broker_ip = broker_ip
         self.port = port
         self.mqtt_client = None
@@ -30,7 +31,6 @@ class DataLogger:
         self.pword = password
 
         self.fname = fname
-
         self.MQTT_LOG_FILE = db_file 
         self.EXCEL_LOG_FILE = xl_file  
 
@@ -52,13 +52,13 @@ class DataLogger:
     
     def on_connect(self, client, userdata, flags, rc):
         """Callback for when cleint receives a CONNNACK response."""
-        print("Connected with result code " + str(rc))
+        print("\nConnected with result code " + str(rc) + ".")
 
         client.subscribe(str(self.v3_start))
     
     def on_disconnect(self, client, userdata, msg):
         """Callback called when user is disconnected from the broker."""
-        print("Disconnected from broker")
+        print("\nDisconnected from broker.")
     
     def on_log(self, client, userdata, level, buf):
         """The callback to log all MQTT information"""
@@ -66,21 +66,18 @@ class DataLogger:
 
     def on_message(self, client, userdata, msg):
         """The callback for when a PUBLISH message is received."""
-        print(msg.topic + " " + str(msg.payload))
+        print("\nReceived: " + str(msg.topic) + " " + str(msg.payload))
 
         if msg.topic == self.v3_start:
 
             received_data = str(msg.payload.decode("utf-8"))
             dict_data = json.loads(received_data)
 
-            """
-            mosquitto_pub -t 'v3/start' -m '{\"start\":true}'
-            mosquitto_pub -t 'v3/start' -m '{\"start\":false}'
-            """
-
             if not dict_data["start"]:              
                 self.convertXL()
                 self.clear_d()
+
+
 
 
     def clear_d(self):
@@ -108,7 +105,7 @@ class DataLogger:
         self.mqtt_client.on_log = self.on_log
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.connect_async(self.broker_ip, self.port, 60)
-        self.recorder.start()
+        #self.recorder.start()
         self.clear_d()
 
         self.mqtt_client.loop_start()
@@ -116,7 +113,8 @@ class DataLogger:
             time.sleep(1)
     
     def stop(self):
-        self.recorder.stop()
+        #self.recorder.stop()
+        pass
     
     #Functions for log conversion
     def parse_module_data(self, module_id: int, cur: sqlite3.Cursor) -> pd.DataFrame:
