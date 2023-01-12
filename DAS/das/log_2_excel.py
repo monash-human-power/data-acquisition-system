@@ -224,8 +224,8 @@ class DataLogger:
         con = sqlite3.connect(self.MQTT_LOG_FILE)
         cur = con.cursor()
         
-        log_time = datetime.now().strftime("%d-%b-%Y_%H-%M-%S")
-        excel_f = self.EXCEL_LOG_FILE + log_time + ".xlsx"
+        log_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        excel_f = self.EXCEL_LOG_FILE + self.fname + "_" + log_time + ".xlsx"
 
         with pd.ExcelWriter(excel_f, engine="xlsxwriter") as writer:
             for module_id in [1, 2, 3, 4]:
