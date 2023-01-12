@@ -20,6 +20,8 @@ import paho.mqtt.client as mqtt
 class DataLogger:
 
     def __init__(self, db_file, xl_file, broker_ip='localhost', port=1883, verbose=False, username=None, password=None, fname="runfile") -> None:
+        """
+        """
         self.v3_start = topics.V3.start
         self.broker_ip = broker_ip
         self.port = port
@@ -317,7 +319,7 @@ if __name__ == "__main__":
     # Read command line arguments
     args = parser.parse_args()
 
-    data_logger = DataLogger(
+    DATA_LOGGER = DataLogger(
         db_file=mqtt_log_file,
         xl_file=excel_log_file,
         broker_ip=args.host,
@@ -326,4 +328,5 @@ if __name__ == "__main__":
         password=args.password,
         fname=args.filename
     )
-    data_logger.start()
+
+    DATA_LOGGER.start()
