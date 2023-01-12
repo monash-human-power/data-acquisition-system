@@ -18,30 +18,27 @@ import paho.mqtt.client as mqtt
 
 
 class DataLogger:
+    """Class that will log run data into excel files."""
 
-    def __init__(self, db_file, xl_file, broker_ip='localhost', port=1883, verbose=False, username=None, password=None, fname="runfile") -> None:
+    def __init__(
+        self, 
+        db_file, 
+        xl_file, 
+        broker_ip='localhost', 
+        port=1883, 
+        verbose=False, 
+        username=None, 
+        password=None, 
+        fname="runfile"
+        ):
         """
+        Constructor for the DataLogger class.
+
+        :param db_file: Filepath to where the SQLite database will be stored.
+        :param xl_file: Filepath to where all Excel logs will be stored. 
+        :broker_ip: The hostname or IP of the MQTT broker, default value is 'localhost'
+        :port: The network port of the server host to connect to, default value is 1883.
         """
-        self.v3_start = topics.V3.start
-
-        self.broker_ip = broker_ip
-        self.port = port
-        self.mqtt_client = None
-        self.uname = username
-        self.pword = password
-
-        self.fname = fname
-        self.MQTT_LOG_FILE = db_file 
-        self.EXCEL_LOG_FILE = xl_file  
-
-        self.recorder = mqtt_logger.Recorder(
-            sqlite_database_path=self.MQTT_LOG_FILE, 
-            broker_address=self.broker_ip,
-            verbose=verbose,
-            username=self.uname,
-            password=self.pword
-            )
-
         # Set logging to output all info by default
         logging.basicConfig(
             format="%(message)s",
@@ -49,24 +46,48 @@ class DataLogger:
             handlers=[RichHandler()],
         )
 
-    
+        self.v3_start = str(topics.V3.start)
+
+        self.broker_ip = broker_ip
+        self.port = port
+        self.mqtt_client = None
+        self.uname = username
+        self.pword = password
+        self.verbose = verbose
+
+        self.MQTT_LOG_FILE = db_file 
+        self.EXCEL_LOG_FILE = xl_file + fname  
+
+        self.recorder = mqtt_logger.Recorder(
+            sqlite_database_path=self.MQTT_LOG_FILE, 
+            broker_address=self.broker_ip,
+            verbose=self.verbose,
+            username=self.uname,
+            password=self.pword
+            )
+
+
     def on_connect(self, client, userdata, flags, rc):
         """Callback for when cleint receives a CONNNACK response."""
-        print("\nConnected with result code " + str(rc) + ".")
 
-        client.subscribe(str(self.v3_start))
+        print("\nConnected with result code " + str(rc) + ".")
+        client.subscribe(self.v3_start)
     
+
     def on_disconnect(self, client, userdata, msg):
         """Callback called when user is disconnected from the broker."""
         print("\nDisconnected from broker.")
     
+
     def on_log(self, client, userdata, level, buf):
         """The callback to log all MQTT information"""
         print("\nlog: ", buf)
 
+
     def on_message(self, client, userdata, msg):
         """The callback for when a PUBLISH message is received."""
-        print("\nReceived: " + str(msg.topic) + " " + str(msg.payload))
+
+        logging.info(f"\nReceived topic: " + str(msg.topic) + ", with message " + str(msg.payload))
 
         if msg.topic == self.v3_start:
 
@@ -76,8 +97,6 @@ class DataLogger:
             if not dict_data["start"]:              
                 self.convertXL()
                 self.clear_d()
-
-
 
 
     def clear_d(self):
@@ -93,10 +112,12 @@ class DataLogger:
         cur = con.cursor()
         cur.execute(sql)
         con.commit()
+        logging.info("Database logs cleared.")
 
 
     def start(self):
-        """Start Data Logger"""
+        """Start Data Logger & MQTT Client"""
+
         self.mqtt_client = mqtt.Client()
         self.mqtt_client.on_connect = self.on_connect
         self.mqtt_client.on_message = self.on_message
@@ -105,18 +126,27 @@ class DataLogger:
         self.mqtt_client.on_log = self.on_log
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.connect_async(self.broker_ip, self.port, 60)
-        #self.recorder.start()
+        logging.info("Connected MQTT client.")
+
+        self.recorder.start()
+        logging.info("Started the data logger.")
         self.clear_d()
 
         self.mqtt_client.loop_start()
         while True:
             time.sleep(1)
     
+
     def stop(self):
-        #self.recorder.stop()
-        pass
+        """Stops Data Logger & MQTT Client"""
+
+        self.recorder.stop()
+        logging.info("Stopped the data logger")
+        self.mqtt_client.disconnect()
+        self.mqtt_client.loop_stop()
+        logging.info("Disconnected MQTT client.")
     
-    #Functions for log conversion
+
     def parse_module_data(self, module_id: int, cur: sqlite3.Cursor) -> pd.DataFrame:
         """Parses the module data if it is from the sensors"""
 
@@ -159,8 +189,9 @@ class DataLogger:
 
         return pd.DataFrame(data_arr)
     
+
     def parse_module_battery(self, module_id: int, cur: sqlite3.Cursor) -> pd.DataFrame:
-        """Parses the module data if it is from the battery"""
+        """Parses the module data if it is from the battery."""
 
         query = f""" 
             SELECT * FROM LOG 
@@ -191,8 +222,9 @@ class DataLogger:
 
         return pd.DataFrame(data_arr)
 
+
     def parse_all_raw(self, cur: sqlite3.Cursor) -> pd.DataFrame:
-        """Convert all data in the LOG table into a single dataframe"""
+        """Convert all data in the LOG table into a single dataframe."""
 
         # Store all of the data dicts inside a big array before converting to a dataframe
         data_arr = []
@@ -217,15 +249,16 @@ class DataLogger:
 
         return pd.DataFrame(data_arr)
     
+
     def convertXL(self):
-        """
-        """
+        """Convert SQLite database logs into excel files."""
+
         # Connect to the sqlite database that has all of the MQTT logs
         con = sqlite3.connect(self.MQTT_LOG_FILE)
         cur = con.cursor()
         
-        log_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        excel_f = self.EXCEL_LOG_FILE + self.fname + "_" + log_time + ".xlsx"
+        #File naming follows runfile_YYYY-MM-DD_HH-MM-SS
+        excel_f = self.EXCEL_LOG_FILE + "_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".xlsx"
 
         with pd.ExcelWriter(excel_f, engine="xlsxwriter") as writer:
             for module_id in [1, 2, 3, 4]:
@@ -302,9 +335,6 @@ parser.add_argument(
     default="runfile",
     help="""File naming system for excel conversion.""",
 )
-
-
-    
 
 
 if __name__ == "__main__":
