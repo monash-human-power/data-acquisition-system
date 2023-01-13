@@ -9,13 +9,9 @@ class SlackMessageSender(MessageSender):
         self.name = "Slack"
         self.webhook = webhook
 
-        # test message
-        # self.send_test_message()
-
     def send_message(self, message):
         payload = '{"text": "%s"}' % f"<!channel> {message} :mega:"
         response = requests.post(
             self.webhook,
             data = payload
         )
-        # print(response.text)
