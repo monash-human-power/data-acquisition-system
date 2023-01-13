@@ -16,9 +16,6 @@ class SnsMessageSender(MessageSender):
         for topic in all_topics:
             self.topic = topic
 
-        # test message
-        # self.send_test_message()
-
     def list_topics(self):
         """
         Lists topics for the current account.
