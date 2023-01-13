@@ -11,7 +11,10 @@
 Upon receiving a true from the crash detection MQTT channel, the program sends an alert via this Slack channel in the MHP Slack workspace. This can be extended for more APIs by adding children of the MessageSender class and implementing the send_message() method with the APIs respective calls.
 
 ## Basic Setup and Usage
-These steps assume that you have [poetry](https://python-poetry.org/) installed.
+In the `crash_alert` directory, create `.env` file based on the `.env.example` file. 
+To obtain the Slack API webhook URL you must be added as a collaborator on the MHP Crash Alert Slack App. The URL can be found by going to the [app's home page](https://api.slack.com/apps) and then using the sidebar links to go to `Incoming Webhooks > Webhook URLs for Your Workspace`. At the bottom of the page, there should be the webhook for the `#crash-alert` channel. 
+
+These next steps assume that you have [poetry](https://python-poetry.org/) installed.
 
 ```bash
 # Move into crash_alert directory
