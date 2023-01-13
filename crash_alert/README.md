@@ -12,7 +12,7 @@ Upon receiving a true from the crash detection MQTT channel, the program sends a
 
 ## Basic Setup and Usage
 In the `crash_alert` directory, create `.env` file based on the `.env.example` file. 
-To obtain the Slack API webhook URL you must be added as a collaborator on the MHP Crash Alert Slack App. The URL can be found by going to the [app's home page](https://api.slack.com/apps) and then using the sidebar links to go to `Incoming Webhooks > Webhook URLs for Your Workspace`. At the bottom of the page, there should be the webhook for the `#crash-alert` channel. 
+To obtain the Slack API webhook URL you must be added as a collaborator on the MHP Crash Alert Slack App. The SLACK_WEBHOOK URL can be found by going to your [Slack Apps page](https://api.slack.com/apps) and copying the webhook URL at `MHP Crash Alert>Features>Incoming Webhooks`. Ensure the URL is for the `#crash-alert` channel. 
 
 These next steps assume that you have [poetry](https://python-poetry.org/) installed.
 
