@@ -55,16 +55,12 @@ class DataLogger:
         self.pword = password
         self.verbose = verbose
 
+        self.logging = False
         self.MQTT_LOG_FILE = db_file 
-        self.EXCEL_LOG_FILE = xl_file + fname  
+        self.EXCEL_LOG_FILE = xl_file + fname
+        self.time = "" 
 
-        self.recorder = mqtt_logger.Recorder(
-            sqlite_database_path=self.MQTT_LOG_FILE, 
-            broker_address=self.broker_ip,
-            verbose=self.verbose,
-            username=self.uname,
-            password=self.pword
-            )
+        self.recorder = None
 
 
     def on_connect(self, client, userdata, flags, rc):
@@ -89,14 +85,54 @@ class DataLogger:
 
         logging.info(f"\nReceived topic: " + str(msg.topic) + ", with message " + str(msg.payload))
 
+        """
+        mosquitto_pub -t 'v3/start' -m '{\"start\":true}'
+        mosquitto_pub -t 'v3/start' -m '{\"start\":false}'
+        """
+
         if msg.topic == self.v3_start:
 
             received_data = str(msg.payload.decode("utf-8"))
             dict_data = json.loads(received_data)
 
-            if not dict_data["start"]:              
-                self.convertXL()
-                self.clear_d()
+            if dict_data["start"]:
+
+                if not self.logging:
+                    self.start_logging()              
+                else:
+                    logging.warning("Already currently logging.")
+            
+            else:
+                if self.logging:
+                    self.stop_logging()
+                else:
+                    logging.warning("Logging not started yet.")
+
+
+    def start_logging(self):
+        """"""
+        self.logging = True
+        self.time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+        self.recorder = mqtt_logger.Recorder(
+            sqlite_database_path=self.MQTT_LOG_FILE+"MQTT_log_"+self.time+".db", 
+            broker_address=self.broker_ip,
+            verbose=self.verbose,
+            username=self.uname,
+            password=self.pword
+            )
+
+        self.recorder.start()
+
+
+    def stop_logging(self):
+        """"""
+        self.logging = False
+        db_path = self.MQTT_LOG_FILE+"MQTT_log_"+self.time+".db"
+        xl_path = self.EXCEL_LOG_FILE + "_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".xlsx"
+        self.convertXL(db_path, xl_path)
+
+        self.recorder.stop()
 
 
     def clear_d(self):
@@ -128,9 +164,9 @@ class DataLogger:
         self.mqtt_client.connect_async(self.broker_ip, self.port, 60)
         logging.info("Connected MQTT client.")
 
-        self.recorder.start()
-        logging.info("Started the data logger.")
-        self.clear_d()
+        # self.recorder.start()
+        # logging.info("Started the data logger.")
+        # self.clear_d()
 
         self.mqtt_client.loop_start()
         while True:
@@ -140,8 +176,8 @@ class DataLogger:
     def stop(self):
         """Stops Data Logger & MQTT Client"""
 
-        self.recorder.stop()
-        logging.info("Stopped the data logger")
+        # self.recorder.stop()
+        # logging.info("Stopped the data logger")
         self.mqtt_client.disconnect()
         self.mqtt_client.loop_stop()
         logging.info("Disconnected MQTT client.")
@@ -250,17 +286,17 @@ class DataLogger:
         return pd.DataFrame(data_arr)
     
 
-    def convertXL(self):
+    def convertXL(self, db_path, xl_path):
         """Convert SQLite database logs into excel files."""
 
         # Connect to the sqlite database that has all of the MQTT logs
-        con = sqlite3.connect(self.MQTT_LOG_FILE)
+        con = sqlite3.connect(db_path)
         cur = con.cursor()
         
         #File naming follows runfile_YYYY-MM-DD_HH-MM-SS
         excel_f = self.EXCEL_LOG_FILE + "_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".xlsx"
 
-        with pd.ExcelWriter(excel_f, engine="xlsxwriter") as writer:
+        with pd.ExcelWriter(xl_path, engine="xlsxwriter") as writer:
             for module_id in [1, 2, 3, 4]:
                 module_data = self.parse_module_data(module_id, cur)
                 module_battery = self.parse_module_battery(module_id, cur)
