@@ -135,22 +135,6 @@ class DataLogger:
         self.recorder.stop()
 
 
-    def clear_d(self):
-        """Clear the Database for relogging"""
-
-        con = None
-        try:
-            con = sqlite3.connect(self.MQTT_LOG_FILE)
-        except sqlite3.Error as e:
-            print(e)
-        
-        sql = "DELETE FROM LOG"
-        cur = con.cursor()
-        cur.execute(sql)
-        con.commit()
-        logging.info("Database logs cleared.")
-
-
     def start(self):
         """Start Data Logger & MQTT Client"""
 
