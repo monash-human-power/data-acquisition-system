@@ -6,12 +6,14 @@
 #include "debug.hpp"
 
 uint8_t addresses[2][6] = {"1Node", "2Node"};
+// TODO: Don't hardcode radio number
 bool radio_number = false; // Indexes above array
 
 Nrf24Radio::Nrf24Radio()
 {
     std::cout << "Starting NRF24 Radio..." << std::endl;
 
+    // TODO: Don't hardcode this configuration
     this->nrf24_ = RF24(25, 0, 100000);
 
     if (!this->nrf24_.begin())
@@ -67,6 +69,7 @@ void Nrf24Radio::transmit_packet(const Frame packet)
     this->nrf24_.stopListening();
 
     struct timespec startTimer;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &startTimer);
 
     const int max_attemps = 3;
     for (int attempt = 0; attempt < max_attemps; attempt++)
@@ -75,6 +78,7 @@ void Nrf24Radio::transmit_packet(const Frame packet)
         {
             auto timerEllapsed = getMicros(startTimer);
             debug << "Packet transmitted in " << timerEllapsed << " us." << std::endl;
+            break;
         }
         else
         {
