@@ -1,7 +1,8 @@
 from machine import I2C
-from mpu6050 import accel
+# from mpu6050 import accel
+from math import atan2, sqrt
+from mpu6500 import MPU6500
 from sensor_base import Sensor
-from math import sqrt, atan2
 
 class MpuSensor(Sensor):
     def __init__(self, scl_pin, sda_pin, samples=10, rolling_samples=5):
@@ -12,12 +13,25 @@ class MpuSensor(Sensor):
         :param samples: An integer representing number of readings to take the average of.
         """
         i2c = I2C(scl=scl_pin, sda=sda_pin)
-        self.accelerometer = accel(i2c)
+        self.accelerometer = MPU6500(i2c)
         self.calibrated_values = []
         self.samples = samples
         self.rolling_samples = rolling_samples
         self.rolling_accel= []
         self.normal = ""
+
+    def get_values_as_dict(self):
+        """
+        mpu6500 helper module seperates accelerometer, gyroscope and temperature data into
+        3 different properties. This function is used to concatenate all values into a dictionary
+        to be used in pre-existing get_smoothed_values method. 
+
+        """
+        values = {}
+        values["acx"], values["acy"], values["acz"] = self.accelerometer.acceleration()
+        values["temp"] = self.accelerometer.temperature()
+        values["gyx"], values["gyy"], values["gyz"] = self.accelerometer.gyro()
+        return values
 
     def get_smoothed_values(self, n_samples=10, calibration=None):
         """
@@ -34,38 +48,34 @@ class MpuSensor(Sensor):
         """
         result = {}
         for _ in range(n_samples):
-            data = self.accelerometer.get_values()
-
+            data = self.get_values_as_dict()
             for key in data.keys():
-                # Add on value / n_samples to produce an average
-                # over n_samples, with default of 0 for first loop.
-                result[key] = result.get(key, 0) + (data[key] / n_samples)
+                result[key] += result.get(key,0) + (data[key]/n_samples)
 
-        if calibration:
-            # Remove calibration adjustment
-            for k in calibration.keys():
-                result[k] -= calibration[k]
+        # if calibration:
+        #     # Remove calibration adjustment.
+        #     for key in calibration.keys():
+        #         result[key] -= calibration[key]
+
         return result
 
-    def calibrate(self, threshold=50, n_samples=10):
+    def roll_calc(y,z):
         """
-        Get calibration data for the sensor, by repeatedly measuring while the sensor is stable. The resulting
-        calibration dictionary contains offsets for this sensor in its current position.
-        :param threshold: The accuracy of the calibration.
-        :param n_samples: The number of times the sensor should be read and averaged.
-        Note: Sourced from: https://www.twobitarcade.net/article/3-axis-gyro-micropython/
-        """
-        print("--------Calibrating:")
-        while True:
-            v1 = self.get_smoothed_values(n_samples)
-            v2 = self.get_smoothed_values(n_samples)
+        calculates the roll angle of the bike using the y-axis acceleration and z-axis acceleration
+        in this case: 
+        y-axis acceleration is perpendicular to direction of travel
+        z-axis acceleration is normal to the ground
+        it is used to determine if the bike is on its sides.
 
-            # Check all consecutive measurements are within the threshold. We use abs() so all calculated
-            # differences are positive.
-            if all(abs(v1[key] - v2[key]) < threshold for key in v1.keys()):
-                self.calibrated_values = v1
-                return v1  # Calibrated.
-            print("in calibration, keep device at rest...")
+
+        ########################################################################
+        need to test if rest give positive vertical axis readings
+        #########################################################################
+        """
+        return atan2(y,z) * 57.3
+
+    def pitch_calc(x,y,z):
+        return atan2((- x) , sqrt(y * y + z * z)) * 57.3;
 
     def get_max_accel(self, accel_values):
         """
@@ -80,14 +90,6 @@ class MpuSensor(Sensor):
 
     def get_mode_list(self, List):
         return max(set(List), key = List.count)
-
-
-    def roll_pitch_calc(x,y,z):
-        roll = atan2(y,z) * 57.3
-        pitch = atan2(-x,sqrt(y**2 + z**2)) * 57.3
-
-        return roll, pitch
-
 
     def read(self, crash_only = False):
         """
@@ -139,4 +141,29 @@ class MpuSensor(Sensor):
         else:
             return [{"type": "crashed", "values": isCrashed}]
 
-    def crash_alert(self):
+
+    ##################################################################
+    # Need to implement seperate method? one for crash alerts and one for data
+    # Outputs to two different topics: crashes and acceleration data
+    ##################################################################
+
+    """
+    Things to work on:
+    1. mpu6500 module performs calculations to convert raw readings to SI units 
+    on every read. Implement method to perfrom conversion later on to reduce number
+    of operations.
+
+    2. 
+
+    """
+    def read(self):
+        
+    def crash_check(self,roll):
+        if roll > 30 and roll < 330:
+            return [{"type": "crashed", "values": True}]
+        else: 
+            return [{"type": "crashed", "values": False}]
+
+        
+        
+
