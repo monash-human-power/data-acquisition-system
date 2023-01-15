@@ -5,6 +5,7 @@ sys.path.insert(2, '../')
 from wireless_module import WirelessModule
 import asyncio
 import logging
+import config
 
 
 # define module number
@@ -17,7 +18,7 @@ async def main():
     )
     
     # define the port that the wind sensor is connected to
-    wind_sensor_port = "COM3"
+    wind_sensor_port = config.PORT
 
     # instantiate a wind sensor
     my_wind_sensor = WindSensor(wind_sensor_port)
