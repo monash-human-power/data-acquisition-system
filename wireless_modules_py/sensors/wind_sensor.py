@@ -41,14 +41,14 @@ class WindSensor(Sensor):
         data = data_bytes.decode('utf-8')
         
         # extract wind direction (deg) data
-        min_direction = data[7:10]
-        avg_direction = data[15:18]
-        max_direction = data[23:26]
+        min_direction = float(data[7:10])
+        avg_direction = float(data[15:18])
+        max_direction = float(data[23:26])
         
         # extract wind speed (m/s) data
-        min_speed = data[31:34]
-        avg_speed = data[39:42]
-        max_speed = data[47:50]
+        min_speed = float(data[31:34])
+        avg_speed = float(data[39:42])
+        max_speed = float(data[47:50])
         
         # update wind direction and speed data
         self.readings = [
