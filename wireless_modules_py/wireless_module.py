@@ -67,9 +67,9 @@ class WirelessModule:
         :param flags: A dictionary that contains response flags sent by the broker.
         :param rc: The connection result.
         """
-        result = ""
         logging.debug("Connected with result code {}: {}".format(str(rc), self.rc_to_message(rc)))
 
+        # reconnect to broker if previous connection request failed
         if rc != 0:
             logging.debug("Reconnecting...")
             client.reconnect()
