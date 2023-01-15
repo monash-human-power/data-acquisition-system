@@ -5,16 +5,16 @@ import json
 import time
 import argparse
 import mqtt_logger
-
 import numpy as np
 import pandas as pd
+import time
+import paho.mqtt.client as mqtt
+
 from dotenv import load_dotenv
 from rich.logging import RichHandler
-from datetime import date, datetime
-import time
-
+from datetime import datetime
 from mhp import topics
-import paho.mqtt.client as mqtt
+
 
 
 class DataLogger:
@@ -39,6 +39,7 @@ class DataLogger:
         :broker_ip: The hostname or IP of the MQTT broker, default value is 'localhost'
         :port: The network port of the server host to connect to, default value is 1883.
         """
+
         # Set logging to output all info by default
         logging.basicConfig(
             format="%(message)s",
@@ -84,11 +85,6 @@ class DataLogger:
         """The callback for when a PUBLISH message is received."""
 
         logging.info(f"\nReceived topic: " + str(msg.topic) + ", with message " + str(msg.payload))
-
-        """
-        mosquitto_pub -t 'v3/start' -m '{\"start\":true}'
-        mosquitto_pub -t 'v3/start' -m '{\"start\":false}'
-        """
 
         if msg.topic == self.v3_start:
 
@@ -148,10 +144,6 @@ class DataLogger:
         self.mqtt_client.connect_async(self.broker_ip, self.port, 60)
         logging.info("Connected MQTT client.")
 
-        # self.recorder.start()
-        # logging.info("Started the data logger.")
-        # self.clear_d()
-
         self.mqtt_client.loop_start()
         while True:
             time.sleep(1)
@@ -160,8 +152,6 @@ class DataLogger:
     def stop(self):
         """Stops Data Logger & MQTT Client"""
 
-        # self.recorder.stop()
-        # logging.info("Stopped the data logger")
         self.mqtt_client.disconnect()
         self.mqtt_client.loop_stop()
         logging.info("Disconnected MQTT client.")
@@ -276,9 +266,6 @@ class DataLogger:
         # Connect to the sqlite database that has all of the MQTT logs
         con = sqlite3.connect(db_path)
         cur = con.cursor()
-        
-        #File naming follows runfile_YYYY-MM-DD_HH-MM-SS
-        excel_f = self.EXCEL_LOG_FILE + "_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".xlsx"
 
         with pd.ExcelWriter(xl_path, engine="xlsxwriter") as writer:
             for module_id in [1, 2, 3, 4]:
