@@ -18,7 +18,54 @@ from mhp import topics
 
 
 class DataLogger:
-    """Class that will log run data into excel files."""
+    """Log run data into excel files.
+    
+    Parameters
+    ----------
+    db_file : str 
+        Filepath to where the SQLite database will be stored.
+    xl_file : str
+        Filepath to where all Excel logs will be stored. 
+    broker_ip : str 
+        The hostname or IP of the MQTT broker, default value is 'localhost'
+    port : int 
+        The network port of the server host to connect to, default value is 1883.
+    verbose: bool
+        Sets the logginng output of Recorder, default value is False.
+    username : str
+        Username for MQTT broker.
+    password : str
+        Password for MQTT broker.
+    fname : str
+        Beginning portion of filenaming system, default value is 'runfile'.
+    
+    Attributes
+    ----------
+    v3_start : str
+        The 'v3/start' topic.
+    broker_ip : str 
+        The hostname or IP of the MQTT broker, default value is 'localhost'
+    port : int 
+        The network port of the server host to connect to, default value is 1883.
+    verbose: bool
+        Sets the logginng output of Recorder, default value is False.
+    username : str
+        Username for MQTT broker.
+    password : str
+        Password for MQTT broker.
+    mqtt_client: paho.mqtt.client
+        MQTT client that connects to the broker and recives the messages.
+    logging : bool
+        Whether we are currently logging or not.
+    MQTT_LOG_FILE : str 
+        Filepath to where the SQLite database will be stored.
+    EXCEL_LOG_FILE : str
+        Filepath to where all Excel logs will be stored.
+    time : str
+        Time that a log begins recording, in HH-MM-SS format.
+    recorder: mqtt_logger.Recorder
+        Recorder class that will record MQTT logs into SQLite database.
+    """
 
     def __init__(
         self, 
@@ -31,14 +78,6 @@ class DataLogger:
         password=None, 
         fname="runfile"
         ):
-        """
-        Constructor for the DataLogger class.
-
-        :param db_file: Filepath to where the SQLite database will be stored.
-        :param xl_file: Filepath to where all Excel logs will be stored. 
-        :broker_ip: The hostname or IP of the MQTT broker, default value is 'localhost'
-        :port: The network port of the server host to connect to, default value is 1883.
-        """
 
         # Set logging to output all info by default
         logging.basicConfig(
@@ -51,10 +90,10 @@ class DataLogger:
 
         self.broker_ip = broker_ip
         self.port = port
-        self.mqtt_client = None
         self.uname = username
         self.pword = password
         self.verbose = verbose
+        self.mqtt_client = None
 
         self.logging = False
         self.MQTT_LOG_FILE = db_file 
