@@ -82,12 +82,6 @@ class MpuSensor(Sensor):
         return max(set(List), key = List.count)
 
 
-    def roll_pitch_calc(x,y,z):
-        roll = atan2(y,z) * 57.3
-        pitch = atan2(-x,sqrt(y**2 + z**2)) * 57.3
-
-        return roll, pitch
-
 
     def read(self, crash_only = False):
         """
