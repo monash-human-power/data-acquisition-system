@@ -35,6 +35,7 @@ def battery_calibration(voltage):
 
 
 async def main():
+    print("Hello world")
     status_led.set_state(WmState.InitialisingSensors)
     asyncio.create_task(status_led.start_blink_loop())
 

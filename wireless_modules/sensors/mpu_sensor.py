@@ -140,3 +140,4 @@ class MpuSensor(Sensor):
             return [{"type": "crashed", "values": isCrashed}]
 
     def crash_alert(self):
+        pass
