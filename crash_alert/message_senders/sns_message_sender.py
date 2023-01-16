@@ -11,7 +11,6 @@ class SnsMessageSender(MessageSender):
         self.name = "AWS SNS"
         self.sns_resource = boto3.resource('sns')
 
-        # assign topic
         all_topics = self.list_topics()
         for topic in all_topics:
             self.topic = topic
