@@ -157,7 +157,7 @@ This command line tool logs MQTT data into an SQLite database and converts these
 ### Usage
 ```bash
 # General command
-poetry run python --file [FILEPATH] [FLAGS]
+poetry run python [FILEPATH] [FLAGS]
 
 ```
 
@@ -167,4 +167,4 @@ poetry run python --file [FILEPATH] [FLAGS]
 | `-v VERBOSE` or `--verbose VERBOSE`     |    `false`    |                 Verbose logging output                   |
 | `-u USERNAME` or `--username USERNAME`  |               |               Username for the MQTT broker               |
 | `-p PASSWORD` or `--password PASSWORD`  |               |               Password for the MQTT broker               |
-| `-f FILENAME` or `--filename FILENAME`  |   `runfile`   |           File naming system for excel conversion.       |
+| `-f FILENAME` or `--filename FILENAME`  |   `runfile`   |           File naming system for excel conversion        |
