@@ -16,7 +16,6 @@ from datetime import datetime
 from mhp import topics
 
 
-
 class DataLogger:
     """Log run data into excel files.
     
@@ -145,7 +144,7 @@ class DataLogger:
 
 
     def start_logging(self):
-        """"""
+        """Start the Data Logger"""
         self.logging = True
         self.time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -161,7 +160,7 @@ class DataLogger:
 
 
     def stop_logging(self):
-        """"""
+        """Stop the Data Logger"""
         self.logging = False
         db_path = self.MQTT_LOG_FILE+"MQTT_log_"+self.time+".db"
         xl_path = self.EXCEL_LOG_FILE + "_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".xlsx"
@@ -381,7 +380,6 @@ parser.add_argument(
     default="runfile",
     help="""File naming system for excel conversion.""",
 )
-
 
 if __name__ == "__main__":
 
