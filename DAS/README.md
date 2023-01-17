@@ -14,6 +14,8 @@
     - [Usage](#usage-2)
   - [V2 MQTT Playback](#v2-mqtt-playback)
     - [Usage](#usage-3)
+  - [Log to Excel](#log-to-excel)
+    - [Usage](#usage-4)
 
 
 ## Basic Setup and Usage
@@ -147,4 +149,22 @@ poetry run python -m das.V2_mqtt_playback ./das/V2_csv_data/2_log.csv -s 60
 | `-s SPEED` or `--speed SPEED` |      `1`      |               Replay speed (x multiplier)                |
 | `-j JUMP` or `--jump JUMP`    |      `0`      |   Starts replaying from a specified time (in seconds)    |
 
+<br/>
 
+## [Log to Excel](/DAS/das/log_2_excel.py)
+This command line tool logs MQTT data into an SQLite database and converts these into excel files.
+
+### Usage
+```bash
+# General command
+poetry run python --file [FILEPATH] [FLAGS]
+
+```
+
+| Flag                                    | Default Value |                           Info                           |
+| :-------------------------------------- | :-----------: | :------------------------------------------------------: |
+| `--host HOST`                           |  `localhost`  |                Address of the MQTT broker                |
+| `-v VERBOSE` or `--verbose VERBOSE`     |    `false`    |                 Verbose logging output                   |
+| `-u USERNAME` or `--username USERNAME`  |               |               Username for the MQTT broker               |
+| `-p PASSWORD` or `--password PASSWORD`  |               |               Password for the MQTT broker               |
+| `-f FILENAME` or `--filename FILENAME`  |   `runfile`   |           File naming system for excel conversion.       |
