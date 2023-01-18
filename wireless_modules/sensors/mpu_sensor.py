@@ -81,9 +81,13 @@ class MpuSensor(Sensor):
     def get_mode_list(self, List):
         return max(set(List), key = List.count)
 
+    def pitch_roll_calc(x,y,z):
+        values = {}
+        values["roll"] = atan2(y,z) * 57.3
+        values["pitch"] = atan2(-x, sqrt(y**2 + z**2)) * 57.3 
+        return values
 
-
-    def read(self, crash_only = False):
+    def read(self):
         """
         Read averaged and calibrated sensor data for the accelerometer and gyroscope.
         :param crash_only: If True, function will only return the crash detection data.
@@ -118,20 +122,22 @@ class MpuSensor(Sensor):
             self.rolling_accel.pop(0)
             self.rolling_accel.append(self.get_max_accel(accel_values)[0])
 
+        rotation = self.pitch_roll_calc(accel_values["x"],accel_values["y"],accel_values["z"])
+
+        return [
+            {"type": "accelerometer", "value": accel_values},
+            {"type": "rotation", "value": rotation},
+            {"type": "gyroscope", "value": gyro_values},
+        ]
+
+
+    def crash_alert(self,rotation):
         isCrashed = False
-        if (len(self.rolling_accel) == self.rolling_samples):
-            if (self.get_mode_list(self.rolling_accel) != self.normal):
-                isCrashed = True
-            
+        if rotation["pitch"] > 45 and rotation["pitch"] < 315:
+            isCrashed = True
+        elif rotation["roll"] > 30 and rotation["roll"] < 30:
+            isCrashed = True
+        
+        # add if statement once working
 
-        if not crash_only:
-            return [
-                {"type": "accelerometer", "value": accel_values},
-                {"type": "gyroscope", "value": gyro_values},
-                {"type": "crashed", "values": isCrashed}
-            ]
-        else:
-            return [{"type": "crashed", "values": isCrashed}]
-
-    def crash_alert(self):
-        pass
+        return [{"type": "crashed", "values": isCrashed}]
