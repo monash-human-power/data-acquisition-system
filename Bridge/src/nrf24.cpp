@@ -5,25 +5,22 @@
 
 #include "debug.hpp"
 
-uint8_t addresses[2][6] = {"1Node", "2Node"};
-// TODO: Don't hardcode radio number
-bool radio_number = false; // Indexes above array
+uint8_t addresses[2][6] = {"chase", "bike_"};
 
-Nrf24Radio::Nrf24Radio()
+Nrf24Radio::Nrf24Radio(bool is_bike, uint16_t ce_pin, uint16_t cs_pin)
 {
     std::cout << "Starting NRF24 Radio..." << std::endl;
 
-    // TODO: Don't hardcode this configuration
-    this->nrf24_ = RF24(25, 0, 100000);
+    // TODO: Test with RF24_SPI_SPEED, or at least something faster
+    this->nrf24_ = RF24(ce_pin, cs_pin, 100000);
 
     if (!this->nrf24_.begin())
         throw "NRF24 begin failed. Check wiring?";
 
     this->nrf24_.setPayloadSize(PACKET_LENGTH);
-    // TODO: Test with high power level (potential power supply issues)
-    this->nrf24_.setPALevel(RF24_PA_LOW);
-    this->nrf24_.openWritingPipe(addresses[radio_number]);
-    this->nrf24_.openReadingPipe(1, addresses[!radio_number]);
+    this->nrf24_.setPALevel(RF24_PA_MAX);
+    this->nrf24_.openWritingPipe(addresses[is_bike]);
+    this->nrf24_.openReadingPipe(1, addresses[!is_bike]);
 
     this->nrf24_.startListening();
 

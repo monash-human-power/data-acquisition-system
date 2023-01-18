@@ -1,8 +1,8 @@
 #pragma once
 
 #include "protocol.hpp"
+#include "radio.hpp"
 #include "ring_buffer.hpp"
-#include "nrf24.hpp"
 
 /**
  * Manages and runs the MQTT Bridge.
@@ -23,7 +23,7 @@ class Bridge
      * The radio to transmit all received MQTT messages with, and from
      * which to receive packets for publishing to MQTT.
      */
-    Radio_ptr radio_ = std::make_shared<Nrf24Radio>();
+    Radio_ptr radio_;
 
     /**
      * Contains the hashes of recent messages.
@@ -57,9 +57,9 @@ public:
     /**
      * Create a new Bridge to manage the MQTT radio bridge.
      * Will initialise the radio module and set up appropriate callbacks to
-     * handle forwarding data between the radio radio and the supplied MQTT
-     * client.
+     * handle forwarding data between the radio and the supplied MQTT client.
      * @param mqttClient The MQTT client to send/receive MQTT messages with.
+     * @param radio The radio module to send/receive radio packets with.
      */
-    Bridge(MqttBridgeClient_ptr mqttClient);
+    Bridge(MqttBridgeClient_ptr mqttClient, Radio_ptr radio);
 };

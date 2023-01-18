@@ -2,8 +2,8 @@
 
 const std::string Bridge::MQTT_HASH_SEPARATOR = "RadioBridgeSeparator";
 
-Bridge::Bridge(MqttBridgeClient_ptr mqttClient)
-    : mqtt_client_(mqttClient)
+Bridge::Bridge(MqttBridgeClient_ptr mqttClient, Radio_ptr radio)
+    : mqtt_client_(mqttClient), radio_(radio)
 {
     using namespace std::placeholders;
     this->mqtt_client_->set_on_message(std::bind(&Bridge::mqtt_message_received_callback, this, _1));

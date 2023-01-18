@@ -5,12 +5,14 @@
 #include <ostream>
 #include <stdint.h>
 
-/** Size of the packet body in bytes. */
-// TODO: Always 5 less than packet length, right?
-constexpr uint16_t BODY_LENGTH = 27;
-/** Total size of the packet in bytes. */
-// TODO: Currently set to max for NRF24. Move to radio-specific location.
+/**
+ * Total size of the packet in bytes.
+ * Currently set to the maximum packet length for the NRF24 radio.
+ * For other radios this may be changed, e.g. 80 bytes for the zeta radio.
+ */
 constexpr uint16_t PACKET_LENGTH = 32;
+/** Size of the packet body in bytes. */
+constexpr uint16_t BODY_LENGTH = PACKET_LENGTH - 5;
 
 /**
  * Types of packets that may be transmitted and received.
