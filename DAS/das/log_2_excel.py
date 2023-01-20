@@ -78,13 +78,6 @@ class DataLogger:
         fname="runfile"
         ):
 
-        # Set logging to output all info by default
-        logging.basicConfig(
-            format="%(message)s",
-            level=logging.INFO,
-            handlers=[RichHandler()],
-        )
-
         self.v3_start = str(topics.V3.start)
 
         self.broker_ip = broker_ip
@@ -390,6 +383,10 @@ if __name__ == "__main__":
 
     # Read command line arguments
     args = parser.parse_args()
+
+    logging.basicConfig(
+        format="%(levelname)-8s [%(filename)s] %(message)s", level=logging.DEBUG
+    )
 
     DATA_LOGGER = DataLogger(
         db_file=mqtt_log_file,
