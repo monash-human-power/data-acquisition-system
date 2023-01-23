@@ -1,5 +1,5 @@
 # Wind Module
-This directory contains the scripts to collect wind speed and direction data from the anemometer, and publishes these data to the MQTT broker.
+This directory contains the scripts to collect wind speed and direction data from the anemometer, and publish these data to the MQTT broker under the topic `/v3/wireless_module/5/data`.
 
 - [Wind Module](#wind-module)
   - [Basic Setup and Usage](#basic-setup-and-usage)
@@ -17,7 +17,7 @@ This directory contains the scripts to collect wind speed and direction data fro
      cd wireless_mdoules_py/wind_module
     ```
 
-5. Ensure that you have [poetry](https://python-poetry.org/) installed, spawn into the poetry environment using:
+5. Ensuring that you have [poetry](https://python-poetry.org/) installed, spawn into the poetry environment using:
     ```
     poetry shell
     ```
