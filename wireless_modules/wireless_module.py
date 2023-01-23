@@ -2,6 +2,7 @@ import uasyncio as asyncio
 import machine
 import ubinascii
 import ujson
+import json
 import sys
 import time
 
@@ -32,8 +33,7 @@ class WirelessModule:
         self.pub_data_topic = b"/v3/wireless_module/{}/data".format(module_id)
         self.battery_topic = b"/v3/wireless_module/{}/battery".format(module_id)
 
-        self.sub_start_topic = b"/v3/wireless_module/{}/start".format(module_id)
-        self.sub_stop_topic = b"/v3/wireless_module/{}/stop".format(module_id)
+        self.v3_start = b"v3/start"
 
         self.status_topic = b"/v3/wireless_module/{}/status".format(module_id)
 
@@ -92,10 +92,16 @@ class WirelessModule:
         :param msg: The message received.
         """
         print("Successfully received message: ", msg, "on:", topic)
-        if topic == self.sub_start_topic:
-            self.start_publish = True
-        elif topic == self.sub_stop_topic:
-            self.start_publish = False
+
+        if topic == self.v3_start:
+            msg_data = json.loads(str(msg.decode("utf-8")))
+            self.start_publish = msg_data["start"]
+
+            if msg_data["start"]:
+                self.status_led.set_state(WmState.Publishing)
+            else:
+                self.status_led.set_state(WmState.Idle)
+
 
     async def start_battery_loop(self, interval):
         """
@@ -137,7 +143,7 @@ class WirelessModule:
 
             # Start message received, tell sensors to start
             for sensor in self.sensors:
-                sensor.on_start()
+                sensor.on_start()         
 
     async def start_data_loop(self, interval):
         """
@@ -182,7 +188,7 @@ class WirelessModule:
 
         # Attempt to connect to MQTT (will block until successful)
         self.status_led.set_state(WmState.ConnectingToMqtt)
-        sub_topics = [self.sub_start_topic, self.sub_stop_topic]
+        sub_topics = [self.v3_start]
         await self.mqtt.connect_and_subscribe(sub_topics, self.sub_cb)
 
         # Start the main publishing loop
