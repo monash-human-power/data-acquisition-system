@@ -17,3 +17,4 @@ You will need to create a local version of `config.py` (`cp src/config.example.p
 | MQTT_BROKER | IP address of the MQTT broker      |
 | USERNAME    | Username to connect to MQTT broker |
 | PASSWORD    | Password to connect to MQTT broker |
+| PORT        | Port to connect the anemometer to  |
