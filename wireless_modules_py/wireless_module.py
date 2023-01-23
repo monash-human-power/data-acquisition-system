@@ -1,11 +1,12 @@
-from paho.mqtt import client as mqtt_client
-import asyncio
+from mhp import topics
 import random
+from paho.mqtt import client as mqtt_client
 import json
+import logging
+import asyncio
 import time
 import config
 import logging
-from mhp import topics
 
 
 class WirelessModule:

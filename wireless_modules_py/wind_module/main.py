@@ -1,11 +1,11 @@
+import sys
+sys.path.insert(1, '../sensors')
+from wind_sensor import WindSensor
+sys.path.insert(2, '../')
+from wireless_module import WirelessModule
 import config
 import logging
 import asyncio
-from wireless_module import WirelessModule
-from wind_sensor import WindSensor
-import sys
-sys.path.insert(1, '../sensors')
-sys.path.insert(2, '../')
 
 
 # define module number

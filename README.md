@@ -32,6 +32,9 @@ The MQTT radio bridge, for connecting the MQTT brokers of the bike and chase car
 ### [Wireless Modules](/wireless_modules/)
 Stores the scripts for the wireless modules.
 
+### [Python Wireless Modules](/wireless_modules_py/)
+Stores the Python scripts for the wireless modules.
+
 ## Contributors ✨
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
