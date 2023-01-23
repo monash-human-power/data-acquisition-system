@@ -8,7 +8,7 @@ This directory contains the scripts to collect wind speed and direction data fro
 ## Basic Setup and Usage
 1. Install the [Vaisala USB Instrument Finder driver](https://go.vaisala.com/software/WXT530/Vaisala_WXT530_Configuration_Tool_Weather_Measurement.zip?_ga=2.138439603.1803271655.1674458831-1555859295.1674458831) using these [installation instructions](https://docs.vaisala.com/r/M211840EN-F/en-US/GUID-6D206CCD-21E9-4E9A-98C9-760C90EA90BF/GUID-AE6CDFA9-16A5-4E47-B354-37C04534C558).
 
-2. Connect the anemometer to you computer and note down which port it is connecting to.
+2. Connect the anemometer to your computer and note down which port it is connecting to.
 
 3. In the `wind_module` directory, create a local version of `config.py` using the `config.example.py` file. 
 
