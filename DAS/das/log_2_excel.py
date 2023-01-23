@@ -96,7 +96,7 @@ class DataLogger:
 
 
     def on_connect(self, client, userdata, flags, rc):
-        """Callback for when cleint receives a CONNNACK response."""
+        """Callback for when client receives a CONNNACK response."""
 
         print("\nConnected with result code " + str(rc) + ".")
         client.subscribe(self.v3_start)
