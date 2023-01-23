@@ -33,8 +33,8 @@ After completing these steps, the anemometer should be collecting wind speed and
 
 ## Testing
 1. Open 2 terminals:
-    a. One to subscribe to the topic `/v3/wireless_module/5/data`.
-    b. Another to publish to the topic `v3/start`.
+    - One to subscribe to the topic `/v3/wireless_module/5/data`.
+    - Another to publish to the topic `v3/start`.
 
 2. Publish a true start message to the topic `v3/start`. Streams of data should be shown in the terminal subscribed to the topic `/v3/wireless_module/5/data`.
 
