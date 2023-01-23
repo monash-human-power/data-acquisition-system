@@ -14,7 +14,7 @@ This directory contains the scripts to collect wind speed and direction data fro
 
 3. In the `wind_module` directory, create a local version of `config.py` using the `config.example.py` file. 
 
-4. Get inside the `wind_module_directory` using:
+4. Get inside the `wind_module` directory using:
      ```
      cd wireless_mdoules_py/wind_module
     ```
