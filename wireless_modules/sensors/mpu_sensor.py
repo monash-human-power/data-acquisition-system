@@ -20,6 +20,7 @@ class MpuSensor(Sensor):
         self.xyz_calib_offset = {"AcX" : 0.0, "AcY": 0.4, "AcZ" : 0.0}
         self.accelerometer = accel(i2c)
         self.time = 0
+        self.crash_detections = []
 
     def pitch_roll_calc(self,x,y,z):
         """
@@ -46,10 +47,10 @@ class MpuSensor(Sensor):
                 
                 The gyroscope values are in degrees/sec ,accelerometer values are in Gs and rotation values are in degrees.
         """
-        n = 50
+        samples_per_call = 50
         lsb_to_g = 16384
         lsb_to_deg = 131
-        for _ in range(n):
+        for _ in range(samples_per_call):
             roll_average, pitch_average = 0,0 
             dt = utime.ticks_diff(utime.ticks_us(),self.time)/1000000 # calculate time step
             all_data = self.accelerometer.get_values()
@@ -63,23 +64,17 @@ class MpuSensor(Sensor):
                 "y": all_data["GyY"] / lsb_to_deg + 2.6,
                 "z": all_data["GyZ"] / lsb_to_deg + 1.4,
             }
-
+            
             ac_rotation = self.pitch_roll_calc(all_data["AcX"],all_data["AcZ"],all_data["AcY"]) # calculate angle based off acceleration values 
             gy_rotation = {"roll": self.roll + gyro_values["x"] * dt, "pitch": self.pitch + gyro_values["z"] * dt} # calculate change in angle based off gyroscope readings
-            self.roll = 0.04 * ac_rotation["roll"] + 0.96 * gy_rotation["roll"] # update roll using complementary ratios
-            self.pitch = 0.04 * ac_rotation["pitch"] + 0.96 * gy_rotation["pitch"] # update pitch using complementary ratios
+            self.roll = 0.10 * ac_rotation["roll"] + 0.90 * gy_rotation["roll"] # update roll using complementary ratios
+            self.pitch = 0.10 * ac_rotation["pitch"] + 0.90 * gy_rotation["pitch"] # update pitch using complementary ratios
             
             roll_average += self.roll/n
             pitch_average += self.pitch/n
             self.time = utime.ticks_us()
 
         rotation = {"roll":self.roll,"pitch":self.pitch} 
-        # serial print for debugging: 
-        
-        print(str(rotation["roll"]) + " " + str(rotation["pitch"]) + " " + str(accel_values["x"]))
-        # print(accel_values)
-        # print(gyro_values)
-
         return [
             {"type": "accelerometer", "value": accel_values},
             {"type": "rotation", "value": rotation},
@@ -93,11 +88,20 @@ class MpuSensor(Sensor):
         :param rotation contains a dictionary of value for pitch and roll
         :return:
         """
+        
+        sample_crashed = False
         isCrashed = False
-        if rotation["pitch"] > 70 and rotation["pitch"] < 315:
+        if abs(rotation["pitch"]) >= 70: 
+            # when bike is tipped forwards by 70 and back by 70 degrees
+            sample_crashed = True
+        elif abs(rotation["roll"]) >= 70:
+            # when bike is tipped side to side by 70 degrees
+            sample_crashed = True
+        
+        self.crash_detections.append(sample_crashed)
+        if len(self.crash_detections) == 4:
+            self.crash_detections.pop(0)
+        if sum(self.crash_detections) == 3: 
             isCrashed = True
-        elif abs(rotation["roll"]) > 70:
-            isCrashed = True
-        # serial print for debugging
-        print(isCrashed) 
-        return [{"type": "crashed", "values": isCrashed}]
+        
+        return {"value": isCrashed} 
