@@ -1,10 +1,12 @@
 from machine import I2C
+import utime
 from mpu6050 import accel
 from sensor_base import Sensor
 from math import sqrt, atan2
 
+
 class MpuSensor(Sensor):
-    def __init__(self, scl_pin, sda_pin, samples=10, rolling_samples=5):
+    def __init__(self, scl_pin, sda_pin):
         """
         Initialise the MPU6050 sensor to read accelerometer and gyroscope data.
         :param scl_pin: A Pin object connected to SCL on the sensor.
@@ -12,117 +14,71 @@ class MpuSensor(Sensor):
         :param samples: An integer representing number of readings to take the average of.
         """
         i2c = I2C(scl=scl_pin, sda=sda_pin)
+        self.roll = 0
+        self.pitch = 0
+        self.xyz_calib_factor = {"AcX" : 1, "AcY": 1, "AcZ" : 1}
+        self.xyz_calib_offset = {"AcX" : 0.0, "AcY": 0.4, "AcZ" : 0.0}
         self.accelerometer = accel(i2c)
-        self.calibrated_values = []
-        self.samples = samples
-        self.rolling_samples = rolling_samples
-        self.rolling_accel= []
-        self.normal = ""
+        self.time = 0
 
-    def get_smoothed_values(self, n_samples=10, calibration=None):
+    def pitch_roll_calc(self,x,y,z):
         """
-        Get smoothed values from the sensor by sampling
-        the sensor `n_samples` times and returning the mean.
-
-        If passed a `calibration` dictionary, subtract these
-        values from the final sensor value before returning.
-        :param n_samples: The number of samples to take average from
-        :param calibration: calibration values to offset by
-        :return: A dictionary of mean sensor measurements for the temperature, 3 dimensions of acceleration and
-                gyroscope
-        Note: Sourced from https://www.twobitarcade.net/article/3-axis-gyro-micropython/
+        :param x: number which represents the acceleration in the x-axis
+        :param y: number which represents the acceleration in the y-axis
+        :param z: number which represents the acceleration in the z-axis
+        :return: a dictionary of length 2 containing values for roll and pitch calculated by roll and pitch formulas adapted from
+        https://wiki.dfrobot.com/How_to_Use_a_Three-Axis_Accelerometer_for_Tilt_Sensing
         """
-        result = {}
-        for _ in range(n_samples):
-            data = self.accelerometer.get_values()
-
-            for key in data.keys():
-                # Add on value / n_samples to produce an average
-                # over n_samples, with default of 0 for first loop.
-                result[key] = result.get(key, 0) + (data[key] / n_samples)
-
-        if calibration:
-            # Remove calibration adjustment
-            for k in calibration.keys():
-                result[k] -= calibration[k]
-        return result
-
-    def calibrate(self, threshold=50, n_samples=10):
-        """
-        Get calibration data for the sensor, by repeatedly measuring while the sensor is stable. The resulting
-        calibration dictionary contains offsets for this sensor in its current position.
-        :param threshold: The accuracy of the calibration.
-        :param n_samples: The number of times the sensor should be read and averaged.
-        Note: Sourced from: https://www.twobitarcade.net/article/3-axis-gyro-micropython/
-        """
-        print("--------Calibrating:")
-        while True:
-            v1 = self.get_smoothed_values(n_samples)
-            v2 = self.get_smoothed_values(n_samples)
-
-            # Check all consecutive measurements are within the threshold. We use abs() so all calculated
-            # differences are positive.
-            if all(abs(v1[key] - v2[key]) < threshold for key in v1.keys()):
-                self.calibrated_values = v1
-                return v1  # Calibrated.
-            print("in calibration, keep device at rest...")
-
-    def get_max_accel(self, accel_values):
-        """
-        Get the index of the maximum acceleration value from the acceleration dictionary and return
-        the key to that value.
-        :param: The acceleration value dictionary
-        """
-        v = list(accel_values.values())
-        k = list(accel_values.keys())
-        max_val = max(v, key=abs)
-        return [k[v.index(max_val)], abs(max_val)]
-
-    def get_mode_list(self, List):
-        return max(set(List), key = List.count)
-
-    def pitch_roll_calc(x,y,z):
         values = {}
-        values["roll"] = atan2(y,z) * 57.3
+        values["roll"] = atan2(abs(round(y,1)),round(z,1)) * 57.3
         values["pitch"] = atan2(-x, sqrt(y**2 + z**2)) * 57.3 
         return values
 
     def read(self):
         """
         Read averaged and calibrated sensor data for the accelerometer and gyroscope.
-        :param crash_only: If True, function will only return the crash detection data.
+        :param: None
         :return: An array of length 3 containing a dictionary of acceleration values, a dictionary for
-                gyroscope values and a boolean if there has been a crash detected. 
+                gyroscope values and a dictionary of rotation values. 
                 Each contains a `type` key associated with a string of the measurement type and a
                 `value` key associated with another dictionary containing (key, value) pair of the axis and it's
                 relevant data.
                 
-                The gyroscope values are in degrees/sec and accelerometer values are in Gs.
+                The gyroscope values are in degrees/sec ,accelerometer values are in Gs and rotation values are in degrees.
         """
+        n = 50
         lsb_to_g = 16384
         lsb_to_deg = 131
-        all_data = self.get_smoothed_values(
-            n_samples=self.samples, calibration=self.calibrated_values
-        )
-        accel_values = {
-            "x": all_data["AcX"] / lsb_to_g,
-            "y": all_data["AcY"] / lsb_to_g,
-            "z": all_data["AcZ"] / lsb_to_g,
-        }
-        gyro_values = {
-            "x": all_data["GyX"] / lsb_to_deg,
-            "y": all_data["GyY"] / lsb_to_deg,
-            "z": all_data["GyZ"] / lsb_to_deg,
-        }
-        if len(self.rolling_accel) == self.rolling_samples-1:
-            self.normal = self.get_mode_list(self.rolling_accel)
-        if len(self.rolling_accel) < self.rolling_samples:
-            self.rolling_accel.append(self.get_max_accel(accel_values)[0])
-        else:
-            self.rolling_accel.pop(0)
-            self.rolling_accel.append(self.get_max_accel(accel_values)[0])
+        for _ in range(n):
+            roll_average, pitch_average = 0,0 
+            dt = utime.ticks_diff(utime.ticks_us(),self.time)/1000000 # calculate time step
+            all_data = self.accelerometer.get_values()
+            accel_values = {
+                "x": (all_data["AcX"] / lsb_to_g * self.xyz_calib_factor["AcX"]) + self.xyz_calib_offset["AcX"],
+                "y": (all_data["AcY"] / lsb_to_g * self.xyz_calib_factor["AcY"]) + self.xyz_calib_offset["AcY"],
+                "z": (all_data["AcZ"] / lsb_to_g * self.xyz_calib_factor["AcZ"]) + self.xyz_calib_offset["AcZ"], 
+            }
+            gyro_values = {
+                "x": all_data["GyX"] / lsb_to_deg - 14,
+                "y": all_data["GyY"] / lsb_to_deg + 2.6,
+                "z": all_data["GyZ"] / lsb_to_deg + 1.4,
+            }
 
-        rotation = self.pitch_roll_calc(accel_values["x"],accel_values["y"],accel_values["z"])
+            ac_rotation = self.pitch_roll_calc(all_data["AcX"],all_data["AcZ"],all_data["AcY"]) # calculate angle based off acceleration values 
+            gy_rotation = {"roll": self.roll + gyro_values["x"] * dt, "pitch": self.pitch + gyro_values["z"] * dt} # calculate change in angle based off gyroscope readings
+            self.roll = 0.04 * ac_rotation["roll"] + 0.96 * gy_rotation["roll"] # update roll using complementary ratios
+            self.pitch = 0.04 * ac_rotation["pitch"] + 0.96 * gy_rotation["pitch"] # update pitch using complementary ratios
+            
+            roll_average += self.roll/n
+            pitch_average += self.pitch/n
+            self.time = utime.ticks_us()
+
+        rotation = {"roll":self.roll,"pitch":self.pitch} 
+        # serial print for debugging: 
+        
+        print(str(rotation["roll"]) + " " + str(rotation["pitch"]) + " " + str(accel_values["x"]))
+        # print(accel_values)
+        # print(gyro_values)
 
         return [
             {"type": "accelerometer", "value": accel_values},
@@ -132,12 +88,16 @@ class MpuSensor(Sensor):
 
 
     def crash_alert(self,rotation):
+        """
+        control flow using data from the accelerometer to determine if a crash has occurred
+        :param rotation contains a dictionary of value for pitch and roll
+        :return:
+        """
         isCrashed = False
-        if rotation["pitch"] > 45 and rotation["pitch"] < 315:
+        if rotation["pitch"] > 70 and rotation["pitch"] < 315:
             isCrashed = True
-        elif rotation["roll"] > 30 and rotation["roll"] < 30:
+        elif abs(rotation["roll"]) > 70:
             isCrashed = True
-        
-        # add if statement once working
-
+        # serial print for debugging
+        print(isCrashed) 
         return [{"type": "crashed", "values": isCrashed}]

@@ -1,7 +1,7 @@
 ESSID = "MHP_MobileNet"
 PASSWORD = "mhpbtec18"
 
-MQTT_BROKER = "samuel.local"
+MQTT_BROKER = "mhp-v3-primary.local"
 
 # Pins for R, G, B channels of status LED
 STATUS_LED_PINS = [14, 12, 13]

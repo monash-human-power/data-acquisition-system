@@ -38,6 +38,7 @@ class WirelessModule:
 
         self.status_topic = b"/v3/wireless_module/{}/status".format(module_id)
 
+        self.mpu_data_topic = b"/v3/wireless_module/{}/mpu_data".format(module_id)
         self.crash_detection_topic = b"/v3/wireless_module/{}/crash_detection".format(module_id)
 
         self.start_publish = False
@@ -142,11 +143,12 @@ class WirelessModule:
                 break
 
         while True:
-            isCrashed = mpu_sensor.read(crash_only = True)
+            mpu_data = mpu_sensor.read()
+            crash_alert = mpu_sensor.crash_alert(mpu_data[1]["value"])
             if self.mqtt.connected:
-                self.mqtt.publish(
-                    self.crash_detection_topic, ujson.dumps(isCrashed)
-                )
+                self.mqtt.publish(self.crash_detection_topic, ujson.dumps(crash_alert))
+                self.mqtt.publish(self.mpu_data_topic, ujson.dumps(mpu_data))
+                pass
             await asyncio.sleep_ms(interval)
 
 
