@@ -16,8 +16,12 @@ class MpuSensor(Sensor):
         i2c = I2C(scl=scl_pin, sda=sda_pin)
         self.roll = 0
         self.pitch = 0
+
+        #TODO implement a function to avoid hardcoding calibration values
         self.xyz_calib_factor = {"AcX" : 1, "AcY": 1, "AcZ" : 1}
         self.xyz_calib_offset = {"AcX" : 0.0, "AcY": 0.4, "AcZ" : 0.0}
+        self.gyro_calib_offset = {"AcX" : -14, "AcY": 2.6, "AcZ": 1.4}
+        
         self.accelerometer = accel(i2c)
         self.time = 0
         self.crash_detections = []
@@ -60,9 +64,9 @@ class MpuSensor(Sensor):
                 "z": (all_data["AcZ"] / lsb_to_g * self.xyz_calib_factor["AcZ"]) + self.xyz_calib_offset["AcZ"], 
             }
             gyro_values = {
-                "x": all_data["GyX"] / lsb_to_deg - 14,
-                "y": all_data["GyY"] / lsb_to_deg + 2.6,
-                "z": all_data["GyZ"] / lsb_to_deg + 1.4,
+                "x": all_data["GyX"] / lsb_to_deg + self.gyro_calib_offset["AcX"],
+                "y": all_data["GyY"] / lsb_to_deg + self.gyro_calib_offset["AcY"],
+                "z": all_data["GyZ"] / lsb_to_deg + self.gyro_calib_offset["AcZ"],
             }
             
             ac_rotation = self.pitch_roll_calc(all_data["AcX"],all_data["AcZ"],all_data["AcY"]) # calculate angle based off acceleration values 
@@ -70,8 +74,8 @@ class MpuSensor(Sensor):
             self.roll = 0.10 * ac_rotation["roll"] + 0.90 * gy_rotation["roll"] # update roll using complementary ratios
             self.pitch = 0.10 * ac_rotation["pitch"] + 0.90 * gy_rotation["pitch"] # update pitch using complementary ratios
             
-            roll_average += self.roll/n
-            pitch_average += self.pitch/n
+            roll_average += self.roll/samples_per_call
+            pitch_average += self.pitch/samples_per_call
             self.time = utime.ticks_us()
 
         rotation = {"roll":self.roll,"pitch":self.pitch} 
@@ -81,12 +85,11 @@ class MpuSensor(Sensor):
             {"type": "gyroscope", "value": gyro_values},
         ]
 
-
     def crash_alert(self,rotation):
         """
         control flow using data from the accelerometer to determine if a crash has occurred
         :param rotation contains a dictionary of value for pitch and roll
-        :return:
+        :return: a dictionary with "value" and a boolean associated with it
         """
         
         sample_crashed = False
