@@ -385,7 +385,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     logging.basicConfig(
-        format="%(levelname)-8s [%(filename)s] %(message)s", level=logging.DEBUG
+        format="%(levelname)-8s [%(filename)s] %(message)s", level=logging.INFO
     )
 
     DATA_LOGGER = DataLogger(
