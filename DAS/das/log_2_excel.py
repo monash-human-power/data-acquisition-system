@@ -155,8 +155,8 @@ class DataLogger:
     def stop_logging(self):
         """Stop the Data Logger"""
         self.logging = False
-        db_path = self.MQTT_LOG_FILE+"MQTT_log_"+self.time+".db"
-        xl_path = self.EXCEL_LOG_FILE + "_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".xlsx"
+        db_path = self.MQTT_LOG_FILE + "MQTT_log_" + self.time + ".db"
+        xl_path = self.EXCEL_LOG_FILE + "_" + self.time + ".xlsx"
         self.convertXL(db_path, xl_path)
 
         self.recorder.stop()
