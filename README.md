@@ -35,6 +35,9 @@ Stores the scripts for the wireless modules.
 ### [Python Wireless Modules](/wireless_modules_py/)
 Stores the Python scripts for the wireless modules.
 
+### [Crash Alert](/crash_alert/)
+Stores the scripts for the crash alert.
+
 ## Contributors ✨
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 

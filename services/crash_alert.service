@@ -1,0 +1,11 @@
+[Unit]
+Description=MHP Crash Alert
+
+[Install]
+WantedBy=default.target
+
+[Service]
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+# Source Poetry env path and run main_crash_alert.py without spawning a new shell
+ExecStart=/bin/bash -c 'eval "$($HOME/.pyenv/bin/pyenv init -)" && $($HOME/.poetry/bin/poetry env info -p)/bin/python main_crash_alert.py'

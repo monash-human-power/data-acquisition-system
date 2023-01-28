@@ -190,24 +190,15 @@ def publish(client, topic, data={}):
 
 
 def start_modules(args):
-    """Sends a null message on the start channels for all of the selected
-    modules to start"""
-
-    # TODO: Add possibility to make modules by importing a file or generating
-    # random modules. The modules should not be hard coded to this script.
-    for module_id_num in args.id:
-        publish(client, topics.WirelessModule.id(module_id_num).start)
-        print("Started module", module_id_num)
+    """Sends a start message on the V3 start channel"""
+    payload = {"start": True}
+    publish(client, topics.V3.start, payload)
 
 
 def stop_modules(args):
-    """Sends a null message on the stop channels for all of the selected
-    modules to stop"""
-
-    for module_id_num in args.id:
-        publish(client, topics.WirelessModule.id(module_id_num).stop)
-        print(f"Stopping module {module_id_num}...")
-
+    """Sends a stop message on the V3 start channels"""
+    payload = {"start": False}
+    publish(client, topics.V3.start, payload)
     time.sleep(1)
     print("Stopped all modules.")
 
