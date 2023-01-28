@@ -61,12 +61,12 @@ class MpuSensor(Sensor):
             accel_values = {
                 "x": (all_data["AcX"] / lsb_to_g * self.xyz_calib_factor["AcX"]) + self.xyz_calib_offset["AcX"],
                 "y": (all_data["AcY"] / lsb_to_g * self.xyz_calib_factor["AcY"]) + self.xyz_calib_offset["AcY"],
-                "z": (all_data["AcZ"] / lsb_to_g * self.xyz_calib_factor["AcZ"]) + self.xyz_calib_offset["AcZ"], 
+                "z": (all_data["AcZ"] / lsb_to_g * self.xyz_calib_factor["AcZ"]) + self.xyz_calib_offset["AcZ"] 
             }
             gyro_values = {
                 "x": all_data["GyX"] / lsb_to_deg + self.gyro_calib_offset["AcX"],
                 "y": all_data["GyY"] / lsb_to_deg + self.gyro_calib_offset["AcY"],
-                "z": all_data["GyZ"] / lsb_to_deg + self.gyro_calib_offset["AcZ"],
+                "z": all_data["GyZ"] / lsb_to_deg + self.gyro_calib_offset["AcZ"]
             }
             
             ac_rotation = self.pitch_roll_calc(all_data["AcX"],all_data["AcZ"],all_data["AcY"]) # calculate angle based off acceleration values 
@@ -82,8 +82,9 @@ class MpuSensor(Sensor):
         return [
             {"type": "accelerometer", "value": accel_values},
             {"type": "rotation", "value": rotation},
-            {"type": "gyroscope", "value": gyro_values},
+            {"type": "gyroscope", "value": gyro_values}
         ]
+
 
     def crash_alert(self,rotation):
         """
