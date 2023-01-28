@@ -36,7 +36,6 @@ class WindSensor(Sensor):
         if time_since_last_read < 1:
             return self.readings
 
-        # read data from anemometer and decode data from bytes to string
         data_bytes = self.sensor.readline()
         data = data_bytes.decode('utf-8')
 
@@ -50,7 +49,6 @@ class WindSensor(Sensor):
         avg_speed = float(data[39:42])
         max_speed = float(data[47:50])
 
-        # update wind direction and speed data
         self.readings = [
             {
                 "type": "windDirection",

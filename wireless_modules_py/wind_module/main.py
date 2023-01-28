@@ -8,7 +8,6 @@ import logging
 import asyncio
 
 
-# define module number
 MODULE_NUM = 5
 
 
@@ -17,10 +16,7 @@ async def main():
         format="%(levelname)-8s [%(filename)s] %(message)s", level=logging.DEBUG
     )
 
-    # define the port that the wind sensor is connected to
     wind_sensor_port = config.PORT
-
-    # instantiate a wind sensor
     my_wind_sensor = WindSensor(wind_sensor_port)
 
     # set up the wind module

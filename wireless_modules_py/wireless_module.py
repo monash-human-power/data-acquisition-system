@@ -122,7 +122,6 @@ class WirelessModule:
             while not self.start_publish:
                 await asyncio.sleep(100*MS_TO_SEC)
 
-            # tell sensors to start reading once start message received
             for sensor in self.sensors:
                 sensor.on_start()
 
@@ -144,7 +143,6 @@ class WirelessModule:
         message = str.encode(json.dumps(status))
         self.mqtt.publish(self.status_topic, message, retain=True)
 
-        # get millisecond counter and initialise to some previous time to start data publication immediately
         prev_data_sent = time.time_ns()*NS_TO_MS - interval
 
         while True:
@@ -155,10 +153,8 @@ class WirelessModule:
             await asyncio.sleep((interval-time_taken)*MS_TO_SEC)
             prev_data_sent = time.time_ns()*NS_TO_MS
 
-            # get sensor data
-            sensor_data = self._read_sensors()
-
             # publish sensor data
+            sensor_data = self._read_sensors()
             self.mqtt.publish(self.pub_data_topic, json.dumps(sensor_data))
             logging.info("MQTT data sent: {} on {}\n".format(
                 sensor_data, self.pub_data_topic))
@@ -169,7 +165,6 @@ class WirelessModule:
         Start running the wireless module. Connect to MQTT and start the data loop.
         :param data_interval: An integer representing the number of seconds to wait before sending data.
         """
-        # set callback functions
         self.mqtt.on_connect = self.on_connect
         self.mqtt.on_message = self.on_message
 
