@@ -15,6 +15,7 @@
   - [V2 MQTT Playback](#v2-mqtt-playback)
     - [Usage](#usage-3)
   - [Log to Excel](#log-to-excel)
+    - [Setup] (#setup)
     - [Usage](#usage-4)
 
 
@@ -153,6 +154,15 @@ poetry run python -m das.V2_mqtt_playback ./das/V2_csv_data/2_log.csv -s 60
 
 ## [Log to Excel](/DAS/das/log_2_excel.py)
 This command line tool logs MQTT data into an SQLite database and converts these into excel files.
+
+### Setup
+The environment file needs to be setup correctly to ensure files are saved to the correct location.
+
+```bash
+#On your local device it should be the environment path that leads to these files
+MQTT_LOG_FILE="PATH_TO/data-acquisition-system/DAS/das/sqlite/"
+EXCEL_LOG_FILE="PATH_TO/dashboard/server/data/"
+```
 
 ### Usage
 ```bash
