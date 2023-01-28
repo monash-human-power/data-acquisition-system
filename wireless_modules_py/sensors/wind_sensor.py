@@ -18,7 +18,6 @@ class WindSensor(Sensor):
 
         self.readings = []
 
-        # track the last time read() was called
         self.query_time = 0
         self.MS_TO_SEC = 1/1000
         self.NS_TO_MS = 1000000
