@@ -168,11 +168,9 @@ class WirelessModule:
         self.mqtt.on_connect = self.on_connect
         self.mqtt.on_message = self.on_message
 
-        # connect to broker
         self.mqtt.username_pw_set(config.USERNAME, config.PASSWORD)
         self.mqtt.connect(config.MQTT_BROKER)
 
-        # subscribe to start topic
         sub_topics = [self.v3_start]
         for topic in sub_topics:
             self.mqtt.subscribe(topic, qos=1)

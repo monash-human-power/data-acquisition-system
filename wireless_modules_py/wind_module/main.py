@@ -19,7 +19,6 @@ async def main():
     wind_sensor_port = config.PORT
     my_wind_sensor = WindSensor(wind_sensor_port)
 
-    # set up the wind module
     wind_module = WirelessModule(MODULE_NUM)
     sensors = [my_wind_sensor]
     wind_module.add_sensors(sensors)
@@ -27,7 +26,6 @@ async def main():
     logging.debug("Start asyncio loop")
     asyncio.create_task(wind_module.run())
 
-    # keep code running indefinitely
     while True:
         await asyncio.sleep(1)
 
