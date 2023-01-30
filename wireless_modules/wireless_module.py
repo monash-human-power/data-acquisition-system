@@ -179,7 +179,7 @@ class WirelessModule:
         stop message - after which the process is repeated.
         :param interval: Integer representing number of seconds to wait before sending data.
         """
-        secs_to_ms = 200
+        secs_to_ms = 1000
         interval *= secs_to_ms
 
         status = {"online": True}
