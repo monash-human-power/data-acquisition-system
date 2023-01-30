@@ -13,7 +13,7 @@
   "dependencies": {
     "ant-plus": "0.0.19",
     "argparse": "^1.0.10",
-    "mqtt": "^2.18.8",
+    "mqtt": "^4.3.7",
     "winston": "^3.1.0"
   },
   "devDependencies": {
