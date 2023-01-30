@@ -5,20 +5,20 @@ description = ""
 authors = ["Blake <bhay0010@student.monash.edu>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-paho-mqtt = "^1.5.0"
-urllib3 = "^1.25.9"
-pandas = "^1.0.3"
+python = "^3.7"
+paho-mqtt = "^1.6.1"
+pandas = "1.1.1"
 argparse = "^1.4.0"
-mhp = {git = "git@github.com:monash-human-power/common.git", rev = "202212.21"}
-python-dotenv = "^0.19.2"
-mqtt-logger = "^0.3.1"
-rich = "^12.2.0"
+python-dotenv = "^0.21.0"
+rich = "^12.5.1"
 XlsxWriter = "^3.0.3"
+mqtt-logger = "^0.3.2"
+mhp = {git = "git@github.com:monash-human-power/common.git"}
+urllib3 = "^1.26.12"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.1.2"
+pytest = "^7.1.3"
 
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
