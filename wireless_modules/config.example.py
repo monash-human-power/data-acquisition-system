@@ -8,4 +8,3 @@ STATUS_LED_PINS = [14, 12, 13]
 
 # Pin for LED on ESP32 board
 BUILTIN_LED_PIN = 2
-

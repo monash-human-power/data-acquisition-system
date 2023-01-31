@@ -1,10 +1,12 @@
 from machine import I2C
+import utime
 from mpu6050 import accel
 from sensor_base import Sensor
+from math import sqrt, atan2
 
 
 class MpuSensor(Sensor):
-    def __init__(self, scl_pin, sda_pin, samples=10):
+    def __init__(self, scl_pin, sda_pin):
         """
         Initialise the MPU6050 sensor to read accelerometer and gyroscope data.
         :param scl_pin: A Pin object connected to SCL on the sensor.
@@ -12,85 +14,98 @@ class MpuSensor(Sensor):
         :param samples: An integer representing number of readings to take the average of.
         """
         i2c = I2C(scl=scl_pin, sda=sda_pin)
+        self.roll = 0
+        self.pitch = 0
+
+        #TODO implement a function to avoid hardcoding calibration values
+        self.xyz_calib_factor = {"AcX" : 1, "AcY": 1, "AcZ" : 1}
+        self.xyz_calib_offset = {"AcX" : 0.0, "AcY": 0.4, "AcZ" : 0.0}
+        self.gyro_calib_offset = {"AcX" : -14, "AcY": 2.6, "AcZ": 1.4}
+        
         self.accelerometer = accel(i2c)
-        self.calibrated_values = []
-        self.samples = samples
+        self.time = 0
+        self.crash_detections = []
 
-    def get_smoothed_values(self, n_samples=10, calibration=None):
+    def pitch_roll_calc(self,x,y,z):
         """
-        Get smoothed values from the sensor by sampling
-        the sensor `n_samples` times and returning the mean.
-
-        If passed a `calibration` dictionary, subtract these
-        values from the final sensor value before returning.
-        :param n_samples: The number of samples to take average from
-        :param calibration: calibration values to offset by
-        :return: A dictionary of mean sensor measurements for the temperature, 3 dimensions of acceleration and
-                gyroscope
-        Note: Sourced from https://www.twobitarcade.net/article/3-axis-gyro-micropython/
+        :param x: number which represents the acceleration in the x-axis
+        :param y: number which represents the acceleration in the y-axis
+        :param z: number which represents the acceleration in the z-axis
+        :return: a dictionary of length 2 containing values for roll and pitch calculated by roll and pitch formulas adapted from
+        https://wiki.dfrobot.com/How_to_Use_a_Three-Axis_Accelerometer_for_Tilt_Sensing
         """
-        result = {}
-        for _ in range(n_samples):
-            data = self.accelerometer.get_values()
-
-            for key in data.keys():
-                # Add on value / n_samples to produce an average
-                # over n_samples, with default of 0 for first loop.
-                result[key] = result.get(key, 0) + (data[key] / n_samples)
-
-        if calibration:
-            # Remove calibration adjustment.
-            for key in calibration.keys():
-                result[key] -= calibration[key]
-
-        return result
-
-    def calibrate(self, threshold=50, n_samples=10):
-        """
-        Get calibration data for the sensor, by repeatedly measuring while the sensor is stable. The resulting
-        calibration dictionary contains offsets for this sensor in its current position.
-        :param threshold: The accuracy of the calibration.
-        :param n_samples: The number of times the sensor should be read and averaged.
-        Note: Sourced from: https://www.twobitarcade.net/article/3-axis-gyro-micropython/
-        """
-        print("--------Calibrating:")
-        while True:
-            v1 = self.get_smoothed_values(n_samples)
-            v2 = self.get_smoothed_values(n_samples)
-
-            # Check all consecutive measurements are within the threshold. We use abs() so all calculated
-            # differences are positive.
-            if all(abs(v1[key] - v2[key]) < threshold for key in v1.keys()):
-                self.calibrated_values = v1
-                return v1  # Calibrated.
-            print("in calibration, keep device at rest...")
+        values = {}
+        values["roll"] = atan2(abs(round(y,1)),round(z,1)) * 57.3
+        values["pitch"] = atan2(-x, sqrt(y**2 + z**2)) * 57.3 
+        return values
 
     def read(self):
         """
         Read averaged and calibrated sensor data for the accelerometer and gyroscope.
-        :return: An array of length 2 containing a dictionary of acceleration values and a dictionary for
-                gyroscope values. Each contains a `type` key associated with a string of the measurement type and a
+        :param: None
+        :return: An array of length 3 containing a dictionary of acceleration values, a dictionary for
+                gyroscope values and a dictionary of rotation values. 
+                Each contains a `type` key associated with a string of the measurement type and a
                 `value` key associated with another dictionary containing (key, value) pair of the axis and it's
                 relevant data.
-                The gyroscope values are in degrees/sec and accelerometer values are in Gs.
+                
+                The gyroscope values are in degrees/sec ,accelerometer values are in Gs and rotation values are in degrees.
         """
+        samples_per_call = 50
         lsb_to_g = 16384
         lsb_to_deg = 131
-        all_data = self.get_smoothed_values(
-            n_samples=self.samples, calibration=self.calibrated_values
-        )
-        accel_values = {
-            "x": all_data["AcX"] / lsb_to_g,
-            "y": all_data["AcY"] / lsb_to_g,
-            "z": all_data["AcZ"] / lsb_to_g,
-        }
-        gyro_values = {
-            "x": all_data["GyX"] / lsb_to_deg,
-            "y": all_data["GyY"] / lsb_to_deg,
-            "z": all_data["GyZ"] / lsb_to_deg,
-        }
+        for _ in range(samples_per_call):
+            roll_average, pitch_average = 0,0 
+            dt = utime.ticks_diff(utime.ticks_us(),self.time)/1000000 # calculate time step
+            all_data = self.accelerometer.get_values()
+            accel_values = {
+                "x": (all_data["AcX"] / lsb_to_g * self.xyz_calib_factor["AcX"]) + self.xyz_calib_offset["AcX"],
+                "y": (all_data["AcY"] / lsb_to_g * self.xyz_calib_factor["AcY"]) + self.xyz_calib_offset["AcY"],
+                "z": (all_data["AcZ"] / lsb_to_g * self.xyz_calib_factor["AcZ"]) + self.xyz_calib_offset["AcZ"] 
+            }
+            gyro_values = {
+                "x": all_data["GyX"] / lsb_to_deg + self.gyro_calib_offset["AcX"],
+                "y": all_data["GyY"] / lsb_to_deg + self.gyro_calib_offset["AcY"],
+                "z": all_data["GyZ"] / lsb_to_deg + self.gyro_calib_offset["AcZ"]
+            }
+            
+            ac_rotation = self.pitch_roll_calc(all_data["AcX"],all_data["AcZ"],all_data["AcY"]) # calculate angle based off acceleration values 
+            gy_rotation = {"roll": self.roll + gyro_values["x"] * dt, "pitch": self.pitch + gyro_values["z"] * dt} # calculate change in angle based off gyroscope readings
+            self.roll = 0.10 * ac_rotation["roll"] + 0.90 * gy_rotation["roll"] # update roll using complementary ratios
+            self.pitch = 0.10 * ac_rotation["pitch"] + 0.90 * gy_rotation["pitch"] # update pitch using complementary ratios
+            
+            roll_average += self.roll/samples_per_call
+            pitch_average += self.pitch/samples_per_call
+            self.time = utime.ticks_us()
 
+        rotation = {"roll":self.roll,"pitch":self.pitch} 
         return [
             {"type": "accelerometer", "value": accel_values},
-            {"type": "gyroscope", "value": gyro_values},
+            {"type": "rotation", "value": rotation},
+            {"type": "gyroscope", "value": gyro_values}
         ]
+
+
+    def crash_alert(self,rotation):
+        """
+        control flow using data from the accelerometer to determine if a crash has occurred
+        :param rotation contains a dictionary of value for pitch and roll
+        :return: a dictionary with "value" and a boolean associated with it
+        """
+        
+        sample_crashed = False
+        isCrashed = False
+        if abs(rotation["pitch"]) >= 70: 
+            # when bike is tipped forwards by 70 and back by 70 degrees
+            sample_crashed = True
+        elif abs(rotation["roll"]) >= 70:
+            # when bike is tipped side to side by 70 degrees
+            sample_crashed = True
+        
+        self.crash_detections.append(sample_crashed)
+        if len(self.crash_detections) == 4:
+            self.crash_detections.pop(0)
+        if sum(self.crash_detections) == 3: 
+            isCrashed = True
+        
+        return {"value": isCrashed} 
