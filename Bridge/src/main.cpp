@@ -22,7 +22,7 @@ std::optional<Args> get_args(int argc, char *argv[])
     bool help_requested = first_arg == "-h" || first_arg == "--help";
     bool valid_device = first_arg == "bike" || first_arg == "chase";
 
-    if (help_requested || !valid_device || argc > 2)
+    if (help_requested || !valid_device || argc > 3)
     {
         std::cout << "Usage: " << argv[0] << " [-h] [bike|chase] [BROKER_ADDRESS]\n"
                                              "  -h, --help      show this help message and exit\n"
@@ -33,7 +33,8 @@ std::optional<Args> get_args(int argc, char *argv[])
     }
 
     args.is_bike = first_arg == "bike";
-    args.broker_address = argv[2];
+    if (argc == 3)
+        args.broker_address = argv[2];
 
     return args;
 }
