@@ -37,6 +37,7 @@ class CrashAlertDriver():
         """
         parser = argparse.ArgumentParser()
         parser.add_argument("--host", type=str, default="localhost", help="ip address")
+        parser.add_argument("--cooldown", type=int, default=120, help="cooldown seconds")
         parsed_args = parser.parse_args(argv)
         return parsed_args
 
@@ -79,7 +80,7 @@ if __name__ == "__main__":
     slack_webhook = os.getenv("SLACK_WEBHOOK")
     ARGS = CrashAlertDriver.get_args()
     host = os.getenv("MQTT_HOST") or ARGS.host
-    cooldown = 10
+    cooldown = ARGS.cooldown
 
     CRASH_ALERT = CrashAlertDriver(host, cooldown, slack_webhook)
     CRASH_ALERT.start()
