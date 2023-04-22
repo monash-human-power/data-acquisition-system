@@ -4,6 +4,8 @@ import smbus
 import numpy as np
 import time
 
+
+
 class PressureSensor(Sensor):
     """
     A class for a barometer connected via serial port.
@@ -21,6 +23,8 @@ class PressureSensor(Sensor):
         self.query_time = 0
         self.MS_TO_SEC = 1/1000
         self.NS_TO_MS = 1000000
+        self.bus = smbus.SMBus(self.i2c_ch)
+        
 
 
     def read(self):
@@ -92,9 +96,9 @@ class PressureSensor(Sensor):
         return praw_sc
         
     def get_traw(self):
-        tmp_MSB = bus.read_byte_data(self.i2c_address, 0x03)
-        tmp_LSB = bus.read_byte_data(self.i2c_address, 0x04)
-        tmp_XLSB = bus.read_byte_data(self.i2c_address, 0x05)
+        tmp_MSB = self.bus.read_byte_data(self.i2c_address, 0x03)
+        tmp_LSB = self.bus.read_byte_data(self.i2c_address, 0x04)
+        tmp_XLSB = self.bus.read_byte_data(self.i2c_address, 0x05)
 
         tmp = np.uint32(tmp_MSB << 16) | np.uint32(tmp_LSB << 8) | np.uint32(tmp_XLSB)
 
@@ -104,9 +108,9 @@ class PressureSensor(Sensor):
         return np.int32(tmp)
     
     def get_praw(self):
-        tmp_MSB = bus.read_byte_data(self.i2c_address, 0x00)
-        tmp_LSB = bus.read_byte_data(self.i2c_address, 0x01)
-        tmp_XLSB = bus.read_byte_data(self.i2c_address, 0x02)
+        tmp_MSB = self.bus.read_byte_data(self.i2c_address, 0x00)
+        tmp_LSB = self.bus.read_byte_data(self.i2c_address, 0x01)
+        tmp_XLSB = self.bus.read_byte_data(self.i2c_address, 0x02)
 
         tmp = np.uint32(tmp_MSB << 16) | np.uint32(tmp_LSB << 8) | np.uint32(tmp_XLSB)
 
@@ -116,7 +120,7 @@ class PressureSensor(Sensor):
         return np.int32(tmp)
     
     def get_temperature_scale_factor(self):
-        tmp_Byte = bus.read_byte_data(self.i2c_address, 0x07)
+        tmp_Byte = self.bus.read_byte_data(self.i2c_address, 0x07)
 
         tmp_Byte = tmp_Byte & 0B111
 
@@ -147,7 +151,7 @@ class PressureSensor(Sensor):
         return k
     
     def get_pressure_scale_factor(self):
-        tmp_Byte = bus.read_byte_data(self.i2c_address, 0x06)
+        tmp_Byte = self.bus.read_byte_data(self.i2c_address, 0x06)
 
         tmp_Byte = tmp_Byte & 0B111
 
@@ -189,8 +193,8 @@ class PressureSensor(Sensor):
         self.get_c30()
     
     def get_c0(self):
-        tmp_MSB = bus.read_byte_data(self.i2c_address, 0x10)
-        tmp_LSB = bus.read_byte_data(self.i2c_address, 0x11)
+        tmp_MSB = self.bus.read_byte_data(self.i2c_address, 0x10)
+        tmp_LSB = self.bus.read_byte_data(self.i2c_address, 0x11)
 
         tmp_LSB = tmp_LSB >> 4;
         tmp = tmp_MSB << 4 | tmp_LSB
@@ -201,10 +205,10 @@ class PressureSensor(Sensor):
         return 
 
     def get_c1(self):
-        tmp_MSB = bus.read_byte_data(self.i2c_address, 0x11)
-        tmp_LSB = bus.read_byte_data(self.i2c_address, 0x12)
+        tmp_MSB = self.bus.read_byte_data(self.i2c_address, 0x11)
+        tmp_LSB = self.bus.read_byte_data(self.i2c_address, 0x12)
 
-        tmp_LSB = bus.read_byte_data(self.i2c_address, 0xF)
+        tmp_LSB = self.bus.read_byte_data(self.i2c_address, 0xF)
         tmp = tmp_MSB << 8 | tmp_LSB
 
         if (tmp & (1 << 11)):
@@ -213,9 +217,9 @@ class PressureSensor(Sensor):
         return 
 
     def get_c00(self):
-        tmp_MSB = bus.read_byte_data(self.i2c_address, 0x13)
-        tmp_LSB = bus.read_byte_data(self.i2c_address, 0x14)
-        tmp_XLSB = bus.read_byte_data(self.i2c_address, 0x15)
+        tmp_MSB = self.bus.read_byte_data(self.i2c_address, 0x13)
+        tmp_LSB = self.bus.read_byte_data(self.i2c_address, 0x14)
+        tmp_XLSB = self.bus.read_byte_data(self.i2c_address, 0x15)
 
         tmp = np.uint32(tmp_MSB << 12) | np.uint32(tmp_LSB << 4) | np.uint32(tmp_XLSB >> 4)
 
@@ -225,9 +229,9 @@ class PressureSensor(Sensor):
         return 
 
     def get_c10(self):
-        tmp_MSB = bus.read_byte_data(self.i2c_address, 0x15)
-        tmp_LSB = bus.read_byte_data(self.i2c_address, 0x16)
-        tmp_XLSB = bus.read_byte_data(self.i2c_address, 0x17)
+        tmp_MSB = self.bus.read_byte_data(self.i2c_address, 0x15)
+        tmp_LSB = self.bus.read_byte_data(self.i2c_address, 0x16)
+        tmp_XLSB = self.bus.read_byte_data(self.i2c_address, 0x17)
 
         tmp_MSB = tmp_MSB & 0xF
 
@@ -241,40 +245,40 @@ class PressureSensor(Sensor):
         return 
 
     def get_c01(self):
-        tmp_MSB = bus.read_byte_data(self.i2c_address, 0x18)
-        tmp_LSB = bus.read_byte_data(self.i2c_address, 0x19)
+        tmp_MSB = self.bus.read_byte_data(self.i2c_address, 0x18)
+        tmp_LSB = self.bus.read_byte_data(self.i2c_address, 0x19)
 
         tmp = (tmp_MSB << 8) | tmp_LSB
         self.c01 = np.int16(tmp)
         return 
 
     def get_c11(self):
-        tmp_MSB = bus.read_byte_data(self.i2c_address, 0x1A)
-        tmp_LSB = bus.read_byte_data(self.i2c_address, 0x1B)
+        tmp_MSB = self.bus.read_byte_data(self.i2c_address, 0x1A)
+        tmp_LSB = self.bus.read_byte_data(self.i2c_address, 0x1B)
 
         tmp = (tmp_MSB << 8) | tmp_LSB
         self.c11 = np.int16(tmp)
         return 
 
     def get_c20(self):
-        tmp_MSB = bus.read_byte_data(self.i2c_address, 0x1C)
-        tmp_LSB = bus.read_byte_data(self.i2c_address, 0x1D)
+        tmp_MSB = self.bus.read_byte_data(self.i2c_address, 0x1C)
+        tmp_LSB = self.bus.read_byte_data(self.i2c_address, 0x1D)
 
         tmp = (tmp_MSB << 8) | tmp_LSB
         self.c20 = np.int16(tmp)
         return
 
     def get_c21(self):
-        tmp_MSB = bus.read_byte_data(self.i2c_address, 0x1E)
-        tmp_LSB = bus.read_byte_data(self.i2c_address, 0x1F)
+        tmp_MSB = self.bus.read_byte_data(self.i2c_address, 0x1E)
+        tmp_LSB = self.bus.read_byte_data(self.i2c_address, 0x1F)
 
         tmp = (tmp_MSB << 8) | tmp_LSB
         self.c21 = np.int16(tmp)
         return
 
     def get_c30(self):
-        tmp_MSB = bus.read_byte_data(self.i2c_address, 0x20)
-        tmp_LSB = bus.read_byte_data(self.i2c_address, 0x21)
+        tmp_MSB = self.bus.read_byte_data(self.i2c_address, 0x20)
+        tmp_LSB = self.bus.read_byte_data(self.i2c_address, 0x21)
 
         tmp = (tmp_MSB << 8) | tmp_LSB
         self.c30 = np.int16(tmp)
