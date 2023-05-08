@@ -3,6 +3,7 @@
 #include "protocol.hpp"
 #include "radio.hpp"
 #include "ring_buffer.hpp"
+#include "debug.hpp"
 
 /**
  * Manages and runs the MQTT Bridge.

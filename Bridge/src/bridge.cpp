@@ -12,6 +12,7 @@ Bridge::Bridge(MqttBridgeClient_ptr mqttClient, Radio_ptr radio)
 
 void Bridge::mqtt_message_received_callback(mqtt::const_message_ptr message)
 {
+    debug << "Bridge got an MQTT message" << std::endl;
     auto hash = this->hash_mqtt_message(message);
     if (this->recently_sent_messages_.contains(hash))
         // This message was sent from us (the bridge), so discard
@@ -23,6 +24,7 @@ void Bridge::mqtt_message_received_callback(mqtt::const_message_ptr message)
 
 void Bridge::radio_packet_received_callback(const Frame packet)
 {
+    debug << "Bridge got a radio message" << std::endl;
     if (auto message = this->rx_.receive_packet(packet))
     {
         // Store the hash of this message so we know to discard it when receive
