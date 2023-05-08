@@ -15,7 +15,14 @@ Nrf24Radio::Nrf24Radio(bool is_bike, uint16_t ce_pin, uint16_t cs_pin)
     this->nrf24_ = RF24(ce_pin, cs_pin, 1'000'000);
 
     if (!this->nrf24_.begin())
+    {
+        std::cout << "NRF24 begin failed. Check wiring?\n";
         throw "NRF24 begin failed. Check wiring?";
+    }
+    else
+    {
+        std::cout << "NRF24 call to begin success\n";
+    }
 
     this->nrf24_.setPayloadSize(PACKET_LENGTH);
     this->nrf24_.setPALevel(RF24_PA_HIGH);

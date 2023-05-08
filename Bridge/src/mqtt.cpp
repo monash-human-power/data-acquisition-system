@@ -33,7 +33,12 @@ void MqttCallback::connection_lost(const std::string& cause)
 
 void MqttCallback::message_arrived(mqtt::const_message_ptr message)
 {
-    this->on_message_(message);
+    std::cout << "Got mqtt message" << std::endl;
+    if (this->on_message_) {
+        this->on_message_(message);
+    } else {
+        std::cout << "Received an MQTT message without on_message being set. Dropping it." << std::endl;
+    }
 }
 
 
