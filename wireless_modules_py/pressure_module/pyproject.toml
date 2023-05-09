@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "pressure-module"
+version = "0.1.0"
+description = ""
+authors = ["da-food <dpollard02@gmail.com>"]
+readme = "README.md"
+packages = [{include = "pressure_module"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+paho-mqtt = "^1.6.1"
+smbus = "^1.1.post2"
+numpy = "^1.24.3"
+mhp = {git = "git@github.com:monash-human-power/common.git"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

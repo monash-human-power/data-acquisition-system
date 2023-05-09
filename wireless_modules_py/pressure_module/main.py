@@ -8,7 +8,7 @@ import logging
 import asyncio
 
 
-MODULE_NUM = 5
+MODULE_NUM = 6
 
 
 async def main():
