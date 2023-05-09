@@ -1,6 +1,5 @@
 from sensor_base import Sensor
-import serial
-import smbus
+import smbus2
 import numpy as np
 import time
 
@@ -23,7 +22,7 @@ class PressureSensor(Sensor):
         self.query_time = 0
         self.MS_TO_SEC = 1/1000
         self.NS_TO_MS = 1000000
-        self.bus = smbus.SMBus(self.i2c_ch)
+        self.bus = smbus2.SMBus(self.i2c_ch)
         
 
 
