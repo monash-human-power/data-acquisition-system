@@ -1,9 +1,8 @@
 import sys
 sys.path.insert(1, '../sensors')
-from sensors.pressure_sensor import PressureSensor
+from pressure_sensor import PressureSensor
 sys.path.insert(2, '../')
 from wireless_module import WirelessModule
-import config
 import logging
 import asyncio
 

@@ -7,11 +7,11 @@ readme = "README.md"
 packages = [{include = "pressure_module"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.8"
 paho-mqtt = "^1.6.1"
-smbus = "^1.1.post2"
 numpy = "^1.24.3"
 mhp = {git = "git@github.com:monash-human-power/common.git"}
+smbus2 = "^0.4.2"
 
 
 [build-system]
