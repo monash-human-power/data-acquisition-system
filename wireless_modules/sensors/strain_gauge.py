@@ -35,5 +35,3 @@ class Strain_Gauge(Sensor):
         filtered_strain = self.ema_filter(strain,self.strain,self.alpha)
         self.strain = filtered_strain
         return filtered_strain
-    
-        
