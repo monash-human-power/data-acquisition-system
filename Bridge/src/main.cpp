@@ -62,20 +62,20 @@ int main(int argc, char *argv[])
     uint16_t pin_cs;
     if ((*args).bike_wiring)
     {
-        pin_ce = 16;
-        pin_cs = 12;
+        pin_ce = 0;
+        pin_cs = 12; // spidev1.2
         std::cout << "Using the bike wiring configuration";
     }
     else
     {
         pin_ce = 25;
-        pin_cs = 0;
+        pin_cs = 0; //spidev0.0
         std::cout << "Using the chase car wiring configuration";
     }
     printf(" (ce=%d, cs=%d)\n", pin_ce, pin_cs);
 
     auto mqttClient = std::make_shared<MqttBridgeClient>((*args).broker_address);
-    auto radio = std::make_shared<Nrf24Radio>((*args).is_bike, 25, 0);
+    auto radio = std::make_shared<Nrf24Radio>((*args).is_bike, pin_ce, pin_cs);
     Bridge bridge(mqttClient, radio);
 
     while (std::cin.get() != 'q')

@@ -25,7 +25,7 @@ Nrf24Radio::Nrf24Radio(bool is_bike, uint16_t ce_pin, uint16_t cs_pin)
     }
 
     this->nrf24_.setPayloadSize(PACKET_LENGTH);
-    this->nrf24_.setPALevel(RF24_PA_HIGH);
+    this->nrf24_.setPALevel(RF24_PA_MAX);
     this->nrf24_.setDataRate(RF24_250KBPS);
     this->nrf24_.openWritingPipe(addresses[is_bike]);
     this->nrf24_.openReadingPipe(1, addresses[!is_bike]);
