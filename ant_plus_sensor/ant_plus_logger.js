@@ -44,8 +44,8 @@ const v3StartTopic = 'v3/start';
 const dataTopic = `/v3/wireless_module/${moduleID}/data`;
 const statusTopic = `/v3/wireless_module/${moduleID}/status`;
 
-// 700c 23mm tyre: https://www.bikecalc.com/wheel_size_math
-const wheelCircumference = 2.09858; // m
+// 406c 28mm tyre: https://www.bikecalc.com/wheel_size_math
+const wheelCircumference = 1.44513; // m
 
 /**
  * Connect to the MQTT broker
