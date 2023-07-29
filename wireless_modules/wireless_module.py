@@ -9,6 +9,7 @@ import time
 from mqtt_client import Client
 from status_led import WmState
 from mpu_sensor import MpuSensor
+from strain_gauge import Strain_Gauge
 
 try:
     import config
@@ -40,6 +41,7 @@ class WirelessModule:
 
         self.mpu_data_topic = b"/v3/wireless_module/{}/mpu_data".format(module_id)
         self.crash_detection_topic = b"/v3/wireless_module/{}/crash_detection".format(module_id)
+        self.strain_gauge_topic = b"/v3/wireless_module/{}/strain_gauge".format(module_id)
 
         self.start_publish = False
         last_will_payload = {"online": False}
@@ -129,10 +131,29 @@ class WirelessModule:
             )
             await asyncio.sleep(interval)
 
+    async def start_strain_gauge_loop(self,interval):
+        """
+        start publishing the strain gauge data ()
+        :param interval: Integer representing number of milliseconds to wait before sending strain gauge data
+        """
+        if not any(isinstance(sensor, Strain_Gauge) for sensor in self.sensors):
+            return
+        
+        for sensor in self.sensors:
+            if isinstance(sensor, Strain_Gauge):
+                strain_gauge = sensor
+                break
+        while True:
+            strain = strain_gauge.read()
+            if self.mqtt.connected:
+                self.mqtt.publish(self.strain_gauge_topic,ujson.dumps(strain))
+                pass
+            await asyncio.sleep_ms(interval)
+
     async def start_crash_detection_loop(self, interval):
         """
         Start publishing the crash detection data (If there has been a crash detected)
-        :param interval: Integer representing number of milliseconds to wait before sending battery voltage data
+        :param interval: Integer representing number of milliseconds to wait before sending crash detection data
         """
         if not any(isinstance(sensor, MpuSensor) for sensor in self.sensors):
             return
@@ -203,7 +224,7 @@ class WirelessModule:
 
             self.mqtt.check_for_message()
 
-    async def run(self, data_interval=1, battery_data_interval=300, crash_detection_interval = 200):
+    async def run(self, data_interval=1, battery_data_interval=300, crash_detection_interval = 1000, strain_gauge_interval = 1):
         """
         Start running the wireless module. Connects to MQTT and starts the data, battery and crash detection loops.
         :param data_interval: Integer representing number of seconds to wait before sending data.
@@ -215,6 +236,9 @@ class WirelessModule:
         # Start publishing crash detection data straight away
         asyncio.create_task(self.start_crash_detection_loop(crash_detection_interval))
 
+        # Start publishing strain gauge data straight away
+        asyncio.create_task(self.start_strain_gauge_loop(strain_gauge_interval))
+
         # Attempt to connect to MQTT (will block until successful)
         self.status_led.set_state(WmState.ConnectingToMqtt)
         sub_topics = [self.v3_start]
@@ -222,3 +246,4 @@ class WirelessModule:
 
         # Start the main publishing loop
         asyncio.create_task(self.start_data_loop(data_interval))
+

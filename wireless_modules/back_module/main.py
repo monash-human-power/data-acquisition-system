@@ -11,7 +11,7 @@ from mpu_sensor import MpuSensor
 from reed_sensor import ReedSensor
 from battery_reader import BatteryReader
 from status_led import StatusLed, WmState
-from strain_gauge import Strain_gauge
+from strain_gauge import Strain_Gauge
 
 
 # Define module number
@@ -57,18 +57,15 @@ async def main():
 
     my_gps = GpsSensor(2)
 
-    my_mpu = MpuSensor(scl_pin, sda_pin, 20)
-    my_mpu.calibrate()
-
+    my_mpu = MpuSensor(scl_pin, sda_pin)
     battery_pin = 32
     battery_reader = BatteryReader(battery_pin, battery_calibration)
 
-    strain_gauge01 = Strain_gauge(34)
-    strain_gauge02 = Strain_gauge(32)
+    strain_gauge = Strain_Gauge(35)
 
     # Set up the wireless module
     back_module = WirelessModule(MODULE_NUM, battery_reader, status_led)
-    sensors = [my_dht, my_mq135, my_gps, my_mpu, strain_gauge01, strain_gauge02]
+    sensors = [my_dht, my_mq135, my_gps, my_mpu, strain_gauge]
     back_module.add_sensors(sensors)
 
     print("Starting asyncio loop")
