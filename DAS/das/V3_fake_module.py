@@ -43,7 +43,7 @@ parser.add_argument(
     action="store",
     nargs="+",
     type=int,
-    default=[1, 2, 3, 4],
+    default=[1, 2, 3, 4, 5],
     help="""Specify the modules to produce fake data. eg. --id 1 2 25 specifies
     that module 1, 2 and 25 will produce data.""",
 )
@@ -72,6 +72,17 @@ sensors = {
     "power": MockSensor(200, percent_range=0.8),
     "cadence": MockSensor(90, percent_range=0.2),
     "heartRate": MockSensor(120),
+    "windDirection":
+        MockSensor(
+            ("minDirection", 180),
+            ("avgDirection", 180),
+            ("maxDirection", 180)),
+    "windSpeed":
+        MockSensor(
+            ("minSpeed", 10),
+            ("avgSpeed", 10),
+            ("maxSpeed", 10),
+        )
 }
 
 # HARDCODED MODULE ONBOARD SENSORS (dict above contains the MockSensor objects)
@@ -79,8 +90,8 @@ M1_sensors = ["temperature", "humidity", "steeringAngle"]
 M2_sensors = ["co2", "temperature", "humidity", "accelerometer", "gyroscope"]
 M3_sensors = ["co2", "reedVelocity", "reedDistance", "gps"]
 M4_sensors = ["power", "cadence", "heartRate"]
+M5_sensors = ["windDirection","windSpeed"]
 Mn_sensors = list(sensors.keys())  # For other fake module all sensors are used
-
 
 def generate_module_data(module_id_num, sensor_list):
     """
@@ -98,7 +109,6 @@ def generate_module_data(module_id_num, sensor_list):
         module_data["sensors"].append(sensor_data)
 
     return module_data
-
 
 def send_fake_data(client, duration, rate, module_id_nums):
     """Send artificial data over MQTT for each module chanel. Sends [rate] per
@@ -165,6 +175,11 @@ def send_fake_data(client, duration, rate, module_id_nums):
                 module_data = generate_module_data(module_id_num, M4_sensors)
                 publish_data_and_battery(module_id_num)
 
+            # Wireless module 5 (Anemometer)
+            elif module_id_num == 5:
+                module_data = generate_module_data(module_id_num, M5_sensors)
+                publish_data_and_battery(module_id_num)
+
             # Wireless module n (Other random sensor)
             else:
                 module_data = generate_module_data(module_id_num, Mn_sensors)
@@ -172,7 +187,6 @@ def send_fake_data(client, duration, rate, module_id_nums):
 
         print()  # Newline for clarity
         time.sleep(1 / rate)
-
 
 def publish(client, topic, data={}):
     """
@@ -188,12 +202,10 @@ def publish(client, topic, data={}):
     client.publish(str(topic), json_data)
     print(topic, "--> ", json_data)
 
-
 def start_modules(args):
     """Sends a start message on the V3 start channel"""
     payload = {"start": True}
     publish(client, topics.V3.start, payload)
-
 
 def stop_modules(args):
     """Sends a stop message on the V3 start channels"""
@@ -202,7 +214,6 @@ def stop_modules(args):
     time.sleep(1)
     print("Stopped all modules.")
 
-
 def start_publishing(client, args):
     print("\npublishing started...")
     start_modules(args)
@@ -210,17 +221,14 @@ def start_publishing(client, args):
     stop_modules(args)
     print("\npublishing finished")
 
-
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected Sucessfully! Result code: " + str(rc))
     else:
         print("Something went wrong! Result code: " + str(rc))
 
-
 def on_message(client, userdata, msg):
     print(msg.topic + " " + str(msg.payload.decode("utf-8")))
-
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -236,3 +244,5 @@ if __name__ == "__main__":
     client.loop_start()
     start_publishing(client, args)
     client.loop_stop()
+
+
