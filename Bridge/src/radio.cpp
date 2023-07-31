@@ -20,6 +20,20 @@ void Radio::set_on_received(std::function<void(Frame)> callback)
 
 void Radio::send_packets(const std::vector<Frame> frames)
 {
+    // Check if there is too much in the queue and drop the oldest packets if needed.
+    const int max_queue_size = 100;
+    int cur_queue_size = this->send_queue_.size();
+    if (cur_queue_size > max_queue_size) {
+        // Queue is too long. Drop the oldest packets.
+        // NOTE: This may cause an issue in high congestion situations where all
+        // messages have at least one packet lost and are subsequently dropped.
+        printf("Dropping one or more packets as queue too long.\n");
+        for (int i = cur_queue_size; i > max_queue_size; i--)
+        {
+            this->send_queue_.pop();
+        }
+    }
+    printf("%d packets in queue\n", this->send_queue_.size());
     this->send_queue_.push(frames);
 }
 

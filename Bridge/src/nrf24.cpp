@@ -12,7 +12,7 @@ Nrf24Radio::Nrf24Radio(bool is_bike, uint16_t ce_pin, uint16_t cs_pin)
     std::cout << "Starting NRF24 Radio..." << std::endl;
 
     // TODO: Test with RF24_SPI_SPEED, or at least something faster
-    this->nrf24_ = RF24(ce_pin, cs_pin, 5'000'000);
+    this->nrf24_ = RF24(ce_pin, cs_pin, 5'000'000); // 8MHz is too fast.
 
     if (!this->nrf24_.begin())
     {
@@ -26,7 +26,8 @@ Nrf24Radio::Nrf24Radio(bool is_bike, uint16_t ce_pin, uint16_t cs_pin)
 
     this->nrf24_.setPayloadSize(PACKET_LENGTH);
     this->nrf24_.setPALevel(RF24_PA_MAX);
-    this->nrf24_.setDataRate(RF24_1MBPS);
+    // this->nrf24_.setDataRate(RF24_1MBPS);
+    this->nrf24_.setDataRate(RF24_250KBPS);
     this->nrf24_.openWritingPipe(addresses[is_bike]);
     this->nrf24_.openReadingPipe(1, addresses[!is_bike]);
 
@@ -76,7 +77,7 @@ void Nrf24Radio::transmit_packet(const Frame packet)
     struct timespec startTimer;
     clock_gettime(CLOCK_MONOTONIC_RAW, &startTimer);
 
-    const int max_attemps = 3;
+    const int max_attemps = 5;
     for (int attempt = 0; attempt < max_attemps; attempt++)
     {
         if (this->nrf24_.write(&packet, PACKET_LENGTH))
