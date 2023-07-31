@@ -15,9 +15,19 @@ void Bridge::mqtt_message_received_callback(mqtt::const_message_ptr message)
     debug << "Bridge got an MQTT message" << std::endl;
     auto hash = this->hash_mqtt_message(message);
     if (this->recently_sent_messages_.contains(hash))
+    {
         // This message was sent from us (the bridge), so discard
         return;
-
+    }
+    if ((message->get_topic().find("mpu_data") != std::string::npos) || (message->get_topic().find("crash_detection") != std::string::npos))
+    {
+        // This message is on the banned topics list. Don't send it across.
+        // Useful for excluding high data rate messages that the receiver isn't
+        // interested in.
+        // TODO: Make this more flexible than hardcoded.
+        debug << "Dropping message of banned topic" << std::endl;
+        return;
+    }
     const auto packets = this->tx_.pack_message(message);
     this->radio_->send_packets(packets);
 }

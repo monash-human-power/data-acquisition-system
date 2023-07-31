@@ -21,7 +21,7 @@ void Radio::set_on_received(std::function<void(Frame)> callback)
 void Radio::send_packets(const std::vector<Frame> frames)
 {
     // Check if there is too much in the queue and drop the oldest packets if needed.
-    const int max_queue_size = 100;
+    const int max_queue_size = 200;
     int cur_queue_size = this->send_queue_.size();
     if (cur_queue_size > max_queue_size) {
         // Queue is too long. Drop the oldest packets.
