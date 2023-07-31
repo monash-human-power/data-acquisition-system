@@ -76,7 +76,7 @@ sensors = {
         MockSensor(
             ("minDirection", 180),
             ("avgDirection", 180),
-            ("maxDirection", 180)),
+            ("maxDirection", 180),percent_range=1),
     "windSpeed":
         MockSensor(
             ("minSpeed", 10),
