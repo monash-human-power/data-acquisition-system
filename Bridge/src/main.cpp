@@ -79,7 +79,10 @@ int main(int argc, char *argv[])
     Bridge bridge(mqttClient, radio);
 
     while (std::cin.get() != 'q')
-        ;
+    {
+        // Seems to always be running when running as a service, so only check every so often.
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
 
     return 0;
 }
