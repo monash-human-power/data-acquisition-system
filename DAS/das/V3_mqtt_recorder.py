@@ -89,7 +89,7 @@ if __name__ == "__main__":
             time.sleep(args.time)
         else:
             while True:
-                pass
+                time.sleep(100)
 
     except KeyboardInterrupt:
         pass
