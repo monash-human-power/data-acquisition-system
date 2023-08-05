@@ -86,7 +86,7 @@ class MpuSensor(Sensor):
         ]
 
 
-    def crash_alert(self,rotation):
+    def crash_alert(self,rotation): 
         """
         control flow using data from the accelerometer to determine if a crash has occurred
         :param rotation contains a dictionary of value for pitch and roll

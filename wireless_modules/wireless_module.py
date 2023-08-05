@@ -53,6 +53,7 @@ class WirelessModule:
 
         self.battery = battery_reader
         self.status_led = status_led
+        self.strain_readings = []
 
         asyncio.get_event_loop().set_exception_handler(self.error_handler)
 
@@ -131,7 +132,7 @@ class WirelessModule:
             )
             await asyncio.sleep(interval)
 
-    async def start_strain_gauge_loop(self,interval):
+    async def start_strain_gauge_data_loop(self,interval):
         """
         start publishing the strain gauge data ()
         :param interval: Integer representing number of milliseconds to wait before sending strain gauge data
@@ -143,11 +144,10 @@ class WirelessModule:
             if isinstance(sensor, Strain_Gauge):
                 strain_gauge = sensor
                 break
+            
         while True:
             strain = strain_gauge.read()
-            if self.mqtt.connected:
-                self.mqtt.publish(self.strain_gauge_topic,ujson.dumps(strain))
-                pass
+            self.strain_readings.append(strain)
             await asyncio.sleep_ms(interval)
 
     async def start_crash_detection_loop(self, interval):
@@ -216,9 +216,9 @@ class WirelessModule:
             time_taken = time.ticks_diff(time.ticks_ms(), prev_data_sent)
             await asyncio.sleep_ms(interval - time_taken)
             prev_data_sent = time.ticks_ms()
-
             # Get and publish sensor data
             sensor_data = self._read_sensors()
+            sensor_data["strain_gauge_data"] = self.strain_readings
             self.mqtt.publish(self.pub_data_topic, ujson.dumps(sensor_data))
             print("MQTT data sent: {} on {}".format(sensor_data, self.pub_data_topic))
 
@@ -237,8 +237,7 @@ class WirelessModule:
         asyncio.create_task(self.start_crash_detection_loop(crash_detection_interval))
 
         # Start publishing strain gauge data straight away
-        asyncio.create_task(self.start_strain_gauge_loop(strain_gauge_interval))
-
+        asyncio.create_task(self.start_strain_gauge_data_loop(strain_gauge_interval))
         # Attempt to connect to MQTT (will block until successful)
         self.status_led.set_state(WmState.ConnectingToMqtt)
         sub_topics = [self.v3_start]

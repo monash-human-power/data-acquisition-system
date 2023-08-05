@@ -28,8 +28,8 @@ class Strain_Gauge(Sensor):
         :return filtered_value: An adjusted value that to take the place of current_value
         """
         filtered_value = ALPHA * current_value + (1-ALPHA) * previous_value
-        return filtered_value 
-    
+        return filtered_value     
+
     def read(self):
         for n_samples in range(25):
             analogue_reading = self.read_analog()
