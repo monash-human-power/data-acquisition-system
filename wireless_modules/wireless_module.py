@@ -148,6 +148,8 @@ class WirelessModule:
         while True:
             strain = strain_gauge.read()
             self.strain_readings.append(strain)
+            if self.mqtt.connected:
+                pass
             await asyncio.sleep_ms(interval)
 
     async def start_crash_detection_loop(self, interval):
@@ -224,7 +226,7 @@ class WirelessModule:
 
             self.mqtt.check_for_message()
 
-    async def run(self, data_interval=1, battery_data_interval=300, crash_detection_interval = 1000, strain_gauge_interval = 1):
+    async def run(self, data_interval=1, battery_data_interval=300, crash_detection_interval = 1000, strain_gauge_interval = 10):
         """
         Start running the wireless module. Connects to MQTT and starts the data, battery and crash detection loops.
         :param data_interval: Integer representing number of seconds to wait before sending data.
