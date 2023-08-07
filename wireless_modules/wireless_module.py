@@ -157,14 +157,9 @@ class WirelessModule:
         Start publishing the crash detection data (If there has been a crash detected)
         :param interval: Integer representing number of milliseconds to wait before sending crash detection data
         """
-        if not any(isinstance(sensor, MpuSensor) for sensor in self.sensors):
-            return
-        
-        for sensor in self.sensors:
-            if isinstance(sensor, MpuSensor):
-                mpu_sensor = sensor
-                break
-
+        if not self.mpu_sensor:
+            return 
+        mpu_sensor = self.mpu_sensor
         while True:
             mpu_data = mpu_sensor.read()
             crash_alert = mpu_sensor.crash_alert(mpu_data[1]["value"])
