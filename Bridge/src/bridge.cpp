@@ -19,7 +19,7 @@ void Bridge::mqtt_message_received_callback(mqtt::const_message_ptr message)
         // This message was sent from us (the bridge), so discard
         return;
     }
-    if ((message->get_topic().find("mpu_data") != std::string::npos) || (message->get_topic().find("crash_detection") != std::string::npos))
+    if ((message->get_topic().find("mpu_data") != std::string::npos) || (message->get_topic().find("crash_detection") != std::string::npos) || (message->get_topic().find("strain_gauge") != std::string::npos))
     {
         // This message is on the banned topics list. Don't send it across.
         // Useful for excluding high data rate messages that the receiver isn't
