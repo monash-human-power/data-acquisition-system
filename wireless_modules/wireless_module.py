@@ -31,6 +31,8 @@ class WirelessModule:
         :param battery_reader: A `BatteryReader` class to read the battery voltage from
         """
         self.sensors = []
+        self.mpu_sensor = False
+        self.strain_gauge = False
 
         self.pub_data_topic = b"/v3/wireless_module/{}/data".format(module_id)
         self.battery_topic = b"/v3/wireless_module/{}/battery".format(module_id)
@@ -53,7 +55,6 @@ class WirelessModule:
 
         self.battery = battery_reader
         self.status_led = status_led
-        self.strain_readings = []
 
         asyncio.get_event_loop().set_exception_handler(self.error_handler)
 
@@ -137,18 +138,13 @@ class WirelessModule:
         start publishing the strain gauge data ()
         :param interval: Integer representing number of milliseconds to wait before sending strain gauge data
         """
-        if not any(isinstance(sensor, Strain_Gauge) for sensor in self.sensors):
-            return
-        
-        for sensor in self.sensors:
-            if isinstance(sensor, Strain_Gauge):
-                strain_gauge = sensor
-                break
-            
+        if not self.strain_gauge:
+            return 
+        strain_gauge = self.strain_gauge
         while True:
             strain = strain_gauge.read()
-            self.strain_readings.append(strain)
             if self.mqtt.connected:
+                self.mqtt.publish(self.strain_gauge_topic,ujson.dumps(strain))
                 pass
             await asyncio.sleep_ms(interval)
 

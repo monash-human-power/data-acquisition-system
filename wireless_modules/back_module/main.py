@@ -65,9 +65,10 @@ async def main():
 
     # Set up the wireless module
     back_module = WirelessModule(MODULE_NUM, battery_reader, status_led)
-    sensors = [my_dht, my_mq135, my_gps, my_mpu, strain_gauge]
+    sensors = [my_dht, my_mq135, my_gps]
     back_module.add_sensors(sensors)
-
+    back_module.strain_gauge = strain_gauge
+    back_module.mpu_sensor = my_mpu
     print("Starting asyncio loop")
     asyncio.create_task(back_module.run())
 
