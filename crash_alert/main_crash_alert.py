@@ -63,7 +63,7 @@ class CrashAlertDriver():
         Starts the mqtt client.
         """
         self.client = mqtt.Client()
-        self.client.enable_logger()
+        # self.client.enable_logger()
         self.client.on_connect = self.on_connect 
         self.client.on_message = self.on_message 
         self.client.connect_async(self.host, self.port)
