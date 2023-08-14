@@ -5,10 +5,14 @@
 #include <ostream>
 #include <stdint.h>
 
+/**
+ * Total size of the packet in bytes.
+ * Currently set to the maximum packet length for the NRF24 radio.
+ * For other radios this may be changed, e.g. 80 bytes for the zeta radio.
+ */
+constexpr uint16_t PACKET_LENGTH = 32;
 /** Size of the packet body in bytes. */
-constexpr uint16_t BODY_LENGTH = 75;
-/** Total size of the packet in bytes. */
-constexpr uint16_t PACKET_LENGTH = 80;
+constexpr uint16_t BODY_LENGTH = PACKET_LENGTH - 5;
 
 /**
  * Types of packets that may be transmitted and received.
@@ -35,7 +39,7 @@ struct __attribute__((packed)) Frame
     uint8_t part_count;
     /** Length of the message body across all frames. */
     uint16_t body_length;
-    /** A slice of the body content, up to 75 bytes in length, zero padded. */
+    /** A slice of the body content, up to BODY_LENGTH bytes in length, zero padded. */
     uint8_t body[BODY_LENGTH] = {0};
 };
 
@@ -43,4 +47,4 @@ struct __attribute__((packed)) Frame
  * Writes the bytes of a Frame to an ostream. Useful for printing the frame's
  * contents.
  */
-std::ostream& operator<<(std::ostream& os, const Frame *frame);
+std::ostream &operator<<(std::ostream &os, const Frame *frame);

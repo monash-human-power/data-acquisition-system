@@ -1,0 +1,12 @@
+[Unit]
+Description=MHP chase car MQTT receiver
+StartLimitIntervalSec=0
+
+[Install]
+WantedBy=default.target
+
+[Service]
+Restart=on-failure
+RestartSec=10
+# Source Poetry env path and run orchestrator.py without spawning a new shell
+ExecStart=/home/pi/data-acquisition-system/Bridge/build/ZetaBridge chase localhost pin-chase

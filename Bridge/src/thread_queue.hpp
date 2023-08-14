@@ -30,6 +30,10 @@ public:
      * @return The popped item if one exists, otherwise std::nullopt.
      */
     std::optional<T> pop();
+    /**
+     * Returns the size of the queue
+    */
+    size_t size();
 };
 
 template<class T>
@@ -45,6 +49,14 @@ void ThreadQueue<T>::push(const std::vector<T> items)
     std::lock_guard<std::mutex> lock(this->mutex_);
     for (auto &&item : items)
         this->queue_.push(item);
+}
+
+
+template<class T>
+size_t ThreadQueue<T>::size()
+{
+    std::lock_guard<std::mutex> lock(this->mutex_);
+    return this->queue_.size();
 }
 
 template<class T>
