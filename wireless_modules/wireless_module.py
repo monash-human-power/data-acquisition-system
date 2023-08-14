@@ -8,6 +8,7 @@ import time
 
 from mqtt_client import Client
 from status_led import WmState
+from mpu_sensor import MpuSensor
 
 try:
     import config
@@ -36,6 +37,9 @@ class WirelessModule:
         self.v3_start = b"v3/start"
 
         self.status_topic = b"/v3/wireless_module/{}/status".format(module_id)
+
+        self.mpu_data_topic = b"/v3/wireless_module/{}/mpu_data".format(module_id)
+        self.crash_detection_topic = b"/v3/wireless_module/{}/crash_detection".format(module_id)
 
         self.start_publish = False
         last_will_payload = {"online": False}
@@ -125,6 +129,29 @@ class WirelessModule:
             )
             await asyncio.sleep(interval)
 
+    async def start_crash_detection_loop(self, interval):
+        """
+        Start publishing the crash detection data (If there has been a crash detected)
+        :param interval: Integer representing number of milliseconds to wait before sending battery voltage data
+        """
+        if not any(isinstance(sensor, MpuSensor) for sensor in self.sensors):
+            return
+        
+        for sensor in self.sensors:
+            if isinstance(sensor, MpuSensor):
+                mpu_sensor = sensor
+                break
+
+        while True:
+            mpu_data = mpu_sensor.read()
+            crash_alert = mpu_sensor.crash_alert(mpu_data[1]["value"])
+            if self.mqtt.connected:
+                self.mqtt.publish(self.crash_detection_topic, ujson.dumps(crash_alert))
+                self.mqtt.publish(self.mpu_data_topic, ujson.dumps(mpu_data))
+                pass
+            await asyncio.sleep_ms(interval)
+
+
     async def wait_for_start(self):
         """
         Asynchronously blocks until publishing is started.
@@ -171,20 +198,22 @@ class WirelessModule:
 
             # Get and publish sensor data
             sensor_data = self._read_sensors()
-
             self.mqtt.publish(self.pub_data_topic, ujson.dumps(sensor_data))
             print("MQTT data sent: {} on {}".format(sensor_data, self.pub_data_topic))
 
             self.mqtt.check_for_message()
 
-    async def run(self, data_interval=1, battery_data_interval=300):
+    async def run(self, data_interval=1, battery_data_interval=300, crash_detection_interval = 200):
         """
-        Start running the wireless module. Connects to MQTT and starts the data and battery loops.
+        Start running the wireless module. Connects to MQTT and starts the data, battery and crash detection loops.
         :param data_interval: Integer representing number of seconds to wait before sending data.
         :param battery_interval: Integer representing number of seconds to wait before sending battery voltage data
         """
         # Start publishing battery data straight away
         asyncio.create_task(self.start_battery_loop(battery_data_interval))
+
+        # Start publishing crash detection data straight away
+        asyncio.create_task(self.start_crash_detection_loop(crash_detection_interval))
 
         # Attempt to connect to MQTT (will block until successful)
         self.status_led.set_state(WmState.ConnectingToMqtt)

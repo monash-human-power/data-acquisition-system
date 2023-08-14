@@ -56,8 +56,7 @@ async def main():
 
     my_gps = GpsSensor(2)
 
-    my_mpu = MpuSensor(scl_pin, sda_pin, 20)
-    my_mpu.calibrate()
+    my_mpu = MpuSensor(scl_pin, sda_pin)
 
     battery_pin = 32
     battery_reader = BatteryReader(battery_pin, battery_calibration)
