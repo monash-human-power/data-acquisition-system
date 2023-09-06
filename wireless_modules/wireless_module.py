@@ -160,7 +160,7 @@ class WirelessModule:
                 self.mqtt.publish(self.crash_detection_topic, ujson.dumps(crash_alert))
                 self.mqtt.publish(self.mpu_strain_topic, ujson.dumps(strain+mpu))
                 pass
-            await asyncio.sleep_ms(interval)
+            await asyncio.sleep_ms(int(interval))
 
     async def start_strain_gauge_data_loop(self,interval):
         """
