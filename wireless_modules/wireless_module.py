@@ -139,9 +139,10 @@ class WirelessModule:
         :param interval: Integer representing number of milliseconds to wait before sending strain gauge data
         """
         if not self.strain_gauge:
-            return 
+            return
         strain_gauge = self.strain_gauge
         while True:
+            await self.wait_for_start()
             strain = strain_gauge.read()
             if self.mqtt.connected:
                 self.mqtt.publish(self.strain_gauge_topic,ujson.dumps(strain))
@@ -154,9 +155,10 @@ class WirelessModule:
         :param interval: Integer representing number of milliseconds to wait before sending crash detection data
         """
         if not self.mpu_sensor:
-            return 
+            return
         mpu_sensor = self.mpu_sensor
         while True:
+            await self.wait_for_start()
             mpu_data = mpu_sensor.read()
             crash_alert = mpu_sensor.crash_alert(mpu_data[1]["value"])
             if self.mqtt.connected:
@@ -184,7 +186,7 @@ class WirelessModule:
 
             # Start message received, tell sensors to start
             for sensor in self.sensors:
-                sensor.on_start()         
+                sensor.on_start()
 
     async def start_data_loop(self, interval):
         """
@@ -211,7 +213,6 @@ class WirelessModule:
             prev_data_sent = time.ticks_ms()
             # Get and publish sensor data
             sensor_data = self._read_sensors()
-            sensor_data["strain_gauge_data"] = self.strain_readings
             self.mqtt.publish(self.pub_data_topic, ujson.dumps(sensor_data))
             print("MQTT data sent: {} on {}".format(sensor_data, self.pub_data_topic))
 
@@ -238,4 +239,3 @@ class WirelessModule:
 
         # Start the main publishing loop
         asyncio.create_task(self.start_data_loop(data_interval))
-
