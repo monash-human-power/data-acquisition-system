@@ -41,9 +41,10 @@ class WirelessModule:
 
         self.status_topic = b"/v3/wireless_module/{}/status".format(module_id)
 
-        self.mpu_data_topic = b"/v3/wireless_module/{}/mpu_data".format(module_id)
+        #self.mpu_data_topic = b"/v3/wireless_module/{}/mpu_data".format(module_id)
         self.crash_detection_topic = b"/v3/wireless_module/{}/crash_detection".format(module_id)
-        self.strain_gauge_topic = b"/v3/wireless_module/{}/strain_gauge".format(module_id)
+        #self.strain_gauge_topic = b"/v3/wireless_module/{}/strain_gauge".format(module_id)
+        self.mpu_strain_topic = b"/v3/mpu_strain"
 
         self.start_publish = False
         last_will_payload = {"online": False}
