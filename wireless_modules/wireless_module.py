@@ -247,7 +247,7 @@ class WirelessModule:
 
             self.mqtt.check_for_message()
 
-    async def run(self, data_interval=1, battery_data_interval=300, strain_crash_interval=1):
+    async def run(self, data_interval=1, battery_data_interval=300, strain_crash_interval=0.1):
         """
         Start running the wireless module. Connects to MQTT and starts the data, battery and crash detection loops.
         :param data_interval: Integer representing number of seconds to wait before sending data.
