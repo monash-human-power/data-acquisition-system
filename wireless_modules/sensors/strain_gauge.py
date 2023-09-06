@@ -18,8 +18,8 @@ class Strain_Gauge(Sensor):
 
     def read_analog(self):
         return self.adc.read()/ATTENUATION * VREF
-        
-    
+
+
     def ema_filter(self,current_value, previous_value):
         """
         Exponential moving average filter reduces potency of incoming fluctuation or noise
@@ -28,13 +28,12 @@ class Strain_Gauge(Sensor):
         :return filtered_value: An adjusted value that to take the place of current_value
         """
         filtered_value = ALPHA * current_value + (1-ALPHA) * previous_value
-        return filtered_value     
+        return filtered_value
 
     def read(self):
-        for n_samples in range(25):
-            analogue_reading = self.read_analog()
-            differential_voltage = analogue_reading - self.voff        
-            strain = differential_voltage/(self.gain * VREF * self.ratio)
-            filtered_strain = self.ema_filter(strain,self.strain)
-            self.strain = filtered_strain
+        analogue_reading = self.read_analog()
+        differential_voltage = analogue_reading - self.voff
+        strain = differential_voltage/(self.gain * VREF * self.ratio)
+        filtered_strain = self.ema_filter(strain,self.strain)
+        self.strain = filtered_strain
         return [{"type": "voltage","value":analogue_reading},{"type":"strain","value":filtered_strain}]
