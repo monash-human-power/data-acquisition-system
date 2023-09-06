@@ -239,3 +239,4 @@ class WirelessModule:
 
         # Start the main publishing loop
         asyncio.create_task(self.start_data_loop(data_interval))
+
