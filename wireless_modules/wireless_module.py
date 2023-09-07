@@ -155,10 +155,11 @@ class WirelessModule:
             strain = strain_gauge.read()
             mpu = mpu_sensor.read()
             crash_alert = mpu_sensor.crash_alert(mpu[1]["value"])
+            to_publish = {"sensors": strain+mpu}
 
             if self.mqtt.connected:
                 self.mqtt.publish(self.crash_detection_topic, ujson.dumps(crash_alert))
-                self.mqtt.publish(self.mpu_strain_topic, ujson.dumps(strain+mpu))
+                self.mqtt.publish(self.mpu_strain_topic, ujson.dumps(to_publish))
                 pass
             await asyncio.sleep_ms(int(interval))
 
