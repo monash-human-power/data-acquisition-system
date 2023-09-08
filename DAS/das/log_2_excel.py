@@ -157,7 +157,9 @@ class DataLogger:
         self.logging = False
         db_path = self.MQTT_LOG_FILE + "MQTT_log_" + self.time + ".db"
         xl_path = self.EXCEL_LOG_FILE + "_" + self.time + ".xlsx"
-        self.convertXL(db_path, xl_path)
+        #self.convertXL(db_path, xl_path)
+
+        sqlite3.connect(db_path).close()
 
         self.recorder.stop()
 
