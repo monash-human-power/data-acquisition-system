@@ -3,12 +3,6 @@ from log_2_excel import DataLogger
 
 import os
 
-
-
-
-
-
-
 if __name__ == "__main__":
 
         # Load env variables
