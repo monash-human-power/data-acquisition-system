@@ -365,6 +365,15 @@ class DataLogger:
                         sheet_name=f"module_{module_id}_battery",
                         index=False,
                     )
+            
+            module_strain_mpu = self.parse_strain_mpu(cur)
+            if not module_strain_mpu.empty:
+                logging.info("Exporting Strain and MPU sensor data")
+                module_strain_mpu.to_excel(
+                    writer,
+                    sheet_name="strain_mpu_data",
+                    index=False
+                )
 
             logging.info(f"Exporting all data to excel")
             self.parse_all_raw(cur).to_excel(writer, sheet_name="raw_data", index=False)
