@@ -371,7 +371,7 @@ class DataLogger:
                 logging.info("Exporting Strain and MPU sensor data")
                 module_strain_mpu.to_excel(
                     writer,
-                    sheet_name="strain_mpu_data"
+                    sheet_name="strain_mpu_data",
                     index=False
                 )
 
