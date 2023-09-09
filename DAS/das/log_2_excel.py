@@ -157,7 +157,9 @@ class DataLogger:
         self.logging = False
         db_path = self.MQTT_LOG_FILE + "MQTT_log_" + self.time + ".db"
         xl_path = self.EXCEL_LOG_FILE + "_" + self.time + ".xlsx"
-        self.convertXL(db_path, xl_path)
+        #self.convertXL(db_path, xl_path)
+
+        sqlite3.connect(db_path).close()
 
         self.recorder.stop()
 
@@ -262,6 +264,51 @@ class DataLogger:
             )
 
         return pd.DataFrame(data_arr)
+
+
+    def parse_strain_mpu(self, cur: sqlite3.Cursor) -> pd.DataFrame:
+        """Parse strain and mpu sensor data."""
+        
+        #TODO: make this a topic in common which we can import
+        query = f""" 
+            SELECT * FROM LOG 
+            WHERE TOPIC='{"/v3/mpu_strain"}'
+            """
+
+        # Store all of the flattened data dicts inside a big array before converting to a dataframe
+        data_arr = []
+        for data_row in cur.execute(query).fetchall():
+            # Unbundle SQL row into individual columns
+            (id, run_id, unix_time, topic, message) = data_row
+
+            # Decode binary string messages into json
+            try:
+                utf8_data = message.decode("utf-8")
+                json_data = json.loads(utf8_data)
+            except:
+                logging.error(f"Message not utf-8 encoded. Skipping id:{id}.")
+                continue
+
+            # Retrieve sensor data from python dict
+            data_dict = {"unix_time": unix_time, "run_id": run_id}
+            for sensor in json_data["sensors"]:
+                sensor_name = sensor["type"]
+                sensor_value = sensor["value"]
+
+                # For nested sensor values
+                if isinstance(sensor_value, dict):
+                    for (sub_sensor, sub_sensor_value) in sensor_value.items():
+                        sub_sensor_name = sensor_name + "_" + sub_sensor
+                        data_dict[sub_sensor_name] = sub_sensor_value
+
+                # For single sensor values
+                else:
+                    data_dict[sensor_name] = sensor_value
+
+            data_arr.append(data_dict)
+
+        return pd.DataFrame(data_arr)
+
 
 
     def parse_all_raw(self, cur: sqlite3.Cursor) -> pd.DataFrame:
