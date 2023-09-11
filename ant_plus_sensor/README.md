@@ -8,6 +8,9 @@
 ## Getting Started
 
 ### Setting up node.js libraries
+
+Raspberry Pis: install `sudo apt install libudev-dev`
+
 To install the necessary libraries for node.js you may need to manually install them instead of running `npm install`.
 
 Run the script with `node ant_plus_logger.js`.
