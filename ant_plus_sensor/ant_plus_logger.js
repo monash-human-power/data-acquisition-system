@@ -43,6 +43,7 @@ winston.info(`Wireless module ID: ${moduleID}`);
 const v3StartTopic = 'v3/start';
 const dataTopic = `/v3/wireless_module/${moduleID}/data`;
 const statusTopic = `/v3/wireless_module/${moduleID}/status`;
+const boostStart = 'boost/start';
 
 // 406c 28mm tyre: https://www.bikecalc.com/wheel_size_math
 const wheelCircumference = 1.44513; // m
@@ -150,7 +151,7 @@ async function heartRateConnect(antPlus) {
 }
 
 (async () => {
-  let isRecording = false;
+  const isRecording = true; // Leave this as true, never
   let speed = 0;
   // The number of wheel revolutions according to the sensor when we start recording
   let startWheelRevolutions = null;
@@ -169,22 +170,33 @@ async function heartRateConnect(antPlus) {
   mqttClient.subscribe(v3StartTopic);
   mqttClient.on('message', (topic, payload) => {
     winston.info(`Topic fired: ${topic}`);
+    winston.info('Log ANT+ constantly!');
 
-    if (topic === v3StartTopic) {
+    if (topic === boostStart) {
       const msg = JSON.parse(payload);
-
       if (msg.start) {
-        isRecording = true;
         distance = 0;
         startWheelRevolutions = null;
-        winston.info('Start publishing data');
       } else {
-        isRecording = false;
-        winston.info('Stop publishing data');
+        winston.error(`Unexpected topic: ${topic}`);
       }
-    } else {
-      winston.error(`Unexpected topic: ${topic}`);
     }
+
+    // if (topic === v3StartTopic) {
+    //   const msg = JSON.parse(payload);
+
+    //   if (msg.start) {
+    //     isRecording = true;
+    //     distance = 0;
+    //     startWheelRevolutions = null;
+    //     winston.info('Start publishing data');
+    //   } else {
+    //     isRecording = false;
+    //     winston.info('Stop publishing data');
+    //   }
+    // } else {
+    //   winston.error(`Unexpected topic: ${topic}`);
+    // }
   });
 
   const bicycleSpeedScanner = await bicycleSpeedConnect(antPlus);
