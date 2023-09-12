@@ -41,7 +41,7 @@ class WirelessModule:
         self.mpu_data_topic = b"/v3/wireless_module/{}/mpu_data".format(module_id)
         self.crash_detection_topic = b"/v3/wireless_module/{}/crash_detection".format(module_id)
 
-        self.start_publish = False
+        self.start_publish = True #Set this to true to begin publishing straight away
         last_will_payload = {"online": False}
 
         # Generate a unique client_id used to set up MQTT Client
@@ -97,14 +97,14 @@ class WirelessModule:
         """
         print("Successfully received message: ", msg, "on:", topic)
 
-        if topic == self.v3_start:
-            msg_data = json.loads(str(msg.decode("utf-8")))
-            self.start_publish = msg_data["start"]
+        # if topic == self.v3_start:
+        #     msg_data = json.loads(str(msg.decode("utf-8")))
+        #     self.start_publish = msg_data["start"]
 
-            if msg_data["start"]:
-                self.status_led.set_state(WmState.Publishing)
-            else:
-                self.status_led.set_state(WmState.Idle)
+        #     if msg_data["start"]:
+        #         self.status_led.set_state(WmState.Publishing)
+        #     else:
+        #         self.status_led.set_state(WmState.Idle)
 
 
     async def start_battery_loop(self, interval):
