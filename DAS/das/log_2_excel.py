@@ -117,23 +117,23 @@ class DataLogger:
 
         logging.info(f"\nReceived topic: " + str(msg.topic) + ", with message " + str(msg.payload))
 
-        if msg.topic == self.v3_start:
+        # if msg.topic == self.v3_start:
 
-            received_data = str(msg.payload.decode("utf-8"))
-            dict_data = json.loads(received_data)
+        #     received_data = str(msg.payload.decode("utf-8"))
+        #     dict_data = json.loads(received_data)
 
-            if dict_data["start"]:
+        #     if dict_data["start"]:
 
-                if not self.logging:
-                    self.start_logging()              
-                else:
-                    logging.warning("Already currently logging.")
+        #         if not self.logging:
+        #             self.start_logging()              
+        #         else:
+        #             logging.warning("Already currently logging.")
             
-            else:
-                if self.logging:
-                    self.stop_logging()
-                else:
-                    logging.warning("Logging not started yet.")
+        #     else:
+        #         if self.logging:
+        #             self.stop_logging()
+        #         else:
+        #             logging.warning("Logging not started yet.")
 
 
     def start_logging(self):
@@ -455,3 +455,4 @@ if __name__ == "__main__":
     )
 
     DATA_LOGGER.start()
+    DATA_LOGGER.start_logging()
