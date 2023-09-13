@@ -79,7 +79,7 @@ class DataLogger:
         ):
 
         # self.v3_start = str(topics.V3.start)
-        self.start = "boost/start"
+        self.boost_start = "boost/start"
 
         self.broker_ip = broker_ip
         self.port = port
@@ -100,7 +100,7 @@ class DataLogger:
         """Callback for when client receives a CONNNACK response."""
 
         print("\nConnected with result code " + str(rc) + ".")
-        client.subscribe(self.start)
+        client.subscribe(self.boost_start)
     
 
     def on_disconnect(self, client, userdata, msg):
@@ -118,7 +118,7 @@ class DataLogger:
 
         logging.info(f"\nReceived topic: " + str(msg.topic) + ", with message " + str(msg.payload))
 
-        if msg.topic == self.start:
+        if msg.topic == self.boost_start:
 
             received_data = str(msg.payload.decode("utf-8"))
             dict_data = json.loads(received_data)
