@@ -78,7 +78,8 @@ class DataLogger:
         fname="runfile"
         ):
 
-        self.v3_start = str(topics.V3.start)
+        # self.v3_start = str(topics.V3.start)
+        self.start = "boost/start"
 
         self.broker_ip = broker_ip
         self.port = port
@@ -99,7 +100,7 @@ class DataLogger:
         """Callback for when client receives a CONNNACK response."""
 
         print("\nConnected with result code " + str(rc) + ".")
-        client.subscribe(self.v3_start)
+        client.subscribe(self.start)
     
 
     def on_disconnect(self, client, userdata, msg):
@@ -117,23 +118,23 @@ class DataLogger:
 
         logging.info(f"\nReceived topic: " + str(msg.topic) + ", with message " + str(msg.payload))
 
-        # if msg.topic == self.v3_start:
+        if msg.topic == self.start:
 
-        #     received_data = str(msg.payload.decode("utf-8"))
-        #     dict_data = json.loads(received_data)
+            received_data = str(msg.payload.decode("utf-8"))
+            dict_data = json.loads(received_data)
 
-        #     if dict_data["start"]:
+            if dict_data["start"]:
 
-        #         if not self.logging:
-        #             self.start_logging()              
-        #         else:
-        #             logging.warning("Already currently logging.")
+                if not self.logging:
+                    self.start_logging()              
+                else:
+                    logging.warning("Already currently logging.")
             
-        #     else:
-        #         if self.logging:
-        #             self.stop_logging()
-        #         else:
-        #             logging.warning("Logging not started yet.")
+            else:
+                if self.logging:
+                    self.stop_logging()
+                else:
+                    logging.warning("Logging not started yet.")
 
 
     def start_logging(self):
@@ -455,4 +456,3 @@ if __name__ == "__main__":
     )
 
     DATA_LOGGER.start()
-    DATA_LOGGER.start_logging()
