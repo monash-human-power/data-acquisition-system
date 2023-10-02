@@ -3,6 +3,7 @@ import time
 #from paho.mqtt import client
 
 ser = serial.Serial('COM3', 9600)
+time.sleep(1)
 # MQTT Setup
 """
 
@@ -27,7 +28,7 @@ while not connected:
             time.sleep(1)
 
 """
-
+print("Arduino connected...")
 while True:
     message = ser.readline().decode().strip()
     if message:

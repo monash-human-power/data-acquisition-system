@@ -1,10 +1,10 @@
 
 // Messages to be sent to python script
-const string START_MESSAGE = "Start Message";
-const string LAP_MESSAGE = "Lap Message";
+const String START_MESSAGE = "Start Message";
+const String LAP_MESSAGE = "Lap Message";
 
 const int TRIGGER_DELAY = 1000; // Delay to avoid unwanted tiggers (e.g. second wheel of bike)
-const int bumpStripPin = 2; // Pin connected to bump strip
+const int buttonPin = 2; // Pin connected to bump strip
 
 
 int buttonState = 0; 
@@ -21,7 +21,7 @@ void loop()
   int buttonState = digitalRead(buttonPin);
 
   if (buttonState == LOW) {
-        if (~started){
+        if (!timerStarted){
             Serial.println(START_MESSAGE);
             timerStarted = true;
         }
@@ -29,7 +29,7 @@ void loop()
             Serial.println(LAP_MESSAGE);
         }
 
-    delay(TRIGGER_DELAY)
+    delay(TRIGGER_DELAY);
   }
   
   
