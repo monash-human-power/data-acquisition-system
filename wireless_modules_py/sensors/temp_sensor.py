@@ -1,29 +1,37 @@
-import pigpio
+from sensor_base import Sensor
 import time
-pi=pigpio.pi()
-def dht22(pin):
-  global pi
-  pi.setmode(pin,pigpio.INPUT)
-  pi.set_pull_up_down(pin, pigpio.PUD_UP)
-    data = []
-    last_state = 1
-    bits = []
-    try:
-        while True:
-            current_state = pi.read(pin)
-            bits.append(1 if current_state == 1 and last_state == 0 else 0)
-            last_state = current_state
-            if len(bits) == 40:
-                break
-       for i in range(0, len(bits), 8):
-            byte = bits[i:i+8]
-            data.append(int(''.join([str(bit) for bit in byte]), 2))
-        humidity = data[0] + data[1]/float(10)
-        temperature = (data[2] & 0x7f) + data[3]/float(10)
-        if data[2] & 0x80:
-            temperature *= -1
-        return (humidity, temperature)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        pi.cleanup()
+import Adafruit_DHT
+
+class TempSensor(Sensor):
+    """
+    A class for the DHT_22 temp sensor
+    """
+    def __init__(self, pin):
+        """
+        Getting the DHT_22 temp sensor and pin for readings
+        """
+        self.pin=pin
+        self.sensor=Adafruit_DHT.DHT22
+
+    def read(self):
+        """
+        Read the temperature (deg in Cel) and humidity (%) from the temperature sensor
+        :return: An array of length 2 containing a temperature dictionary and a humidity dictionary.
+                 Each dictionary contains a "type" key associated with the sensor type (str) and a "value" key associated with
+                 another dictionary containing key-value pairs of the measurement method (str) and its relevant data (float).
+        """
+        readings=[]
+        
+        humidity, temperature=Adafruit_DHT.read_retry(self.sensor,self.pin)
+        if humidity is not None and temperature is not None:
+            temperature=float(temperature)
+            humidity=float(humidity)
+            readings = [
+                {
+                "temp_in_deg": temperature,
+                },
+                {
+                "humidity_in_percent": humidity,
+                }
+                ] 
+        return readings
