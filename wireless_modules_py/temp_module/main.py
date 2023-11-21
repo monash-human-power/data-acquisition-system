@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(1,'data-acquisition-system\wireless_modules_py\sensors')
+sys.path.insert(1,'../sensors')
 from temp_sensor import TempSensor
 sys.path.insert(2, '../')
 import config
