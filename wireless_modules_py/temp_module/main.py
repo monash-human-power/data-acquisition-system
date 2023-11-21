@@ -3,6 +3,7 @@ sys.path.insert(1,'../sensors')
 from temp_sensor import TempSensor
 sys.path.insert(2, '../')
 import config
+from wireless_module import WirelessModule
 import time
 import os
 os.environ['PI_HOST']='127.0.0.1'
