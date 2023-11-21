@@ -1,18 +1,36 @@
+import sys
+sys.path.insert(1,'data-acquisition-system\wireless_modules_py\sensors')
+from temp_sensor import TempSensor
+sys.path.insert(2, '../')
+import config
 import time
 import os
 os.environ['PI_HOST']='127.0.0.1'
 os.environ['PI_PORT']='8888'
-import sys
 import Adafruit_DHT
+import logging
+import asyncio
+
 DHT_SENSOR=Adafruit_DHT.DHT22
-DHT_PIN=....
-while True:
-    try: 
-        humidity, temperature=Adafruit_DHT.read_retry(DHT_SENSOR,DHT_PIN)
-        if humidity is not None and temperature is not None:
-            print("Temperature={0:0.1f}C Humidity={1:0.1f}%".format(temperature,humidity))
-        else:
-            print ("failed to obtain data")
-    except KeyboardInterrupt:
-        break
-    time.sleep(2.0)
+MODULE_NUM=6
+
+async def main():
+    logging.basicConfig(
+        format="%(levelname)-8s [%(filename)s] %(message)s", level=logging.DEBUG
+    )
+
+    temp_sensor_pin = config.PIN
+    my_temp_sensor = TempSensor(temp_sensor_pin)
+
+    temp_module = WirelessModule(MODULE_NUM)
+    sensors = [my_temp_sensor]
+    temp_module.add_sensors(sensors)
+
+    logging.debug("Start asyncio loop")
+    asyncio.create_task(temp_module.run())
+
+    while True:
+        await asyncio.sleep(1)
+
+
+asyncio.run(main())

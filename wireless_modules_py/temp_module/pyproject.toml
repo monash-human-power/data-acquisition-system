@@ -1,15 +1,15 @@
 [tool.poetry]
-name = "wind_module"
+name = "temp_module"
 version = "0.1.0"
 description = ""
-authors = ["Cheuk Lam Winnie Chui <cchu0061@student.monash.edu>"]
+authors = ["Ngoc Thao Vy Nguyen <cnngu0146@student.monash.edu>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-pyserial = "^3.5"
 paho-mqtt = "^1.6.1"
 mhp = {git = "git@github.com:monash-human-power/common.git"}
+Adafruit-DHT = "^1.4.0"
 
 [tool.poetry.dev-dependencies]
 
