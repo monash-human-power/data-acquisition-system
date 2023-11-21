@@ -34,4 +34,6 @@ class TempSensor(Sensor):
                 "humidity_in_percent": humidity,
                 }
                 ] 
+        else:
+            print('Failed to obtain data')
         return readings
