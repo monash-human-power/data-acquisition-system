@@ -197,8 +197,6 @@ def interpolate_rows(row1: pd.Series, row2: pd.Series, time: float) -> pd.Series
     new_row = row1.copy()
     new_row[time_column] = time
 
-    # TODO: Cope with strings and GPS timestamps
-
     # Iterate over all non-time columns.
     for column in row1.keys():
         if column != time_column:
@@ -217,15 +215,21 @@ def merge(sheets: List[pd.DataFrame], t_step=1) -> pd.DataFrame:
     Returns:
         pd.DataFrame: The merged and interpolated data frame.
     """
-    times, data = resample_sheets(sheets, t_step)
-    # print(repr(data[0]))
-    for i, time in enumerate([times[10]]):
-        print(repr(pd.concat(data[i], axis=1)))   
+    processed_sheets = resample_sheets(sheets, t_step)
+
+    # Merge all rows of each sheet back together.
+    series = []
+    for s in processed_sheets:
+        series.append(pd.concat(s, axis=1).transpose())
+        series[-1].reset_index(inplace=True, drop=True)
+
+    # Merge all series back together.
+    return pd.concat(series, axis=1)
 
 
 def resample_sheets(
     sheets: List[pd.DataFrame], t_step: float = 1
-) -> Tuple[List[float], List[List[pd.DataFrame]]]:
+) -> List[List[pd.DataFrame]]:
     """Resamples all sheets to have the same times.
 
     Args:
@@ -233,42 +237,82 @@ def resample_sheets(
         t_step (float): The time step.
 
     Returns:
-        Tuple[List[float], List[List[pd.DataFrame]]]: The times and for each time, a list of Series for each sheet.
+        List[List[pd.DataFrame]]: For each sheet, a list of Series for each time.
     """
     # Maximum and minimum times to interpolate between
     min_t = min([min_time(i) for i in sheets])
     max_t = max([max_time(i) for i in sheets])
 
-    rows = []
+    sheet_results = [[] for i in sheets]
     times = np.arange(min_t, max_t, t_step)
     for time in times:
-        time_rows = []
-        for sheet in sheets:
+        for sheet_index, sheet in enumerate(sheets):
             # Get the row before the current time and after for the current sheet.
             before = get_before(sheet, time)
             after = get_after(sheet, time)
 
             if after is not None and before is None:
                 # At the very beginning of this sheet.
-                time_rows.append(after)
+                # time_rows.append(after)
+                sheet_results[sheet_index].append(after)
             elif before is not None and after is None:
                 # At the very end of this sheet.
-                time_rows.append(before)
+                sheet_results[sheet_index].append(before)
             else:
                 # There are two rows. Linearly interpolate.
-                # time_rows.app
-                time_rows.append(interpolate_rows(before, after, time))
+                sheet_results[sheet_index].append(interpolate_rows(before, after, time))
 
-        rows.append(time_rows)
-    
-    return times, rows
+    return sheet_results
 
 
 if __name__ == "__main__":
+    # Parsing and help text.
     parser = argparse.ArgumentParser(
-        "turps", "linearly interpolates between DAS log files and merges all tabes"
+        description="""\
+Linearly interpolates between DAS log files and merges all tables.\
+
+This script loads a spreadsheet converted from a DAS log file and resamples all sheets to a single table. The output is saved to a csv file.
+
+Of special note, the pandas library needs to be installed (pip install pandas).
+
+Example:
+./turps.py -i runfile_2023-09-15_14-12-37.xlsx -o runfile_2023-09-15_14-12-37.csv -t 0.5
+""",
+        epilog="""\
+Written by Jotham Gates for Monash Human Power (MHP), 2023.""",
+    formatter_class=argparse.RawTextHelpFormatter # Allow new lines in the description to be rendered.
     )
-    parser.add_argument("-i", "--input", help="The input file", type=str, required=True)
+    parser.add_argument(
+        "-i",
+        "--input",
+        help="The input file (excel spreadsheet)",
+        type=str,
+        required=True,
+    )
+    parser.add_argument(
+        "-o", "--output", help="The output file (csv)", type=str, required=True
+    )
+    parser.add_argument(
+        "-t",
+        "--time-step",
+        help="The time step of the output in seconds.",
+        type=float,
+        default=1,
+    )
     args = parser.parse_args()
-    sheets = load(pd.ExcelFile(args.input), ["raw_data"], [GPSTimestampModifier()])
-    merge(sheets)
+
+    # Main steps
+    try:
+        input_file = pd.ExcelFile(args.input)
+    except FileNotFoundError:
+        print(
+            f"Could not find '{args.input}'. Please try with a different input file name."
+        )
+    except ValueError:
+        print("Invalid input file format (doesn't look like an Excel spreadsheet).")
+    else:
+        sheets = load(input_file, ["raw_data"], [GPSTimestampModifier()])
+        frame = merge(sheets)
+
+        # Save output
+        frame.to_csv(args.output, index=False)
