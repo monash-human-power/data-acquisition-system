@@ -1,5 +1,27 @@
 #!/usr/bin/env python3
-"""Loads a DAS excel spreadsheet and linearly interpolates between each point to make a single table."""
+"""
+usage: turps.py [-h] -i INPUT -o OUTPUT [-t TIME_STEP]
+
+Linearly interpolates between DAS log files and merges all tables.
+This script loads a spreadsheet converted from a DAS log file and resamples all sheets to a single table. The output is saved to a csv file.
+
+Of special note, the pandas library needs to be installed (pip install pandas).
+
+Example:
+./turps.py -i runfile_2023-09-15_14-12-37.xlsx -o runfile_2023-09-15_14-12-37.csv -t 0.5
+
+options:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        The input file (excel spreadsheet)
+  -o OUTPUT, --output OUTPUT
+                        The output file (csv)
+  -t TIME_STEP, --time-step TIME_STEP
+                        The time step of the output in seconds.
+
+Written by Jotham Gates for Monash Human Power (MHP), 2023.
+"""
+
 import argparse
 import pandas as pd
 from typing import List, Tuple, TypeVar, Callable
@@ -280,7 +302,7 @@ Example:
 """,
         epilog="""\
 Written by Jotham Gates for Monash Human Power (MHP), 2023.""",
-    formatter_class=argparse.RawTextHelpFormatter # Allow new lines in the description to be rendered.
+        formatter_class=argparse.RawTextHelpFormatter,  # Allow new lines in the description to be rendered.
     )
     parser.add_argument(
         "-i",
@@ -312,7 +334,7 @@ Written by Jotham Gates for Monash Human Power (MHP), 2023.""",
         print("Invalid input file format (doesn't look like an Excel spreadsheet).")
     else:
         sheets = load(input_file, ["raw_data"], [GPSTimestampModifier()])
-        frame = merge(sheets)
+        frame = merge(sheets, args.time_step)
 
         # Save output
         frame.to_csv(args.output, index=False)
