@@ -4,16 +4,92 @@ import argparse
 import pandas as pd
 from typing import List, Tuple, TypeVar, Callable
 import numpy as np
+from abc import ABC, abstractmethod
+from datetime import datetime
 
 T = TypeVar("T")
 
 
-def load(excel: pd.ExcelFile, excluded_sheets: List[str] = []) -> List[pd.DataFrame]:
+class ColumnModifier(ABC):
+    """Base class for a modifier that can modify or process individual columns in individual sheets."""
+
+    @abstractmethod
+    def __init__(self, column_name: str, sheet_name: str = None):
+        """Initialises the modifier with the column name and sheet(s) to look for.
+
+        Args:
+            column_name (str): the column name to be applied to.
+            sheet_name (str, optional): A specific shee to apply to only. Defaults to None.
+        """
+        self.sheet_name = sheet_name
+        self.column_name = column_name
+
+    def apply(self, sheet_name: str, sheet: pd.DataFrame):
+        """Applies this modifier to a sheet if required.
+
+        Args:
+            sheet_name (str): The name of the current sheet.
+            sheet (pd.DataFrame): The dataframe object containing the sheet. This is updated on return.
+        """
+        if (self.sheet_name is None or sheet_name == self.sheet_name) and (
+            self.column_name in sheet
+        ):
+            # We should take notice of this sheet and the column is present.
+            sheet[self.column_name] = self.modify(sheet[self.column_name])
+
+    @abstractmethod
+    def modify(self, column: pd.Series) -> pd.Series:
+        """Applies the modifier to the column.
+
+        Args:
+            column (pd.Series): The input data.
+
+        Returns:
+            pd.Series: The modified data.
+        """
+        pass
+
+
+class GPSTimestampModifier(ColumnModifier):
+    """Class for converting the GPS timestamps to unix timestamps."""
+
+    def __init__(self):
+        """Initialises the modifier."""
+        super().__init__("3_gps_datetime", "module_3_data")
+
+    def modify(self, column: pd.Series) -> pd.Series:
+        """Applies the modifier to the column.
+
+        Args:
+            column (pd.Series): The input data.
+
+        Returns:
+            pd.Series: The modified data.
+        """
+
+        def convert_gps(time_str: str) -> float:
+            """Converts a timestamp to a floating point unix time."""
+            try:
+                time_obj = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S")
+                return time_obj.timestamp()
+            except ValueError:
+                # If the GPS doesn't have lock, sometimes it gives a date with day 0.
+                return 0
+
+        return column.apply(convert_gps)
+
+
+def load(
+    excel: pd.ExcelFile,
+    excluded_sheets: List[str] = [],
+    modifiers: List[ColumnModifier] = [],
+) -> List[pd.DataFrame]:
     """Returns a list of sheets to merge.
 
     Args:
         excel (pd.ExcelFile): The spreadsheet to load.
         excluded_sheets (List[str], optional): Sheet names to exclude. Defaults to [].
+        modifiers (List[ColumnModifier, optional]): Modifies the values in particular columns for easier processing. Defaults to [].
 
     Returns:
         List[pd.DataFrame]: A list of all sheets.
@@ -23,6 +99,10 @@ def load(excel: pd.ExcelFile, excluded_sheets: List[str] = []) -> List[pd.DataFr
         if i not in excluded_sheets:
             # Add an interpolator for this sheet.
             sheets.append(excel.parse(i))
+
+            # Apply the modifiers if needed
+            for m in modifiers:
+                m.apply(i, sheets[-1])
 
     return sheets
 
@@ -137,12 +217,31 @@ def merge(sheets: List[pd.DataFrame], t_step=1) -> pd.DataFrame:
     Returns:
         pd.DataFrame: The merged and interpolated data frame.
     """
+    times, data = resample_sheets(sheets, t_step)
+    # print(repr(data[0]))
+    for i, time in enumerate([times[10]]):
+        print(repr(pd.concat(data[i], axis=1)))   
+
+
+def resample_sheets(
+    sheets: List[pd.DataFrame], t_step: float = 1
+) -> Tuple[List[float], List[List[pd.DataFrame]]]:
+    """Resamples all sheets to have the same times.
+
+    Args:
+        sheets (List[pd.DataFrame]): The sheets to merge.
+        t_step (float): The time step.
+
+    Returns:
+        Tuple[List[float], List[List[pd.DataFrame]]]: The times and for each time, a list of Series for each sheet.
+    """
     # Maximum and minimum times to interpolate between
     min_t = min([min_time(i) for i in sheets])
     max_t = max([max_time(i) for i in sheets])
 
     rows = []
-    for time in np.arange(min_t, max_t, t_step):
+    times = np.arange(min_t, max_t, t_step)
+    for time in times:
         time_rows = []
         for sheet in sheets:
             # Get the row before the current time and after for the current sheet.
@@ -161,6 +260,8 @@ def merge(sheets: List[pd.DataFrame], t_step=1) -> pd.DataFrame:
                 time_rows.append(interpolate_rows(before, after, time))
 
         rows.append(time_rows)
+    
+    return times, rows
 
 
 if __name__ == "__main__":
@@ -169,5 +270,5 @@ if __name__ == "__main__":
     )
     parser.add_argument("-i", "--input", help="The input file", type=str, required=True)
     args = parser.parse_args()
-    sheets = load(pd.ExcelFile(args.input), ["raw_data"])
+    sheets = load(pd.ExcelFile(args.input), ["raw_data"], [GPSTimestampModifier()])
     merge(sheets)
