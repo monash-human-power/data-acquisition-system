@@ -5,9 +5,10 @@ import pandas as pd
 from typing import List, Tuple, TypeVar, Callable
 import numpy as np
 
-T = TypeVar('T')
+T = TypeVar("T")
 
-def load(excel:pd.ExcelFile, excluded_sheets:List[str]=[]) -> List[pd.DataFrame]:
+
+def load(excel: pd.ExcelFile, excluded_sheets: List[str] = []) -> List[pd.DataFrame]:
     """Returns a list of sheets to merge.
 
     Args:
@@ -25,14 +26,17 @@ def load(excel:pd.ExcelFile, excluded_sheets:List[str]=[]) -> List[pd.DataFrame]
 
     return sheets
 
-def time_getter(aggregator:Callable[[float], T]) -> Callable[[pd.DataFrame], T]:
+
+def time_getter(aggregator: Callable[[float], T]) -> Callable[[pd.DataFrame], T]:
     """Returns a function that can aggregate the time field in a specific way."""
     return lambda frame: aggregator(frame["unix_time"])
+
 
 max_time = time_getter(max)
 min_time = time_getter(min)
 
-def get_after(frame:pd.DataFrame, time:float) -> pd.Series:
+
+def get_after(frame: pd.DataFrame, time: float) -> pd.Series:
     """Gets the first row on or after a specific time.
 
     Args:
@@ -49,7 +53,8 @@ def get_after(frame:pd.DataFrame, time:float) -> pd.Series:
     else:
         return None
 
-def get_before(frame:pd.DataFrame, time:float) -> pd.Series:
+
+def get_before(frame: pd.DataFrame, time: float) -> pd.Series:
     """Gets the first row on or before a specific time.
 
     Args:
@@ -66,7 +71,10 @@ def get_before(frame:pd.DataFrame, time:float) -> pd.Series:
     else:
         return None
 
-def interpolate(t1:float, t2:float, n1:float, n2:float, time_target:float) -> float:
+
+def interpolate(
+    t1: float, t2: float, n1: float, n2: float, time_target: float
+) -> float:
     """Linearly interpolates between two points.
 
     Args:
@@ -79,12 +87,48 @@ def interpolate(t1:float, t2:float, n1:float, n2:float, time_target:float) -> fl
     Returns:
         float: The linearly interpolated value at time_target.
     """
-    # y - y1 = m(x - x1)
-    # m = (y2 - y1) / (x2 - x1)
-    m = (n1 - n2) / (t1 - t2)
-    return m*(time_target - t1) + n1
+    if t1 == t2:
+        # Rows have the same time. Averate the values as gradient is undefined.
+        return (n1 + n2) / 2
+    else:
+        # y - y1 = m(x - x1)
+        # m = (y2 - y1) / (x2 - x1)
+        m = (n1 - n2) / (t1 - t2)
+        return m * (time_target - t1) + n1
 
-def merge(sheets:List[pd.DataFrame], t_step=1) -> pd.DataFrame:
+
+def interpolate_rows(row1: pd.Series, row2: pd.Series, time: float) -> pd.Series:
+    """Interpolates between two rows with the same columns.
+
+    Args:
+        row1 (pd.Series): The first row.
+        row2 (pd.Series): The second row.
+        time (float): The time to interpolate at.
+
+    Returns:
+        pd.Series: The merged row.
+    """
+
+    time_column = "unix_time"
+    t1 = row1[time_column]
+    t2 = row2[time_column]
+
+    # Row to put stuff in.
+    new_row = row1.copy()
+    new_row[time_column] = time
+
+    # TODO: Cope with strings and GPS timestamps
+
+    # Iterate over all non-time columns.
+    for column in row1.keys():
+        if column != time_column:
+            # A row that isn't the time. Interpolate between.
+            new_row[column] = interpolate(t1, t2, row1[column], row2[column], time)
+
+    return new_row
+
+
+def merge(sheets: List[pd.DataFrame], t_step=1) -> pd.DataFrame:
     """Merges all sheets into one by interpolating between them and resampling.
 
     Args:
@@ -93,6 +137,7 @@ def merge(sheets:List[pd.DataFrame], t_step=1) -> pd.DataFrame:
     Returns:
         pd.DataFrame: The merged and interpolated data frame.
     """
+    # Maximum and minimum times to interpolate between
     min_t = min([min_time(i) for i in sheets])
     max_t = max([max_time(i) for i in sheets])
 
@@ -104,31 +149,25 @@ def merge(sheets:List[pd.DataFrame], t_step=1) -> pd.DataFrame:
             before = get_before(sheet, time)
             after = get_after(sheet, time)
 
-            if after and not before:
+            if after is not None and before is None:
                 # At the very beginning of this sheet.
                 time_rows.append(after)
-            elif before and not after:
+            elif before is not None and after is None:
                 # At the very end of this sheet.
                 time_rows.append(before)
             else:
                 # There are two rows. Linearly interpolate.
                 # time_rows.app
-                pass
+                time_rows.append(interpolate_rows(before, after, time))
 
-            rows.append(time_rows)
-
+        rows.append(time_rows)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         "turps", "linearly interpolates between DAS log files and merges all tabes"
     )
-    parser.add_argument(
-        "-i", "--input",
-        help="The input file",
-        type=str,
-        required=True
-    )
+    parser.add_argument("-i", "--input", help="The input file", type=str, required=True)
     args = parser.parse_args()
-    sheets = load(pd.ExcelFile(args.input))
+    sheets = load(pd.ExcelFile(args.input), ["raw_data"])
     merge(sheets)
