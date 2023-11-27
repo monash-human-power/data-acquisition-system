@@ -1,7 +1,7 @@
 from sensor_base import Sensor
 import time
 import Adafruit_DHT
-
+from temp_module import config.py
 class TempSensor(Sensor):
     """
     A class for the DHT_22 temp sensor
@@ -10,7 +10,7 @@ class TempSensor(Sensor):
         """
         Getting the DHT_22 temp sensor and pin for readings
         """
-        self.pin=pin
+        self.pin=config.PIN
         self.sensor=Adafruit_DHT.DHT22
 
     def read(self):
