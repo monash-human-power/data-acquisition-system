@@ -10,6 +10,12 @@ import asyncio
 # EXAMPLE USAGE OF NEW PYTHON-ANT LIBRARY
 from ant.plus.heartrate import *
 
+from ant.core import driver, exceptions
+from ant.core.node import Node, Network
+from ant.core.constants import NETWORK_KEY_ANT_PLUS, NETWORK_NUMBER_PUBLIC
+from ant.plus.power import *
+
+
 # TODO
 # Required to detect speed sensor.
 # The GitHub code has a SpeedScanner class which isn't accessible here for some reason.
@@ -49,11 +55,11 @@ async def mqtt_connect():
     """
     Connect to the MQTT broker
 
-    @return Promise of MQTT client
+    @return MQTT client
     """
 
     def on_connect(client, userdata, flags, rc):
-        logger.info(f'Connected to MQTT broker')
+        logger.info('Connected to MQTT broker')
         will_payload = { "online": False }
         client.will_set(topic= status_topic, payload= json.dumps(will_payload), qos= 0, retain= True)
 
@@ -71,14 +77,32 @@ async def mqtt_connect():
 #############################
 
 async def antplus_connect():
-    pass
+    """
+    Connect to the ANT+ stick
 
+    @return ANT+ stick instance
+    """
 
+    logger.info('Finding ant-plus USB...')
+    ant_node = Node(driver.USB2Driver(log=True, debug=True, idProduct=0x1009))
+
+    try:
+        ant_node.start()
+        network = Network(key=NETWORK_KEY_ANT_PLUS, name='N:ANT+')
+        ant_node.setNetworkKey(NETWORK_NUMBER_PUBLIC, network)
+        logger.info('ant-plus stick initialized')
+    except exceptions.ANTException as err:
+        logger.info(f'Could not start ANT.\n{err}')
+
+    return ant_node
+    
+    
 #######################################
 # Connect to the bicycle speed sensor #
 #######################################
 
 async def bicycle_speed_connect(antPlus):
+    # TODO
     pass
 
 
@@ -86,14 +110,47 @@ async def bicycle_speed_connect(antPlus):
 # Connect to the bicycle power sensor #
 #######################################
 
+#-------------------------------------------------#
+#  ANT Callbacks for bicycle power sensor         #
+#-------------------------------------------------#
+
+def device_paired(device_profile, channel_id):
+    print(f'Connected to {device_profile.name} ({channel_id.deviceNumber})')
+
+def search_timed_out(device_profile):
+    print(f'Could not connect to {device_profile.name}')
+
+def channel_closed(device_profile):
+    print(f'Channel closed for {device_profile.name}')
+
+def power_data(event_count, pedal_power_ratio, cadence, accumulated_power, instantaneous_power):
+    print(f'Cadence: {cadence}, Power: {instantaneous_power}, accumulated: {accumulated_power}, ratio: {pedal_power_ratio}')
+
+def torque_and_pedal_data(event_count, left_torque, right_torque, left_pedal_smoothness, right_pedal_smoothness):
+    print(f'Torque: {left_torque} (left), {right_torque} (right),  pedal smoothness: {left_pedal_smoothness} (left), {right_pedal_smoothness} (right)')
+
+#-------------------------------------------------#
+#  ANT Callbacks for bicycle power sensor         #
+#-------------------------------------------------#
+
 async def bicycle_power_connect(antPlus):
-    pass
+    network = Network(key=NETWORK_KEY_ANT_PLUS, name='N:ANT+')
+    bicycle_power_scanner = BicyclePower(antPlus, network,
+                         {'onDevicePaired': device_paired,
+                          'onSearchTimeout': search_timed_out,
+                          'onChannelClosed': channel_closed,
+                          'onPowerData': power_data,
+                          'onTorqueAndPedalData': torque_and_pedal_data})
+    bicycle_power_scanner.open()
+    return bicycle_power_connect
+    
 
 ####################################
 # Connect to the heart rate sensor #
 ####################################
 
 async def heart_rate_connect(antPlus):
+    # TODO
     pass
 
 
