@@ -1,5 +1,7 @@
 from sensor_base import Sensor
 import time
+import sys
+#sys.path.append('home/pi/data-acquisition-system/wireless_modules_py/sensors/Adafruit_Python_DHT/Adafruit_DHT')
 import Adafruit_DHT
 from temp_module import config.py
 class TempSensor(Sensor):
@@ -10,7 +12,7 @@ class TempSensor(Sensor):
         """
         Getting the DHT_22 temp sensor and pin for readings
         """
-        self.pin=config.PIN
+        self.pin=pin
         self.sensor=Adafruit_DHT.DHT22
 
     def read(self):
@@ -21,7 +23,6 @@ class TempSensor(Sensor):
                  another dictionary containing key-value pairs of the measurement method (str) and its relevant data (float).
         """
         readings=[]
-        
         humidity, temperature=Adafruit_DHT.read_retry(self.sensor,self.pin)
         if humidity is not None and temperature is not None:
             temperature=float(temperature)

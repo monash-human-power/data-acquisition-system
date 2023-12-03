@@ -8,6 +8,7 @@ import time
 import os
 os.environ['PI_HOST']='127.0.0.1'
 os.environ['PI_PORT']='8888'
+sys.path.append('home/pi/data-acquisition-system/wireless_modules_py/sensors/Adafruit_Python_DHT/Adafruit_DHT')
 import Adafruit_DHT
 import logging
 import asyncio
