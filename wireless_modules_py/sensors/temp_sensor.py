@@ -1,9 +1,7 @@
 from sensor_base import Sensor
 import time
 import sys
-#sys.path.append('home/pi/data-acquisition-system/wireless_modules_py/sensors/Adafruit_Python_DHT/Adafruit_DHT')
 import Adafruit_DHT
-from temp_module import config.py
 class TempSensor(Sensor):
     """
     A class for the DHT_22 temp sensor
@@ -25,8 +23,8 @@ class TempSensor(Sensor):
         readings=[]
         humidity, temperature=Adafruit_DHT.read_retry(self.sensor,self.pin)
         if humidity is not None and temperature is not None:
-            temperature=float(temperature)
-            humidity=float(humidity)
+            temperature=round(float(temperature),2)
+            humidity=round(float(humidity),2)
             readings = [
                 {
                 "temp_in_deg": temperature,
