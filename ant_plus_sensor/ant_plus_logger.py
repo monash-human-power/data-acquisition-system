@@ -7,20 +7,14 @@ from utils.average import RollingAverage
 import json
 import asyncio
 
-# EXAMPLE USAGE OF NEW PYTHON-ANT LIBRARY
-from ant.plus.heartrate import *
-
+# Imports from new Python ANT library
 from ant.core import driver, exceptions
 from ant.core.node import Node, Network
 from ant.core.constants import NETWORK_KEY_ANT_PLUS, NETWORK_NUMBER_PUBLIC
 from ant.plus.power import *
+from ant.plus.heartrate import *
+from ant.plus.bikeTrainer import *
 
-
-# TODO
-# Required to detect speed sensor.
-# The GitHub code has a SpeedScanner class which isn't accessible here for some reason.
-# It uses a deviceType of 0x7b (SpeedCadenceScanner uses 0x79), and replacing it seems to work.
-# Ant.SpeedCadenceScanner.deviceType = 0x7b;
 
 parser = ArgumentParser(add_help = True, description = 'Ant-Plus MQTT Logger')
 
@@ -33,6 +27,7 @@ parser.add_argument('-r', '--rate', help= 'Rate to publish data in Hz', default=
 args = parser.parse_args()
 module_id = args.id
 mqtt_address = args.host
+rate = args.rate
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -94,24 +89,30 @@ async def antplus_connect():
     except exceptions.ANTException as err:
         logger.info(f'Could not start ANT.\n{err}')
 
-    return ant_node
-    
-    
-#######################################
-# Connect to the bicycle speed sensor #
-#######################################
-
-async def bicycle_speed_connect(antPlus):
-    # TODO
-    pass
+    return (ant_node, network)
 
 
-#######################################
-# Connect to the bicycle power sensor #
-#######################################
+###################################################
+#  Common ANT Callbacks for all sensors           #
+###################################################
+
+def device_paired(device_profile, channel_id):
+    print(f'Connected to {device_profile.name} ({channel_id.deviceNumber})')
+
+def search_timed_out(device_profile):
+    print(f'Could not connect to {device_profile.name}')
+
+def channel_closed(device_profile):
+    print(f'Channel closed for {device_profile.name}')
+
+
+
+#############################################################
+# Connect to the bicycle speed sensor (uses a bike trainer) #
+#############################################################
 
 #-------------------------------------------------#
-#  ANT Callbacks for bicycle power sensor         #
+#  ANT Callbacks for bicycle speed sensor         #
 #-------------------------------------------------#
 
 def device_paired(device_profile, channel_id):
@@ -123,18 +124,43 @@ def search_timed_out(device_profile):
 def channel_closed(device_profile):
     print(f'Channel closed for {device_profile.name}')
 
-def power_data(event_count, pedal_power_ratio, cadence, accumulated_power, instantaneous_power):
-    print(f'Cadence: {cadence}, Power: {instantaneous_power}, accumulated: {accumulated_power}, ratio: {pedal_power_ratio}')
+def bike_Trainer(elapsedTime, distanceTraveled, instantaneousSpeed, kmSpeed, cadence, power):
+    print(f"Speed: {kmSpeed} km/h, Cadence: {cadence}, Power: {power}")
 
-def torque_and_pedal_data(event_count, left_torque, right_torque, left_pedal_smoothness, right_pedal_smoothness):
-    print(f'Torque: {left_torque} (left), {right_torque} (right),  pedal smoothness: {left_pedal_smoothness} (left), {right_pedal_smoothness} (right)')
+#-------------------------------------------------#
+#  Function for connecting bicycle speed sensor   #
+#-------------------------------------------------#
+
+async def bicycle_speed_connect(antPlus, network):
+    bicycle_speed_scanner = bikeTrainer(antPlus, network,
+             {'onDevicePaired' : device_paired,
+              'onSearchTimeout': search_timed_out,
+              'onChannelClosed': channel_closed,
+              'onBikeTrainer'  : bike_Trainer})
+    # bicycle_speed_scanner.deviceType = 0x7b # Unsure if required.
+    bicycle_speed_scanner.open()
+
+
+#######################################
+# Connect to the bicycle power sensor #
+#######################################
 
 #-------------------------------------------------#
 #  ANT Callbacks for bicycle power sensor         #
 #-------------------------------------------------#
 
-async def bicycle_power_connect(antPlus):
-    network = Network(key=NETWORK_KEY_ANT_PLUS, name='N:ANT+')
+def power_data(event_count, pedal_power_ratio, cadence, accumulated_power, instantaneous_power):
+    print(f'Cadence: {cadence}, Power: {instantaneous_power}, accumulated: {accumulated_power}, ratio: {pedal_power_ratio}')
+    powerAverage.add(instantaneous_power)
+
+def torque_and_pedal_data(event_count, left_torque, right_torque, left_pedal_smoothness, right_pedal_smoothness):
+    print(f'Torque: {left_torque} (left), {right_torque} (right),  pedal smoothness: {left_pedal_smoothness} (left), {right_pedal_smoothness} (right)')
+
+#-------------------------------------------------#
+#  Function for connecting bicycle power sensor   #
+#-------------------------------------------------#
+
+async def bicycle_power_connect(antPlus, network):
     bicycle_power_scanner = BicyclePower(antPlus, network,
                          {'onDevicePaired': device_paired,
                           'onSearchTimeout': search_timed_out,
@@ -142,23 +168,39 @@ async def bicycle_power_connect(antPlus):
                           'onPowerData': power_data,
                           'onTorqueAndPedalData': torque_and_pedal_data})
     bicycle_power_scanner.open()
-    return bicycle_power_connect
     
 
 ####################################
 # Connect to the heart rate sensor #
 ####################################
 
-async def heart_rate_connect(antPlus):
-    # TODO
-    pass
+#-------------------------------------------------#
+#  ANT Callbacks for heart rate sensor            #
+#-------------------------------------------------#
+
+def heart_rate_data(computed_heartrate, event_time_ms, rr_interval_ms):
+    print(f'Heart rate: {computed_heartrate}, event time(ms): {event_time_ms}, rr interval (ms): {rr_interval_ms}')
+
+#-------------------------------------------------#
+#  Function for connecting heart rate sensor      #
+#-------------------------------------------------#
+
+async def heart_rate_connect(antPlus, network):
+    heart_rate_scanner = HeartRate(antPlus, network,
+                         {'onDevicePaired': device_paired,
+                          'onSearchTimeout': search_timed_out,
+                          'onChannelClosed': channel_closed,
+                          'onHeartRateData': heart_rate_data})
+    heart_rate_scanner.open()
 
 
-########
-# Main #
-########
+#################
+# Main Function #
+#################
 
 async def main():
+    global powerAverage
+
     isRecording = False
     speed = 0
     # The number of wheel revolutions according to the sensor when we start recording
@@ -170,7 +212,7 @@ async def main():
     onlineMsg = { 'online': True }
 
     mqttClient = await mqtt_connect()
-    antPlus = await antplus_connect()
+    antPlus, network = await antplus_connect()
 
     # Announce we're online once ANT+ stick is also connected
     mqttClient.publish(topic= status_topic, payload= json.dumps(onlineMsg), retain= True)
@@ -202,8 +244,28 @@ async def main():
 
     mqttClient.on_message = on_message
 
-    # TODO
+    await bicycle_speed_connect(antPlus, network)
+    await bicycle_power_connect(antPlus, network)
+    await heart_rate_connect(antPlus, network)
 
+    while True:
+        await asyncio.sleep(1 / rate)
+
+        if isRecording:
+            power = round(powerAverage.average(), 2)
+            payload = {
+                "sensors": [
+                    {"type": "antSpeed", "value": speed} if speed else {},
+                    {"type": "antDistance", "value": distance} if distance else {},
+                    {"type": "power", "value": power} if power else {},
+                    {"type": "cadence", "value": cadence} if cadence else {},
+                    {"type": "heartRate", "value": heartRate} if heartRate else {},
+                ]
+            }
+            payload["sensors"] = [sensor for sensor in payload["sensors"] if sensor]
+            data = json.dumps(payload)
+            mqttClient.publish(topic= data_topic, payload= data)
+            logger.info(f"{data_topic} -> {data}")
 
 if __name__ == "__main__":
     asyncio.run(main())
