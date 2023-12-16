@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "python-ant-plus-sensor"
+version = "0.1.0"
+description = "Communicate with ANT+ devices using Python ANT+ library"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+ant = {git = "https://github.com/mch/python-ant.git"}
+paho-mqtt = "^1.6.1"
+pyusb = "^1.2.1"
+libusb = "^1.0.26b5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

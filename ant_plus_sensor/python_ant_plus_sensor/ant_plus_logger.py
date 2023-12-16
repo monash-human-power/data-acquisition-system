@@ -1,19 +1,23 @@
-# IMPORTS
 import paho.mqtt.client as mqtt
-from argparse import ArgumentParser
 import logging
-from utils.average import RollingAverage
-
 import json
 import asyncio
+from argparse import ArgumentParser
+from utils.average import RollingAverage
 
-# Imports from new Python ANT library
-from ant.core import driver, exceptions
+# Imports from the Python ANT+ library
+from ant.core import driver, exceptions, log
 from ant.core.node import Node, Network
 from ant.core.constants import NETWORK_KEY_ANT_PLUS, NETWORK_NUMBER_PUBLIC
 from ant.plus.power import *
 from ant.plus.heartrate import *
 from ant.plus.bikeTrainer import *
+
+# If set to True, the stick's driver will dump everything it reads/writes from/to the stick.
+DEBUG = False
+
+# Set to None to disable logging
+LOG = log.LogWriter()
 
 
 parser = ArgumentParser(add_help = True, description = 'Ant-Plus MQTT Logger')
@@ -79,17 +83,16 @@ async def antplus_connect():
     """
 
     logger.info('Finding ant-plus USB...')
-    ant_node = Node(driver.USB2Driver(log=True, debug=True, idProduct=0x1009))
+    ant_node = Node(driver.USB2Driver(log=LOG, debug=DEBUG, idProduct=0x1009))
 
     try:
         ant_node.start()
         network = Network(key=NETWORK_KEY_ANT_PLUS, name='N:ANT+')
         ant_node.setNetworkKey(NETWORK_NUMBER_PUBLIC, network)
         logger.info('ant-plus stick initialized')
+        return (ant_node, network)
     except exceptions.ANTException as err:
         logger.info(f'Could not start ANT.\n{err}')
-
-    return (ant_node, network)
 
 
 ###################################################
@@ -97,13 +100,13 @@ async def antplus_connect():
 ###################################################
 
 def device_paired(device_profile, channel_id):
-    print(f'Connected to {device_profile.name} ({channel_id.deviceNumber})')
+    logger.info(f'Connected to {device_profile.name} ({channel_id.deviceNumber})')
 
 def search_timed_out(device_profile):
-    print(f'Could not connect to {device_profile.name}')
+    logger.info(f'Could not connect to {device_profile.name}')
 
 def channel_closed(device_profile):
-    print(f'Channel closed for {device_profile.name}')
+    logger.info(f'Channel closed for {device_profile.name}')
 
 
 
@@ -115,17 +118,8 @@ def channel_closed(device_profile):
 #  ANT Callbacks for bicycle speed sensor         #
 #-------------------------------------------------#
 
-def device_paired(device_profile, channel_id):
-    print(f'Connected to {device_profile.name} ({channel_id.deviceNumber})')
-
-def search_timed_out(device_profile):
-    print(f'Could not connect to {device_profile.name}')
-
-def channel_closed(device_profile):
-    print(f'Channel closed for {device_profile.name}')
-
 def bike_Trainer(elapsedTime, distanceTraveled, instantaneousSpeed, kmSpeed, cadence, power):
-    print(f"Speed: {kmSpeed} km/h, Cadence: {cadence}, Power: {power}")
+    logger.info(f"Speed: {kmSpeed} km/h, Cadence: {cadence}, Power: {power}")
 
 #-------------------------------------------------#
 #  Function for connecting bicycle speed sensor   #
@@ -150,11 +144,11 @@ async def bicycle_speed_connect(antPlus, network):
 #-------------------------------------------------#
 
 def power_data(event_count, pedal_power_ratio, cadence, accumulated_power, instantaneous_power):
-    print(f'Cadence: {cadence}, Power: {instantaneous_power}, accumulated: {accumulated_power}, ratio: {pedal_power_ratio}')
+    logger.info(f'Cadence: {cadence}, Power: {instantaneous_power}, accumulated: {accumulated_power}, ratio: {pedal_power_ratio}')
     powerAverage.add(instantaneous_power)
 
 def torque_and_pedal_data(event_count, left_torque, right_torque, left_pedal_smoothness, right_pedal_smoothness):
-    print(f'Torque: {left_torque} (left), {right_torque} (right),  pedal smoothness: {left_pedal_smoothness} (left), {right_pedal_smoothness} (right)')
+    logger.info(f'Torque: {left_torque} (left), {right_torque} (right),  pedal smoothness: {left_pedal_smoothness} (left), {right_pedal_smoothness} (right)')
 
 #-------------------------------------------------#
 #  Function for connecting bicycle power sensor   #
@@ -179,7 +173,7 @@ async def bicycle_power_connect(antPlus, network):
 #-------------------------------------------------#
 
 def heart_rate_data(computed_heartrate, event_time_ms, rr_interval_ms):
-    print(f'Heart rate: {computed_heartrate}, event time(ms): {event_time_ms}, rr interval (ms): {rr_interval_ms}')
+    logger.info(f'Heart rate: {computed_heartrate}, event time(ms): {event_time_ms}, rr interval (ms): {rr_interval_ms}')
 
 #-------------------------------------------------#
 #  Function for connecting heart rate sensor      #
