@@ -10,9 +10,8 @@ time.sleep(1)
 
 client_id = "Ammanuel" # 
 broker_id = 3 # change
-topic_string_1 = "/start"
-topic_string_2 = "/lap"
-start_message ="start"
+topic_string = "/lap"
+start_message ="start timer"
 lap_message = "lap"
 
 
@@ -37,8 +36,8 @@ while True:
         print(message) 
     
         if message == start_message: 
-            mqtt.publish(topic_string_1, message)
+            mqtt.publish(topic_string, message)
         elif message == lap_message:
-            mqtt.publish(topic_string_2, message)
+            mqtt.publish(topic_string, message)
         
 
