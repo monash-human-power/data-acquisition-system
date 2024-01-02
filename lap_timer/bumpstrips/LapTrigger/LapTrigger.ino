@@ -1,7 +1,7 @@
 
 // Messages to be sent to python script
-const String START_MESSAGE = "Start Message";
-const String LAP_MESSAGE = "Lap Message";
+const String START_MESSAGE = "start timer";
+const String LAP_MESSAGE = "lap";
 
 const int TRIGGER_DELAY = 1000; // Delay to avoid unwanted tiggers (e.g. second wheel of bike)
 const int buttonPin = 2; // Pin connected to bump strip
