@@ -6,7 +6,7 @@ authors = ["Your Name <you@example.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.7"
 ant = {git = "https://github.com/mch/python-ant.git"}
 paho-mqtt = "^1.6.1"
 pyusb = "^1.2.1"
