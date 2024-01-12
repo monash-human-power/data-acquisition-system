@@ -24,7 +24,7 @@ parser = ArgumentParser(add_help = True, description = 'Ant-Plus MQTT Logger')
 
 parser.add_argument('-i', '--id', help= 'Wireless sensor module ID', default = 4, type = int, action = 'store')
 
-parser.add_argument('-a', '--host', help= 'Address of the MQTT broker. If nothing is selected it will default to http://localhost.', default = 'http://localhost', action = 'store')
+parser.add_argument('-a', '--host', help= 'Address of the MQTT broker. If nothing is selected it will default to http://localhost.', default = 'localhost', action = 'store')
 
 parser.add_argument('-r', '--rate', help= 'Rate to publish data in Hz', default= 1, type = float, action = 'store')
 
@@ -38,8 +38,8 @@ logger = logging.getLogger(__name__)
 logger.info(f'Wireless module ID: {module_id}')
 
 v3_start_topic = 'v3/start';
-data_topic = f'/v3/wireless_module/${module_id}/data';
-status_topic = f'/v3/wireless_module/${module_id}/status';
+data_topic = f'/v3/wireless_module/{module_id}/data';
+status_topic = f'/v3/wireless_module/{module_id}/status';
 
 
 # // 406c 28mm tyre: https://www.bikecalc.com/wheel_size_math
@@ -65,7 +65,7 @@ async def mqtt_connect():
     logger.info('Connecting to MQTT broker...')
     mqtt_client = mqtt.Client()
     mqtt_client.on_connect = on_connect
-    mqtt_client.connect_async(host = mqtt_address)
+    mqtt_client.connect(host = mqtt_address)
     mqtt_client.loop_start()
 
     return mqtt_client
@@ -246,7 +246,8 @@ async def main():
         await asyncio.sleep(1 / rate)
 
         if isRecording:
-            power = round(powerAverage.average(), 2)
+            # power = round(powerAverage.average(), 2)
+            power = 0
             payload = {
                 "sensors": [
                     {"type": "antSpeed", "value": speed} if speed else {},
