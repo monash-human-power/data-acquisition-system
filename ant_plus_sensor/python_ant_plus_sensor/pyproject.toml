@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "python-ant-plus-sensor"
+name = "python_ant_plus_sensor"
 version = "0.1.0"
 description = "Communicate with ANT+ devices using Python ANT+ library"
 authors = ["Your Name <you@example.com>"]
