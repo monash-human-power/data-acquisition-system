@@ -10,7 +10,7 @@ time.sleep(1)
 
 client_id = "Ammanuel" # 
 broker_id = 3 # change
-topic_string = "/lap"
+topic_string = "trike/lap/trigger"
 start_message ="start timer"
 lap_message = "lap"
 
