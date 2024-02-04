@@ -36,7 +36,7 @@ class LapTimer():
         """
 
         self.broker_id = broker_id
-        self.username =  username
+        self.username = username
         self.password = password
 
         
@@ -83,7 +83,7 @@ class LapTimer():
 
         elif message.topic == self.ant_topic:
             msg_data = json.loads(str(message.payload.decode("utf-8")))
-            self.last_lap_distance = msg_data["antDistance"]
+            self.last_lap_distance = msg_data["sensors"][4]["value"]
 
 
 
