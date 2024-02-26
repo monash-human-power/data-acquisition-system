@@ -35,8 +35,8 @@ class RollingAverage:
         @return average (float): Average
 
         """
-        time = time_mod.time() * 1000;
-        self.points = filter(lambda x: x[0] >= time - self.interval, self.points)
+        time = time_mod.time() * 1000
+        self.points = list(filter(lambda x: x[0] >= time - self.interval, self.points))
         sum = functools.reduce(lambda acc, curr: acc + curr[1], self.points, 0)
-        average = sum / len(self.points)
+        average = sum / len(self.points) if len(self.points) != 0 else sum
         return average

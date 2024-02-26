@@ -6,12 +6,11 @@ authors = ["Your Name <you@example.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.7"
-ant = {git = "https://github.com/mch/python-ant.git"}
+python = ">=3.8.1,<4.0"
 paho-mqtt = "^1.6.1"
 pyusb = "^1.2.1"
 libusb = "^1.0.26b5"
-
+openant = "^1.3.1"
 
 [build-system]
 requires = ["poetry-core"]
