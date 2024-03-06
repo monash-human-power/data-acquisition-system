@@ -24,7 +24,7 @@ Written by Jotham Gates for Monash Human Power (MHP), 2023.
 
 import argparse
 import pandas as pd
-from typing import List, Tuple, TypeVar, Callable
+from typing import List, TypeVar, Callable
 import numpy as np
 from abc import ABC, abstractmethod
 from datetime import datetime
