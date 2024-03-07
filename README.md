@@ -38,6 +38,9 @@ Stores the Python scripts for the wireless modules.
 ### [Crash Alert](/crash_alert/)
 Stores the scripts for the crash alert.
 
+### [Log file interpolator](/utils/)
+Linearly interpolates between data points to merge all sheets and data sources into a common time interval.
+
 ## Contributors ✨
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
