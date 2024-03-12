@@ -1,9 +1,10 @@
 import paho.mqtt.client as mqtt
 import logging
 import json
-import asyncio
 from argparse import ArgumentParser
 from utils.average import RollingAverage
+import threading
+import time
 
 # Imports from the openant Python ANT+ library
 from openant.easy.node import Node
@@ -31,16 +32,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.info(f'Wireless module ID: {module_id}')
 
-v3_start_topic = 'v3/start';
-data_topic = f'/v3/wireless_module/{module_id}/data';
-status_topic = f'/v3/wireless_module/{module_id}/status';
+v3_start_topic = 'v3/start'
+data_topic = f'/v3/wireless_module/{module_id}/data'
+status_topic = f'/v3/wireless_module/{module_id}/status'
 
 # // 406c 28mm tyre: https://www.bikecalc.com/wheel_size_math
 WHEEL_CIRCUMFERENCE_M = 1.44513 # m
 
 
 
-async def mqtt_connect():
+def mqtt_connect():
     """
     Connect to the MQTT broker
 
@@ -59,24 +60,6 @@ async def mqtt_connect():
     mqtt_client.loop_start()
 
     return mqtt_client
-
-
-async def antplus_connect():
-    """
-    Connect to the ANT+ stick
-
-    @returns ant_node: ANT+ stick instance
-    """
-
-    ant_node = Node()
-    ant_node.set_network_key(0x00, ANTPLUS_NETWORK_KEY)
-
-    try:
-        ant_node.start()
-        logger.info('ant-plus stick initialized')
-        return ant_node
-    except KeyboardInterrupt:
-        logger.info(f'Closing ANT+ device..."')
 
 
 def on_device_data(page: int, page_name: str, data: DeviceData):
@@ -103,7 +86,7 @@ def on_device_data(page: int, page_name: str, data: DeviceData):
         sensor_values["heartRate"] = data.heart_rate
 
 
-async def bicycle_speed_connect(ant_plus): 
+def bicycle_speed_connect(ant_plus): 
     """
     Connect to the bicycle speed sensor
 
@@ -117,7 +100,7 @@ async def bicycle_speed_connect(ant_plus):
     bicycle_speed_scanner.on_device_data = on_device_data
     bicycle_speed_scanner.open_channel()
     
-async def bicycle_power_connect(ant_plus):
+def bicycle_power_connect(ant_plus):
     """
     Connect to the bicycle power sensor
 
@@ -131,7 +114,7 @@ async def bicycle_power_connect(ant_plus):
     bicycle_power_scanner.on_device_data = on_device_data
     bicycle_power_scanner.open_channel()
     
-async def heart_rate_connect(ant_plus):
+def heart_rate_connect(ant_plus):
     """
     Connect to the heart rate sensor
 
@@ -146,7 +129,7 @@ async def heart_rate_connect(ant_plus):
     heart_rate_scanner.open_channel()
 
 
-async def main():
+def main():
     """
     Main function that listens and logs data from ANT+ sensors 
     """
@@ -164,8 +147,7 @@ async def main():
     is_recording = False
     online_msg = { 'online': True }
 
-    mqtt_client = await mqtt_connect()
-    ant_plus = await antplus_connect()
+    mqtt_client = mqtt_connect()
 
     # Announce we're online once ANT+ stick is also connected
     mqtt_client.publish(topic= status_topic, payload= json.dumps(online_msg), retain= True)
@@ -196,12 +178,12 @@ async def main():
 
     mqtt_client.on_message = on_message
 
-    await bicycle_speed_connect(ant_plus)
-    await bicycle_power_connect(ant_plus)
-    await heart_rate_connect(ant_plus)
+    bicycle_speed_connect(ant_plus)
+    bicycle_power_connect(ant_plus)
+    heart_rate_connect(ant_plus)
 
     while True:
-        await asyncio.sleep(1 / rate)
+        time.sleep(1/rate)
 
         if is_recording:
             speed = sensor_values["speed"]
@@ -223,6 +205,13 @@ async def main():
             data = json.dumps(payload)
             mqtt_client.publish(topic= data_topic, payload= data)
             logger.info(f"{data_topic} -> {data}")
-
+                    
 if __name__ == "__main__":
-    asyncio.run(main())
+    ant_plus = Node()
+    ant_plus.set_network_key(0x00, ANTPLUS_NETWORK_KEY)
+
+    main_thread = threading.Thread(target=main)
+    ant_thread = threading.Thread(target=ant_plus.start)
+
+    main_thread.start()
+    ant_thread.start()
