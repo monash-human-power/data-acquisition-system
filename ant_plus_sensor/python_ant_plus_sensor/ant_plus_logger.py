@@ -72,20 +72,18 @@ def on_device_data(page: int, page_name: str, data: DeviceData):
         speed = data.calculate_speed(WHEEL_CIRCUMFERENCE_M)
         distance = data.calculate_distance(WHEEL_CIRCUMFERENCE_M)
         if speed:
-            print(f"speed: {speed:.2f} km/h")
-            print(f"distance: {speed:.2f} m")
             sensor_values["speed"] = speed
             sensor_values["distance"] = distance
+            logger.info('Speed: ${speed}, Distance: ${distance}')
     elif isinstance(data, PowerData):
-        print(f"power: {data.instantaneous_power} watts")
-        print(f"cadence: {data.cadence} rpm")
         sensor_values["power"] = data.instantaneous_power
         sensor_values["cadence"] = data.cadence
+        logger.info('Cadence: ${cadence}, Power: ${power}')
     elif isinstance(data, HeartRateData):
-        print(f"Heart rate update {data.heart_rate} bpm")
         sensor_values["heartRate"] = data.heart_rate
-
-
+        logger.info('Heart Rate: ${heartRate}')
+        
+        
 def bicycle_speed_connect(ant_plus): 
     """
     Connect to the bicycle speed sensor
