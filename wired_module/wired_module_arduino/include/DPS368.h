@@ -7,6 +7,16 @@
 #define DPS368_ADDRESS (0x76 << 1) 
 #define DPS368_ID 0x10
 
+// sensor configuration
+#define TMP_MEASUREMENT_RATE 8
+#define TMP_OVERSAMPLING_RATE 16
+#define PSR_MEASUREMENT_RATE 8
+#define PSR_OVERSAMPLING_RATE 16
+
+// To be written into the configuration register
+// TODO: check if this is correct, throw error if log2() return a float?
+#define TMP_CONFIG (uint8_t)log2(TMP_MEASUREMENT_RATE)<<4 + (uint8_t)log2(TMP_OVERSAMPLING_RATE)
+#define PSR_CONFIG (uint8_t)log2(PSR_MEASUREMENT_RATE)<<4 + (uint8_t)log2(PSR_OVERSAMPLING_RATE)
 
 // register map for the DPS368
 #define DPS368_PSR_B2      0x00
@@ -52,11 +62,12 @@ enum DPS368Mode {
     CON_BOTH = 0x07
 };
 
+
 class DPS368:public I2cSensorBase {
 
     public:
     // Attributes
-
+    uint8_t coef_source; 
 
     // Use parent constructor
     using I2cSensorBase::I2cSensorBase;
@@ -67,10 +78,21 @@ class DPS368:public I2cSensorBase {
 
     boolean is_coef_ready();
     boolean is_sensor_ready();
-
+    
+    uint8_t get_coef_source();
     void get_coefficient();
     
     void select_mode(DPS368Mode measurementMode);
+    void read_temperature();
+    void read_pressure();
+
+    
+    private:
+    
+    // Coefficients
+    int16_t c0,c1; // 12bits
+    int32_t c00,c10; // 20bits
+    int16_t c01,c11,c20,c21,c30; // 16bits
 
 };
 
