@@ -23,3 +23,10 @@ void I2cSensorBase::print_read_buffer() {
         printf("%d:0x%02x\n",i,this->readBuffer[i]);
     }
 }
+
+int32_t I2cSensorBase::convert_two_complement(uint32_t data, uint8_t length){
+    if (data & 1 << (length - 1)){
+        data -= 2^length;
+    }
+    return data; 
+}

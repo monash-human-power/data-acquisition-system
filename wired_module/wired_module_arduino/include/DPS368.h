@@ -15,16 +15,12 @@
 
 // To be written into the configuration register
 // TODO: check if this is correct, throw error if log2() return a float?
-#define TMP_CONFIG (uint8_t)log2(TMP_MEASUREMENT_RATE)<<4 + (uint8_t)log2(TMP_OVERSAMPLING_RATE)
-#define PSR_CONFIG (uint8_t)log2(PSR_MEASUREMENT_RATE)<<4 + (uint8_t)log2(PSR_OVERSAMPLING_RATE)
+#define TMP_CONFIG (uint8_t)log2(TMP_MEASUREMENT_RATE)<< 4 + (uint8_t)log2(TMP_OVERSAMPLING_RATE)
+#define PSR_CONFIG (uint8_t)log2(PSR_MEASUREMENT_RATE)<< 4 + (uint8_t)log2(PSR_OVERSAMPLING_RATE)
 
 // register map for the DPS368
-#define DPS368_PSR_B2      0x00
-#define DPS368_PSR_B1      0x01
-#define DPS368_PSR_B0      0x02
-#define DPS368_TMP_B2      0x03
-#define DPS368_TMP_B1      0x04
-#define DPS368_TMP_B0      0x05
+#define DPS368_PSR         0x00
+#define DPS368_TMP         0x03
 #define DPS368_PRS_CFG     0x06
 #define DPS368_TMP_CFG     0x07
 #define DPS368_MEAS_CFG    0x08
@@ -80,15 +76,19 @@ class DPS368:public I2cSensorBase {
     boolean is_sensor_ready();
     
     uint8_t get_coef_source();
+    uint32_t get_scale_factor(uint8_t oversamplingRate);
     void get_coefficient();
+
     
     void select_mode(DPS368Mode measurementMode);
-    void read_temperature();
-    void read_pressure();
+    int32_t read_raw_temperature();
+    void caculate_temperature();
+    int32_t read_raw_pressure();
+    void calculate_pressure();
 
     
     private:
-    
+
     // Coefficients
     int16_t c0,c1; // 12bits
     int32_t c00,c10; // 20bits

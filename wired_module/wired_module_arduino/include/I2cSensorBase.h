@@ -17,6 +17,8 @@ class I2cSensorBase : public SensorBase {
     // Methods
     void read_sensor_register(uint8_t registerAddress, size_t readLength, int timeout);
     void write_sensor_register(uint8_t registerAddress, uint8_t data, int timeout);
+    
+    int32_t convert_two_complement(uint32_t data, uint8_t length);
     void print_read_buffer();
 };
 
