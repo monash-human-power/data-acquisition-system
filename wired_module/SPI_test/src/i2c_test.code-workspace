@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "../../i2c_test"
+		},
+		{
+			"name": "SPI_test",
+			"path": ".."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"gpio.h": "c",
+			"spi_master.h": "c"
+		}
+	}
+}
