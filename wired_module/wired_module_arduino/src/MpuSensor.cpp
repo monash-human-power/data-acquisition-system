@@ -1,32 +1,33 @@
 #include "MpuSensor.h"
-
 #include <cstring>
 
 void MpuSensor::configure() {
-    write_sensor_register(0x6B, 0, 2000);
-    write_sensor_register(0x19, 7, 2000);
+    write_sensor_register(0x4E, 0x0F, 2000);
+    delay(100);
 }
 
-void MpuSensor ::read() {
-    // Get raw data from sensor
-    read_sensor_register(0x3B, 6, 2000);
+void MpuSensor::read() {
+    // Read accelerometer data from registers 0x1F to 0x24
+    read_sensor_register(0x1F, 6, 2000); // ACCEL_X/Y/Z_OUT
+    int16_t accX = (readBuffer[0] << 8) | readBuffer[1];
+    int16_t accY = (readBuffer[2] << 8) | readBuffer[3];
+    int16_t accZ = (readBuffer[4] << 8) | readBuffer[5];
 
-    int16_t RAWX = (this->readBuffer[0] << 8) | this->readBuffer[1];
-    int16_t RAWY = (this->readBuffer[2] << 8) | this->readBuffer[3];
-    int16_t RAWZ = (this->readBuffer[4] << 8) | this->readBuffer[5];
+    // Convert to g using ±16g scale => 2048 LSB/g (or adjust if using ±2g)
+    float ax = (float)accX / 2048.0f;
+    float ay = (float)accY / 2048.0f;
+    float az = (float)accZ / 2048.0f;
 
-    float xg = (float)RAWX / 16384;
-    float yg = (float)RAWY / 16384;
-    float zg = (float)RAWZ / 16384; 
+    // Read gyro data from registers 0x25 to 0x2A
+    read_sensor_register(0x25, 6, 2000); // GYRO_X/Y/Z_OUT
+    int16_t gyroX = (readBuffer[0] << 8) | readBuffer[1];
+    int16_t gyroY = (readBuffer[2] << 8) | readBuffer[3];
+    int16_t gyroZ = (readBuffer[4] << 8) | readBuffer[5];
 
-    read_sensor_register(0x43, 6, 2000);  // Gyro X, Y, Z
+    // Convert to °/s using ±2000 dps => 16.4 LSB/°/s (or adjust scale)
+    float gz = (float)gyroZ / 16.4f;
 
-    int16_t RAW_GX = (this->readBuffer[0] << 8) | this->readBuffer[1];
-    int16_t RAW_GY = (this->readBuffer[2] << 8) | this->readBuffer[3];
-    int16_t RAW_GZ = (this->readBuffer[4] << 8) | this->readBuffer[5];
-
-    float gz = (float)RAW_GZ / 131.0;  // Assuming ±250°/s full scale (131 LSB/°/s)
-
-    float data[2] = { zg, gz };
+    // Only sending Z accel and Z gyro for now
+    float data[2] = { az, gz };
     memcpy(this->canBuffer, data, sizeof(data));
 }
