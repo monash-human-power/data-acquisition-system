@@ -17,8 +17,16 @@ void MpuSensor ::read() {
 
     float xg = (float)RAWX / 16384;
     float yg = (float)RAWY / 16384;
-    float zg = (float)RAWZ / 16384;
+    float zg = (float)RAWZ / 16384; 
 
-    // Write to CAN buffer
-    memcpy(this->canBuffer, &zg, sizeof(zg));
+    read_sensor_register(0x43, 6, 2000);  // Gyro X, Y, Z
+
+    int16_t RAW_GX = (this->readBuffer[0] << 8) | this->readBuffer[1];
+    int16_t RAW_GY = (this->readBuffer[2] << 8) | this->readBuffer[3];
+    int16_t RAW_GZ = (this->readBuffer[4] << 8) | this->readBuffer[5];
+
+    float gz = (float)RAW_GZ / 131.0;  // Assuming ±250°/s full scale (131 LSB/°/s)
+
+    float data[2] = { zg, gz };
+    memcpy(this->canBuffer, data, sizeof(data));
 }
