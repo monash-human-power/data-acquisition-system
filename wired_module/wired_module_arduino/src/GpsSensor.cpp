@@ -21,7 +21,6 @@ void GpsSensor::read() {
         if (c == '\n') {
             gpsLine.trim();
             if (gpsLine.startsWith("$GPGGA")) {
-                // Parse latitude and longitude
                 String fields[15];
                 int fieldIndex = 0;
 
@@ -48,14 +47,14 @@ void GpsSensor::read() {
     }
 }
 
-void GpsSensor::send() {
-    // Retrieve latitude and longitude from the GPS data (already stored in canBuffer)
+String GpsSensor::generateJson() {
     float lat = ((float*)this->canBuffer)[0];
     float lon = ((float*)this->canBuffer)[1];
 
-    // Create JSON string — Example: {"sensors":[{"type":"gps","latitude":12.3456,"longitude":-98.7654}]}
-    String json = "{\"sensors\":[{\"type\":\"gps\",\"latitude\":" + String(lat, 6) + 
-                  ",\"longitude\":" + String(lon, 6) + "}]}";
+    return "{\"sensors\":[{\"type\":\"gps\",\"latitude\":" + String(lat, 6) + 
+           ",\"longitude\":" + String(lon, 6) + "}]}";
+}
 
-    sendJson(this->canId, json);  // Use the instance's CAN ID
+void GpsSensor::send() {
+    sendJson(this->canId, generateJson());
 }

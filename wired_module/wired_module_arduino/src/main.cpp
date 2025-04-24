@@ -8,6 +8,8 @@
 #include <vector>
 #include "driver/i2c.h"
 
+#include "DPS368.cpp"
+
 #define I2C_NUM I2C_NUM_0
 #define I2C_SCL GPIO_NUM_22
 #define I2C_SDA GPIO_NUM_21
@@ -23,12 +25,19 @@ void loop();
 // ==================================================================
 I2cMaster i2cMaster(I2C_NUM, I2C_SDA, I2C_SCL, 400000);
 
-MpuSensor mpuSensor(i2cMaster.portNum, 0x68, 0x13); // ICM-42670-P via legacy MpuSensor abstraction
+MpuSensor mpuSensor(i2cMaster.portNum, 0x68, 0x13); // ICM-42670-P
 BarometerSensor barometerSensor(i2cMaster.portNum, 0x76, 0x11);
 Adc1 adc1(ADC1_CHANNEL_0, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 0x12);
-GpsSensor gpsSensor(2, 16, 17, 0x14);  // UART2, RX=16, TX=17, CAN ID = 0x14
+GpsSensor gpsSensor(2, 16, 17, 0x14);  // UART2, RX=16, TX=17
+Dps368Sensor dps368Sensor(i2cMaster.portNum, 0x77, 0x15); // Add your DPS368 sensor here
 
-std::vector<SensorBase*> sensors = {&mpuSensor, &barometerSensor, &adc1, &gpsSensor};
+std::vector<SensorBase*> sensors = {
+    &mpuSensor,
+    &barometerSensor,
+    &adc1,
+    &gpsSensor,
+    &dps368Sensor  // Add to sensors list
+};
 // ==================================================================
 
 void onReceive(int packetSize) {

@@ -7,11 +7,17 @@
 
 class GpsSensor : public SensorBase {
 public:
+    // Constructor
     GpsSensor(int uartNum, int rxPin, int txPin, uint8_t canId);
+
+    // Methods
     void configure() override;
     void read() override;
+    String generateJson() override;
+    void send() override;
 
 private:
+    // GPS related attributes
     HardwareSerial* gpsSerial;
     int uartNum;
     int rxPin;
@@ -19,4 +25,4 @@ private:
     String buffer;
 };
 
-#endif
+#endif // GPSSENSOR_H
