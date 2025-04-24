@@ -36,6 +36,11 @@ void BarometerSensor ::read() {
     float temp = (float)raw_temp / (float)this->scaleFactor;
     temp = this->c0 * 0.5 + this->c1 * temp;
 
-    // Write to CAN buffer
-    memcpy(this->canBuffer, &temp, sizeof(temp));
+}
+
+// New send() method that sends JSON
+void BarometerSensor::send() {
+    // Example: {"sensors":[{"type":"barometer","value":27.6}]}
+    String json = "{\"sensors\":[{\"type\":\"barometer\",\"value\":" + String(this->temperature, 2) + "}]}";
+    sendJson(0x124, json);
 }

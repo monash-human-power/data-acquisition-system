@@ -177,3 +177,19 @@ void DPS368::read(){
     this -> calculate_pressure();
     this -> caculate_temperature();
 }
+
+void DPS368::send() {
+    int32_t rawTemp = read_raw_temperature();
+    int32_t rawPressure = read_raw_pressure();
+
+    float temperature = c0 * 0.5f + c1 * rawTemp;
+    float pressure = c00 + rawPressure * (c10 + rawPressure * (c20 + rawPressure * c30)) +
+                     rawTemp * c01 + rawTemp * rawPressure * (c11 + rawPressure * c21);
+
+    // Create JSON string — Example: {"sensors":[{"type":"dps368","temperature":23.56,"pressure":101325.78}]}
+    String json = "{\"sensors\":[{\"type\":\"dps368\",\"temperature\":" + String(temperature, 2) +
+                  ",\"pressure\":" + String(pressure, 2) + "}]}";
+
+    sendJson(0x126, json);  // You can change the ID to match your system
+}
+

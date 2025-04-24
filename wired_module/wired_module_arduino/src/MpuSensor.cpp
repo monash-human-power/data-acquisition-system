@@ -31,3 +31,15 @@ void MpuSensor::read() {
     float data[2] = { az, gz };
     memcpy(this->canBuffer, data, sizeof(data));
 }
+
+void MpuSensor::send() {
+    // Retrieve accelerometer and gyroscope data (stored in canBuffer)
+    float az = ((float*)this->canBuffer)[0];  // Z-axis acceleration
+    float gz = ((float*)this->canBuffer)[1];  // Z-axis gyroscope
+
+    // Create JSON string — Example: {"sensors":[{"type":"mpu","acceleration_z":0.123,"gyro_z":2.345}]}
+    String json = "{\"sensors\":[{\"type\":\"mpu\",\"acceleration_z\":" + String(az, 4) + 
+                  ",\"gyro_z\":" + String(gz, 4) + "}]}";
+
+    sendJson(this->canId, json);  // Use the instance's CAN ID
+}
