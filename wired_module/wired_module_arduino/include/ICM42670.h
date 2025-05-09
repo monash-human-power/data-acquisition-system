@@ -3,7 +3,7 @@
 #ifndef GYRO_SENSOR
 #define GYRO_SENSOR
 
-class GyroSensor : public I2cSensorBase {
+class ICM42670 : public I2cSensorBase {
 public:
     // Use parent constructor
     using I2cSensorBase::I2cSensorBase;

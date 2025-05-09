@@ -1,7 +1,7 @@
-#include "GyroSensor.h"
+#include "ICM42670.h"
 #include "SensorBase.h"
 
-void GyroSensor::configure() {
+void ICM42670::configure() {
     // Reset device
     write_sensor_register(0x11, 0x01, 1000); // DEVICE_CONFIG register
     delay(100);
