@@ -1,21 +1,21 @@
+#ifndef GYRO_SENSOR_H
+#define GYRO_SENSOR_H
+
 #include "I2cSensorBase.h"
 
-#ifndef GYRO_SENSOR
-#define GYRO_SENSOR
-
-class ICM42670 : public I2cSensorBase {
+class ICM42670: public I2cSensorBase {
 public:
-    // Use parent constructor
-    using I2cSensorBase::I2cSensorBase;
+    // Gyroscope values
+    float gyroX, gyroY, gyroZ;
 
-    // Methods
+    // Constructor
+    GyroSensor(i2c_port_t masterPortNum, uint8_t sensorAddress, uint8_t sensorID);
+
+    // Override required methods
     void configure() override;
     void read() override;
     String generateJson() override;
-    void send() override;
-
-private:
-    float gyroX, gyroY, gyroZ;
 };
 
-#endif
+#endif // GYRO_SENSOR_H
+
