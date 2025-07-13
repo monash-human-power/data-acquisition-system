@@ -12,7 +12,7 @@ constexpr uint8_t REG_WHO_AM_I       = 0x75;   // fixed device ID
 
 /* Conversion constant for ±2000 dps full-scale (FS_SEL = 00)  
    From datasheet: 16.4 LSB = 1 deg/s */
-constexpr float   DPSSCALE = 16.4f;
+constexpr float DPSSCALE = 16.4f;
 } // namespace
 
 /* Constructor*/
@@ -30,15 +30,15 @@ void GyroSensor::configure()
     delay(50);
 
     /* 2)  Power-up gyro + accel in Low-Noise mode (bits [3:0] = 0b0111) */
-    write_sensor_register(REG_PWR_MGMT0, 0x07, 1000);
+    write_sensor_register(REG_PWR_MGMT0,  0x0F, 1000);
 
-    /* 3)  Gyro full-scale ±2000 dps & 1.1 kHz ODR (FS_SEL = 00, ODR = 011) */
-    write_sensor_register(REG_GYRO_CONFIG0, 0x03, 1000);
+    /* 3)  Gyro full-scale */
+    write_sensor_register(REG_GYRO_CONFIG0, 0x6F, 1000);
 
-    /* 4) (Optional) set INT1 active-high, push-pull, pulse mode   BIT0 = 1 */
+    /* 4) (not sure if we need this ) set INT1 active-high, push-pull, pulse mode   BIT0 = 1 */
     // write_sensor_register(REG_INT_CONFIG, 0x01, 1000);
 
-    /* 5)  Verify WHO_AM_I = 0x67 (optional sanity check) */
+    /* 5)  Verify WHO_AM_I = 0x67 (not sure if we need to do this) */
     read_sensor_register(REG_WHO_AM_I, 1, 1000);
     if (readBuffer[0] != 0x67) {
         Serial.printf("ICM-42670-P: unexpected WHO_AM_I (0x%02X)\n", readBuffer[0]);
