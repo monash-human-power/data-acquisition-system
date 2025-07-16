@@ -1,5 +1,7 @@
+#include <WiFi.h>
+#include <PubSubClient.h>
+
 #include <BarometerSensor.h>
-#include <CAN.h>
 #include <I2cMaster.h>
 #include <MpuSensor.h>
 #include <Adc1.h>
@@ -7,77 +9,95 @@
 
 #include <vector>
 #include "driver/i2c.h"
-
 #include "DPS368.cpp"
 
+// ──────────────────────────────────────────────
+// Wi-Fi and MQTT Settings
+// ──────────────────────────────────────────────
+const char* ssid = "YOUR_WIFI_SSID";
+const char* password = "YOUR_WIFI_PASSWORD";
+const char* mqttServer = "RASPBERRY_PI_IP_ADDRESS";  // e.g., "192.168.1.50"
+const int mqttPort = 1883;
+
+WiFiClient espClient;
+PubSubClient mqttClient(espClient);  // Declared globally for SensorBase access
+
+// ──────────────────────────────────────────────
+// I2C Config
+// ──────────────────────────────────────────────
 #define I2C_NUM I2C_NUM_0
 #define I2C_SCL GPIO_NUM_22
 #define I2C_SDA GPIO_NUM_21
 
-// Function prototypes
-static esp_err_t i2c_master_init(void);
-void onReceive(int packetSize);
-void setup();
-void loop();
-
-// ==================================================================
-// SETUP SENSORS HERE
-// ==================================================================
 I2cMaster i2cMaster(I2C_NUM, I2C_SDA, I2C_SCL, 400000);
 
+// ──────────────────────────────────────────────
+// Sensor Setup
+// ──────────────────────────────────────────────
 MpuSensor mpuSensor(i2cMaster.portNum, 0x68, 0x13); // ICM-42670-P
 BarometerSensor barometerSensor(i2cMaster.portNum, 0x76, 0x11);
 Adc1 adc1(ADC1_CHANNEL_0, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 0x12);
 GpsSensor gpsSensor(2, 16, 17, 0x14);  // UART2, RX=16, TX=17
-Dps368Sensor dps368Sensor(i2cMaster.portNum, 0x77, 0x15); // Add your DPS368 sensor here
+Dps368Sensor dps368Sensor(i2cMaster.portNum, 0x77, 0x15); // DPS368 sensor
 
 std::vector<SensorBase*> sensors = {
     &mpuSensor,
     &barometerSensor,
     &adc1,
     &gpsSensor,
-    &dps368Sensor  // Add to sensors list
+    &dps368Sensor
 };
-// ==================================================================
 
-void onReceive(int packetSize) {
-    // Get all bytes from packet
-    uint8_t buffer[4];
-    int i = 0;
-    while (CAN.available()) {
-        buffer[i++] = CAN.read();
+// ──────────────────────────────────────────────
+// Wi-Fi and MQTT Helpers
+// ──────────────────────────────────────────────
+void connectToWiFi() {
+    WiFi.begin(ssid, password);
+    Serial.print("Connecting to Wi-Fi");
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
     }
-
-    // Convert bytes to float
-    float data;
-    memcpy(&data, buffer, sizeof(float));
-
-    Serial.printf("Msg received | ID = 0x%lx | Data = %f\n", CAN.packetId(), data);
+    Serial.println("\nWi-Fi connected. IP: " + WiFi.localIP().toString());
 }
 
-void setup() {
-    // Setup CAN bus
-    CAN.setPins(4, 5);  // or your preferred TX/RX pins
-    Serial.begin(115200);
-    while (!Serial);
-
-    if (!CAN.begin(500E3)) {
-        Serial.println("\n\nStarting CAN failed!\n\n");
-        while (1);
+void connectToMQTT() {
+    mqttClient.setServer(mqttServer, mqttPort);
+    while (!mqttClient.connected()) {
+        Serial.print("Connecting to MQTT...");
+        if (mqttClient.connect("ESP32Client")) {
+            Serial.println("connected");
+        } else {
+            Serial.print("failed, rc=");
+            Serial.print(mqttClient.state());
+            Serial.println(" try again in 2 seconds");
+            delay(2000);
+        }
     }
+}
 
-    CAN.loopback();
-    CAN.onReceive(onReceive);
+// ──────────────────────────────────────────────
+// Setup & Loop
+// ──────────────────────────────────────────────
+void setup() {
+    Serial.begin(115200);
+    connectToWiFi();
+    connectToMQTT();
 
-    // Configure all sensors
     for (auto sensor : sensors) {
         sensor->configure();
     }
 }
 
 void loop() {
-    for (auto sensor : sensors) {
-        sensor->send();
+    if (!mqttClient.connected()) {
+        connectToMQTT();
     }
-    delay(1000);
+    mqttClient.loop();  // Handle incoming/outgoing MQTT messages
+
+    for (auto sensor : sensors) {
+        sensor->send();  // This calls generateJson() and publishes via MQTT
+    }
+
+    delay(1000);  // Send every second
 }
