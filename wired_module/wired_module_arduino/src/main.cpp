@@ -11,12 +11,7 @@
 # include <vector>
 # include "driver/i2c.h"
 # include "DPS368.cpp"
-
-// Wi-Fi and MQTT Settings
-const char* ssid = "A 2 jang pura extn_5G";
-const char* password = "act12345";
-const char* mqttServer = "192.168.0.117";  // will replace it later with raspberry's IP
-const int mqttPort = 1883;
+#include "secrets.h"
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);  // Declared globally for SensorBase access
