@@ -13,3 +13,7 @@ __pycache__
 
 # intelliJ configs
 .idea/
+
+debug.log
+
+# run ->   platformio device monitor --baud 115200 > debug.log         
