@@ -74,6 +74,9 @@ void setup() {
     for (auto sensor : sensors) {
         sensor->configure();
     }
+
+    Serial.print("Connected! IP address: ");
+    Serial.println(WiFi.localIP());
 }
 
 void loop() {
