@@ -1,15 +1,15 @@
 #ifndef GYRO_SENSOR_H
 #define GYRO_SENSOR_H
 
-#include "I2cSensorBase.h"
+#include "SpiSensorBase.h"
 
-class ICM42670: public I2cSensorBase {
+class GyroSensor: public SpiSensorBase {
 public:
     // Gyroscope values
     float gyroX, gyroY, gyroZ;
 
     // Constructor
-    GyroSensor(i2c_port_t masterPortNum, uint8_t sensorAddress, uint8_t sensorID);
+    GyroSensor(spi_device_handle_t handle, uint8_t sensorID);
 
     // Override required methods
     void configure() override;
