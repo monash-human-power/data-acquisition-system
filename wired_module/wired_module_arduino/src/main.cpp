@@ -41,11 +41,13 @@ std::vector<SensorBase*> sensors = {
 
 // Wi-Fi and MQTT Helpers
 void connectToWiFi() {
-    WiFi.begin(ssid, password);
     Serial.print("Connecting to Wi-Fi");
+    WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
+        delay(2500);
+        Serial.println(WiFi.status()); 
     }
     Serial.println("\nWi-Fi connected. IP: " + WiFi.localIP().toString());
 }
@@ -67,16 +69,20 @@ void connectToMQTT() {
 
 // Setup & Loop
 void setup() {
-    Serial.begin(9600);
+    /*Serial.begin(115200);
     connectToWiFi();
     connectToMQTT();
 
     for (auto sensor : sensors) {
         sensor->configure();
+    } */
+    delay(1000);
+    Serial.begin(115200);
+    delay(1000);
+    while (true){
+        Serial.println("ESP32 is alive!");
+        delay(500);
     }
-
-    Serial.print("Connected! IP address: ");
-    Serial.println(WiFi.localIP());
 }
 
 void loop() {
