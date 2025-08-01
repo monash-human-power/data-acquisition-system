@@ -1,8 +1,11 @@
+#include <WiFi.h>
 #include <CAN.h>
 #include <ArduinoJson.h>  // Include ArduinoJson for JSON handling
 
 #ifndef SENSOR_BASE
 #define SENSOR_BASE
+
+extern PubSubClient mqttClient; // Declare external MQTT client
 
 // Abstract Class
 class SensorBase {
@@ -25,9 +28,9 @@ protected:
 
     // Function to send JSON data over CAN
     void sendJson(uint8_t sensorID, String json) {
-        CAN.beginPacket(sensorID);
-        CAN.write(json.c_str(), json.length());  // Write JSON string to CAN packet
-        CAN.endPacket();
+       char topic[32];
+       snprintf(topic, sizeof(topic), "sensor/%02x", sensorID);
+       mqttClient.publish(topic, json.c_str());
     }
 };
 
