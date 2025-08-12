@@ -9,7 +9,7 @@ public:
     float gyroX, gyroY, gyroZ;
 
     // Constructor
-    GyroSensor(i2c_port_t masterPortNum, uint8_t sensorAddress, uint8_t sensorID);
+    ICM42670(i2c_port_t masterPortNum, uint8_t sensorAddress, uint8_t sensorID);
 
     // Override required methods
     void configure() override;

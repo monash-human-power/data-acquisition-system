@@ -16,14 +16,14 @@ constexpr float DPSSCALE = 16.4f;
 } // namespace 
 
 /* Constructor*/
-GyroSensor::GyroSensor(i2c_port_t port,
+ICM42670::ICM42670(i2c_port_t port,
                        uint8_t    address,
                        uint8_t    id)
     : I2cSensorBase(port, address, id),
       gyroX(0), gyroY(0), gyroZ(0) {}
 
 /* Configure sensor registers*/
-void GyroSensor::configure()
+void ICM42670::configure()
 {
     /* 1)  Softreset */
     write_sensor_register(REG_DEVICE_CONFIG, 0x01,1000);
@@ -46,7 +46,7 @@ void GyroSensor::configure()
 }
 
 /*  Read 6 bytes of gyro data*/
-void GyroSensor::read()
+void ICM42670::read()
 {
     read_sensor_register(REG_GYRO_DATA_XYZ, 6,1000);
 
@@ -60,7 +60,7 @@ void GyroSensor::read()
 }
 
 /* JSON payload for this sensor*/
-String GyroSensor::generateJson()
+String ICM42670::generateJson()
 {
     // two decimal places is enough precision for most telemetry streams
     return String("{\"sensor\":\"gyroscope\",\"x\":") + String(gyroX, 2) +
