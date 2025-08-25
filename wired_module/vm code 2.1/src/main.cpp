@@ -6,8 +6,8 @@
 #include <ICM42670.h>
 /* #include <MpuSensor.h>
 #include <Adc1.h>
-# include <GpsSensor.h>
-# include "DPS368.cpp" */
+# include <GpsSensor.h> */
+# include "DPS368.cpp"
 # include <vector>
 # include "driver/i2c.h"
 #include "secrets.h"
@@ -25,9 +25,9 @@ I2cMaster i2cMaster(I2C_NUM, I2C_SDA, I2C_SCL, 400000);
 // Sensor Setup
 /* MpuSensor mpuSensor(i2cMaster.portNum, 0x68, 0x13); // ICM-42670-P
 Adc1 adc1(ADC1_CHANNEL_0, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 0x12);
-GpsSensor gpsSensor(2, 16, 17, 0x14);  // UART2, RX=16, TX=17
-Dps368Sensor dps368Sensor(i2cMaster.portNum, 0x77, 0x15); // DPS368 sensor */
+GpsSensor gpsSensor(2, 16, 17, 0x14);  // UART2, RX=16, TX=17 */
 
+Dps368Sensor dps368Sensor(i2cMaster.portNum, 0x77, 0x15); // DPS368 sensor
 ICM42670 icm42670Sensor(i2cMaster.portNum, 0x68, 0x16);  // ICM-42670-P sensor
 BarometerSensor barometerSensor(i2cMaster.portNum, 0x76, 0x11);
 
@@ -36,6 +36,7 @@ std::vector<SensorBase*> sensors = {
     &adc1,
     &gpsSensor,
     &dps368Sensor */
+    &dps368Sensor,
     &icm42670Sensor,
     &barometerSensor
 };
