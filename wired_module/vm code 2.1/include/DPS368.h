@@ -3,21 +3,20 @@
 
 #include "I2cSensorBase.h"
 
-// header guard
-#define DPS368_ADDRESS (0x76 << 1) 
-#define DPS368_ID 0x10
+// I2C address and ID
+#define DPS368_ADDRESS 0x76
+#define DPS368_ID      0x10   // 8-bit product ID
 
-// sensor configuration
+// Sensor config
 #define TMP_MEASUREMENT_RATE 8
 #define TMP_OVERSAMPLING_RATE 16
 #define PSR_MEASUREMENT_RATE 8
 #define PSR_OVERSAMPLING_RATE 16
 
-// To be written into the configuration register
-#define TMP_CONFIG (uint8_t)(log2(TMP_MEASUREMENT_RATE) << 4 + (uint8_t)log2(TMP_OVERSAMPLING_RATE))
-#define PSR_CONFIG (uint8_t)(log2(PSR_MEASUREMENT_RATE) << 4 + (uint8_t)log2(PSR_OVERSAMPLING_RATE))
+#define TMP_CONFIG ((uint8_t)((log2(TMP_MEASUREMENT_RATE) << 4) + log2(TMP_OVERSAMPLING_RATE)))
+#define PSR_CONFIG ((uint8_t)((log2(PSR_MEASUREMENT_RATE) << 4) + log2(PSR_OVERSAMPLING_RATE)))
 
-// register map for the DPS368
+// Register map
 #define DPS368_PSR         0x00
 #define DPS368_TMP         0x03
 #define DPS368_PRS_CFG     0x06
@@ -28,11 +27,9 @@
 #define DPS368_FIFO_STS    0x0B
 #define DPS368_RESET       0x0C
 #define DPS368_PRODUCT_ID  0x0D
-#define DPS368_COEF        0x10  // Starts at 0x10, spans multiple addresses
-#define DPS368_RESERVED    0x22  // Starts at 0x22, spans multiple addresses
+#define DPS368_COEF        0x10
 #define DPS368_COEF_SRCE   0x28
 
-// Measurement modes as per datasheet
 enum DPS368Mode {
     IDLE = 0x00,
     CMD_PRS = 0x01,
@@ -44,36 +41,33 @@ enum DPS368Mode {
 
 class DPS368 : public I2cSensorBase {
 public:
-    // Attributes
-    uint8_t coef_source;
-
-    // Use parent constructor
     using I2cSensorBase::I2cSensorBase;
 
-    // Methods
     void configure() override;
     void read() override;
     String generateJson() override;
     void send() override;
 
-    boolean is_coef_ready();
-    boolean is_sensor_ready();
-    
-    uint8_t get_coef_source();
-    uint32_t get_scale_factor(uint8_t oversamplingRate);
-    void get_coefficient();
-    
-    void select_mode(DPS368Mode measurementMode);
-    int32_t read_raw_temperature();
-    void calculate_temperature();
-    int32_t read_raw_pressure();
-    void calculate_pressure();
-
 private:
-    // Coefficients for calculation
-    int16_t c0, c1; // 12bits
-    int32_t c00, c10; // 20bits
-    int16_t c01, c11, c20, c21, c30; // 16bits
+    int16_t c0 = 0, c1 = 0;
+    int32_t c00 = 0, c10 = 0;
+    int16_t c01 = 0, c11 = 0, c20 = 0, c21 = 0, c30 = 0;
+
+    float temperature = 0.0f;
+    float pressure = 0.0f;
+
+    uint8_t coef_source = 0;
+
+    bool is_coef_ready();
+    bool is_sensor_ready();
+    void get_coef_source();
+    void read_coefficients();
+    void select_mode(DPS368Mode mode);
+    int32_t read_raw_temperature();
+    int32_t read_raw_pressure();
+    void calculate_temperature();
+    void calculate_pressure();
+    uint32_t get_scale_factor(uint8_t oversamplingRate);
 };
 
 #endif // DPS368_H
