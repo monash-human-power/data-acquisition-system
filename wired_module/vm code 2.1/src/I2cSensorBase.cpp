@@ -25,8 +25,8 @@ void I2cSensorBase::print_read_buffer() {
 }
 
 int32_t I2cSensorBase::convert_two_complement(uint32_t data, uint8_t length){
-    if (data & 1 << (length - 1)){
-        data -= 2^length;
+    if (data & (1 << (length - 1))) {
+        data -= (1 << length); // use bit shift to get 2^length
     }
-    return data; 
+    return static_cast<int32_t>(data);
 }
