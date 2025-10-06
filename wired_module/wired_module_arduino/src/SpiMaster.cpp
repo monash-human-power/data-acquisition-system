@@ -2,9 +2,10 @@
 
 
 /*
-#define MOSI_PIN        13
-#define MISO_PIN        12
-#define SCLK_PIN        14
+#define MOSI_PIN        11
+#define MISO_PIN        13
+#define SCLK_PIN        12
+#define CS0             10 (first device connected to the bus)
 
 */
 
