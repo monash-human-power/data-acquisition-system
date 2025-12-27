@@ -69,6 +69,5 @@ class WindSensor(Sensor):
         ]
 
         # update the last time of read() being called
-        self.query_time = time.time_ns() * self.NS_TO_MS
-
+        
         return self.readings
