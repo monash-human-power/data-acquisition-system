@@ -5,9 +5,9 @@ description = ""
 authors = ["Blake <bhay0010@student.monash.edu>"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = ">=3.8.1,<4.0"
 paho-mqtt = "^1.6.1"
-pandas = "1.1.1"
+pandas = "^1.5.3"
 argparse = "^1.4.0"
 python-dotenv = "^0.21.0"
 rich = "^12.5.1"
