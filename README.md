@@ -6,6 +6,10 @@ The Data Acquisition System (DAS) allows us to collect and store data from vario
 
 This repository contains all the code related to Monash Human Power's Data Acquisition System (DAS).
 
+## Documentation
+
+- **[Engineering handover & planning](docs/README.md)** — project overview, architecture, implementation status, backlog, sprint plan, setup guide, and improvement notes.
+
 ## Getting Started
 
 Clone the repo and install submodules.
