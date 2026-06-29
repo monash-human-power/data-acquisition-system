@@ -1,14 +1,16 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 #include <string>
 #include <vector>
 
 class I2CBus
 {
 public:
-    explicit I
-    2CBus(const std::string& devicePath);
+    explicit I2CBus(const std::string& devicePath);
+
+    ~I2CBus();
 
     bool writeRegister(uint8_t deviceAddress,
                        uint8_t reg,
