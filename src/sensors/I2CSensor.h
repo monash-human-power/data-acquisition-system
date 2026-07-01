@@ -8,7 +8,7 @@
 class I2CSensor : public SensorBase {
     protected:
         u_int8_t deviceAddress;
-        // Will likely need to add a bus and other info related to connection, plus functions for children to use
+        // Will likely need to add other info related to connection, plus functions for children to use
         I2CBus& bus;
 
     public:

@@ -18,7 +18,7 @@ I2CBus::I2CBus(const std::string& devicePath) {
         std::cerr << "Warning: Could not set I2C retries" << std::endl;
     }
 
-    // Sets a 10ms timeout on reads
+    // Set a 10ms timeout on reads
     if (ioctl(fileDescriptor, I2C_TIMEOUT, 1) < 0) {
         std::cerr << "Warning: Could not set I2C timeout" << std::endl;
     }
@@ -65,6 +65,31 @@ std::vector<uint8_t> I2CBus::readRegisters(uint8_t deviceAddress, uint8_t startR
 
     if (read(fileDescriptor, data.data(), length) != static_cast<ssize_t>(length)) {
         std::cerr << "Failed to read data from device 0x" << std::hex << (int)deviceAddress << std::endl;
+        return std::vector<uint8_t>();
+    }
+    
+    return data;
+}
+
+bool I2CBus::writeCommand(uint8_t deviceAddress, uint8_t command) {
+    if (!selectDevice(deviceAddress)) return false;
+
+    if (write(fileDescriptor, &command, 1) != 1) {
+        std::cerr << "Failed to write command to 0x" << std::hex << (int)deviceAddress << std::endl;
+        return false;
+    }
+    return true;
+}
+
+std::vector<uint8_t> I2CBus::readBytes(uint8_t deviceAddress, size_t length) {
+    std::vector<uint8_t> data(length, 0);
+    
+    if (!selectDevice(deviceAddress)) {
+        return std::vector<uint8_t>(); 
+    }
+
+    if (read(fileDescriptor, data.data(), length) != static_cast<ssize_t>(length)) {
+        std::cerr << "Failed to read data from 0x" << std::hex << (int)deviceAddress << std::endl;
         return std::vector<uint8_t>();
     }
     
