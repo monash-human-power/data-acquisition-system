@@ -21,6 +21,7 @@ public:
 
     // Some I2C want direct commands instead of registers
     bool writeCommand(uint8_t deviceAddress, uint8_t command);
+    
     std::vector<uint8_t> readBytes(uint8_t deviceAddress, size_t length);
 
 private:

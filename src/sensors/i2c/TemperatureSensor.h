@@ -3,10 +3,11 @@
 
 class TemperatureSensor : public I2CSensor {
 public:
-    explicit TemperatureSensor(I2CBus& sharedBus, int id, int addr = 0x44);
+    explicit TemperatureSensor(std::string id, I2CBus& sharedBus, uint8_t addr = 0x44);
 
     ~TemperatureSensor() override = default;
 
     bool init() override;
-    SensorReading read() override;
+    bool read() override;
+    std::string serialize() const override;
 };

@@ -8,16 +8,17 @@
 
 class SensorBase {
     protected:
-        int sensorID;
-
+        std::string sensorID;
+        SensorReading lastReading;
     public:
-        explicit SensorBase(uint8_t id) : sensorID(id) {};
+        explicit SensorBase(std::string id) : sensorID(id) {};
         virtual ~SensorBase() {};
 
         virtual bool init() = 0;
-        virtual SensorReading read() = 0;
+        virtual bool read() = 0;
+        virtual std::string serialize() const = 0;
 
-        uint8_t getSensorID() const {
+        std::string getSensorID() const {
             return sensorID;
         }
 

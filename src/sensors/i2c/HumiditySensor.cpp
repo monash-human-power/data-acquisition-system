@@ -1,10 +1,11 @@
 #include "HumiditySensor.h"
 #include <iostream>
+#include <sstream>
 #include <chrono>
 #include <thread>
 
-HumiditySensor::HumiditySensor(I2CBus& sharedBus, int id, int addr)
-    : I2CSensor(sharedBus, id, addr) {}
+HumiditySensor::HumiditySensor(std::string id, I2CBus& sharedBus, uint8_t addr)
+    : I2CSensor(id, sharedBus, addr) {}
 
 bool HumiditySensor::init() {
     // 0x94 is soft reset
@@ -16,7 +17,7 @@ bool HumiditySensor::init() {
     return false;
 }
 
-SensorReading HumiditySensor::read() {
+bool HumiditySensor::read() {
     SensorReading reading;
     reading.sensorID = this->sensorID; 
     reading.isValid = false;
@@ -24,7 +25,8 @@ SensorReading HumiditySensor::read() {
     // 0xFD is temp and relative humidity in high precision
     if (!bus.writeCommand(deviceAddress, 0xFD)) {
         std::cerr << "SHT40 (RH): Failed to send measure command.\n";
-        return reading; 
+        this->lastReading = reading;
+        return false; 
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -34,7 +36,8 @@ SensorReading HumiditySensor::read() {
     
     if (rx_bytes.size() != 6) {
         std::cerr << "SHT40 (RH): Read failed or returned incomplete data.\n";
-        return reading;
+        this->lastReading = reading;
+        return false;
     }
 
     // Third and fourth bytes are humidity
@@ -51,6 +54,18 @@ SensorReading HumiditySensor::read() {
     }
 
     reading.value = rh;
+
+    auto now = std::chrono::system_clock::now();
+    uint64_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    reading.timestamp = ms;
     reading.isValid = true;
-    return reading;
+    this->lastReading = reading;
+    return true;
+}
+
+std::string HumiditySensor::serialize() const{
+    std::stringstream ss;
+    ss << this->lastReading.sensorID << "," << this->lastReading.timestamp << "," << this->lastReading.value << "," << this->lastReading.isValid;
+
+    return ss.str();
 }

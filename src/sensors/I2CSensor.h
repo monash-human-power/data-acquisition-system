@@ -7,15 +7,17 @@
 // The base class for all I2C sensors, will require deciding on I2C interaction methods before fully implementing
 class I2CSensor : public SensorBase {
     protected:
-        u_int8_t deviceAddress;
+        uint8_t deviceAddress;
         // Will likely need to add other info related to connection, plus functions for children to use
         I2CBus& bus;
 
     public:
-        explicit I2CSensor(uint8_t id, I2CBus& bus, uint8_t addr);
+        explicit I2CSensor(std::string id, I2CBus& bus, uint8_t addr);
         virtual ~I2CSensor();
 
-        bool init() override;
+        bool init() override = 0;
 
-        SensorReading read() override = 0; 
+        bool read() override = 0;
+        
+        std::string serialize() const override = 0;
 };

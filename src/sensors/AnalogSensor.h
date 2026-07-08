@@ -14,5 +14,5 @@ class AnalogSensor : public SensorBase {
 
         bool init() override;
 
-        SensorReading read() override = 0; 
+        bool read() override = 0; 
 };
