@@ -1,17 +1,31 @@
 #pragma once
 
-#include <string>
+#include <cstdint>
+#include <sstream>
+#include "SensorReading.h"
 
-class Sensor
-{
-public:
-    virtual bool init() = 0;
 
-    virtual bool read() = 0;
+// Define the base class that all sensors will be made from, no matter the communication format //
 
-    virtual std::string serialize() const = 0;
+class SensorBase {
+    protected:
+        std::string sensorID;
+        SensorReading lastReading;
+    public:
+        explicit SensorBase(std::string id) : sensorID(id) {};
+        virtual ~SensorBase() {};
 
-    virtual std::string getSensorID() const = 0;
+        virtual bool init() = 0;
+        virtual bool read() = 0;
 
-    virtual ~Sensor() = default;
-};
+        std::string getSensorID() const {
+            return sensorID;
+        }
+
+        virtual std::string serialize() const{
+            std::stringstream ss;
+            ss << this->lastReading.sensorID << "," << this->lastReading.timestamp << "," << this->lastReading.value << "," << this->lastReading.isValid;
+
+            return ss.str();
+        }
+    };
