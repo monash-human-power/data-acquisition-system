@@ -1,6 +1,5 @@
 #include "HumiditySensor.h"
 #include <iostream>
-#include <sstream>
 #include <chrono>
 #include <thread>
 
@@ -11,7 +10,6 @@ bool HumiditySensor::init() {
     // 0x94 is soft reset
     if (bus.writeCommand(deviceAddress, 0x94)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        std::cout << "SHT40 Humidity Sensor Initialized at 0x" << std::hex << (int)deviceAddress << std::dec << "\n";
         return true;
     }
     return false;
@@ -60,12 +58,7 @@ bool HumiditySensor::read() {
     reading.timestamp = ms;
     reading.isValid = true;
     this->lastReading = reading;
+    
     return true;
 }
 
-std::string HumiditySensor::serialize() const{
-    std::stringstream ss;
-    ss << this->lastReading.sensorID << "," << this->lastReading.timestamp << "," << this->lastReading.value << "," << this->lastReading.isValid;
-
-    return ss.str();
-}

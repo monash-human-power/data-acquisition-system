@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sstream>
 #include "SensorReading.h"
 
 
@@ -16,10 +17,15 @@ class SensorBase {
 
         virtual bool init() = 0;
         virtual bool read() = 0;
-        virtual std::string serialize() const = 0;
 
         std::string getSensorID() const {
             return sensorID;
         }
 
+        virtual std::string serialize() const{
+            std::stringstream ss;
+            ss << this->lastReading.sensorID << "," << this->lastReading.timestamp << "," << this->lastReading.value << "," << this->lastReading.isValid;
+
+            return ss.str();
+        }
     };

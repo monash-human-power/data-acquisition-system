@@ -9,5 +9,4 @@ public:
 
     bool init() override;
     bool read() override;
-    std::string serialize() const override;
 };

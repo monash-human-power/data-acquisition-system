@@ -1,5 +1,4 @@
 #include "TemperatureSensor.h"
-#include <sstream>
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -11,7 +10,6 @@ bool TemperatureSensor::init() {
     // 0x94 is soft reset command
     if (bus.writeCommand(deviceAddress, 0x94)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1)); // Wait 1ms for reset
-        std::cout << "SHT40 Initialized at 0x" << std::hex << (int)deviceAddress << std::dec << "\n";
         return true;
     }
     return false;
@@ -53,11 +51,4 @@ bool TemperatureSensor::read() {
 
     this->lastReading = reading;
     return true;
-}
-
-std::string TemperatureSensor::serialize() const{
-    std::stringstream ss;
-    ss << this->lastReading.sensorID << "," << this->lastReading.timestamp << "," << this->lastReading.value << "," << this->lastReading.isValid;
-
-    return ss.str();
 }
