@@ -1,27 +1,27 @@
-#include "MAX17320.h"
+#include "VoltageSensor.h"
 #include <iostream>
 #include <chrono>
 
-MAX17320::MAX17320(const std::string id, I2CBus& sharedBus)
-    : I2CSensor(id, bus) {}
+VoltageSensor::VoltageSensor(std::string id, I2CBus& sharedBus, uint8_t addr)
+    : I2CSensor(id, sharedBus, addr) {}
 
-bool MAX17320::init() {
+bool VoltageSensor::init() {
     // 0x36 is MAX17320 address, battery voltage is on register 0xDA
-    std::vector<uint8_t> testRead = bus->readRegisters(0x36, 0xDA, 2);
+    std::vector<uint8_t> testRead = bus.readRegisters(0x36, 0xDA, 2);
     if (testRead.empty()) {
         return false;
     }
     return true;
 }
 
-bool MAX17320::read() {
-    SensorReading newReading;
-    newReading.isValid = false;
+bool VoltageSensor::read() {
+    SensorReading reading;
+    reading.isValid = false;
 
     // 2 byte voltage
-    std::vector<uint8_t> voltageData = bus->readRegisters(0x36, 0xDA, 2);
+    std::vector<uint8_t> voltData = bus.readRegisters(0x36, 0xDA, 2);
 
-    if (voltageData.empty()) {
+    if (voltData.empty()) {
         this->lastReading = reading;
         return false;
     }
@@ -32,14 +32,14 @@ bool MAX17320::read() {
     // From datasheet
     float voltage = rawVoltage * 0.0003125f;
 
-    newReading.value = voltage;
+    reading.value = voltage;
     
-    newReading.timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
+    reading.timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
                                std::chrono::system_clock::now().time_since_epoch()
                            ).count();
-    newReading.isValid = true;
+    reading.isValid = true;
 
-    this->lastReading = newReading;
+    this->lastReading = reading;
 
     return true;
 }
