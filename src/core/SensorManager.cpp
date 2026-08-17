@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-void SensorManager::addSensor(std::shared_ptr<Sensor> sensor)
+void SensorManager::addSensor(std::shared_ptr<SensorBase> sensor)
 {
     sensors.push_back(sensor);
 }
@@ -55,7 +55,7 @@ std::vector<std::string> SensorManager::serializeAll() const
     return output;
 }
 
-size_t SensorManager::getSensorCount() const
+std::size_t SensorManager::getSensorCount() const
 {
     return sensors.size();
 }

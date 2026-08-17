@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Sensor.h"
+#include "../sensors/Sensor.h"
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -9,7 +10,7 @@
 class SensorManager
 {
 public:
-    void addSensor(std::shared_ptr<Sensor> sensor);
+    void addSensor(std::shared_ptr<SensorBase> sensor);
 
     bool initAll();
 
@@ -17,8 +18,8 @@ public:
 
     std::vector<std::string> serializeAll() const;
 
-    size_t getSensorCount() const;
+    std::size_t getSensorCount() const;
 
 private:
-    std::vector<std::shared_ptr<Sensor>> sensors;
+    std::vector<std::shared_ptr<SensorBase>> sensors;
 };
