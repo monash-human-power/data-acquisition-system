@@ -1,32 +1,21 @@
-#include "SensorManager.h"
+#include "src/core/VCUController.h"
 
-#include <chrono>
 #include <iostream>
-#include <thread>
 
 int main()
 {
-    SensorManager sensorManager;
-
-    bool initSuccess = sensorManager.initAll();
-
-    if (!initSuccess)
+    try
     {
-        std::cerr << "Warning: one or more sensors failed to initialise." << std::endl;
+        VCUController controller;
+        controller.run();
     }
-
-    while (true)
+    catch (const std::exception& error)
     {
-        sensorManager.readAll();
+        std::cerr << "VCU failed to start: "
+                  << error.what()
+                  << std::endl;
 
-        auto packets = sensorManager.serializeAll();
-
-        for (const auto& packet : packets)
-        {
-            std::cout << packet << std::endl;
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        return 1;
     }
 
     return 0;

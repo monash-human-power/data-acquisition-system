@@ -2,7 +2,10 @@
 
 #include "SystemConfig.h"
 #include "SensorManager.h"
+#include "CommunicationManager.h"
 #include "I2CBus.h"
+
+#include <memory>
 
 class VCUController
 {
@@ -15,8 +18,9 @@ public:
 
 private:
     SystemConfig config;
-    I2CBus i2cBus;
+    std::unique_ptr<I2CBus> i2cBus;
     SensorManager sensorManager;
+    CommunicationManager communicationManager;
 
     bool running;
 };

@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <sstream>
+#include <string>
+
 #include "SensorReading.h"
 
 
