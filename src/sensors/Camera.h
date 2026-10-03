@@ -1,18 +1,15 @@
 #pragma once
 
-#include <string>
+#include <cstdint>
 
 class Camera
 {
-protected:
+private:
     uint8_t cameraIndex;
 
 public:
-    explicit Camera(uint8_t deviceIndex);
+    explicit Camera(uint8_t deviceIndex = 0);
 
-    ~Camera();
-
-    bool record(uint16_t timeSeconds,
-                std::string savePath);
-
+    bool startStream();
+    void stopStream();
 };
