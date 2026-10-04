@@ -20,12 +20,20 @@ public:
                                        uint8_t startReg,
                                        size_t length);
 
-    // Some I2C want direct commands instead of registers
     bool writeCommand(uint8_t deviceAddress, uint8_t command);
-    
+
     std::vector<uint8_t> readBytes(uint8_t deviceAddress, size_t length);
+
+    // Resolve a TCA9548A mux channel to its dynamically assigned
+    // Linux /dev/i2c-X child bus.
+    static std::string resolveMuxChannel(
+        int parentBus,
+        uint8_t muxAddress,
+        uint8_t channel
+    );
 
 private:
     int fileDescriptor;
+
     bool selectDevice(uint8_t deviceAddress);
 };
