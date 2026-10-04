@@ -5,6 +5,7 @@
 #include "CommunicationManager.h"
 #include "I2CBus.h"
 
+#include "../data/DataSerialiser.h"
 #include "../sensors/GyroscopeSensor.h"
 
 #include <memory>
@@ -25,6 +26,7 @@ private:
     std::shared_ptr<GyroscopeSensor> gyroSensor;
 
     SensorManager sensorManager;
+    DataSerialiser dataSerialiser;
     CommunicationManager communicationManager;
 
     bool running;

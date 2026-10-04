@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <iostream>
-#include <sstream>
 #include <thread>
 
 GyroscopeSensor::GyroscopeSensor(
@@ -22,13 +21,12 @@ GyroscopeSensor::GyroscopeSensor(
 {
     lastReading.sensorID = sensorID;
     lastReading.timestamp = 0;
-    lastReading.value = 0.0f;
+    lastReading.values.clear();
     lastReading.isValid = false;
 }
 
 bool GyroscopeSensor::init()
 {
-    // WHO_AM_I register
     auto whoami =
         bus.readRegisters(
             deviceAddress,
@@ -71,8 +69,7 @@ bool GyroscopeSensor::init()
         std::chrono::milliseconds(100)
     );
 
-    // Wake device.
-    // Clock source = X-axis gyroscope PLL.
+    // Wake device
     if (!bus.writeRegister(
             deviceAddress,
             0x6B,
@@ -103,15 +100,7 @@ bool GyroscopeSensor::init()
         return false;
     }
 
-    /*
-        DLPF_CONFIG = 3
-
-        Approx bandwidth:
-        accelerometer ≈ 44 Hz
-
-        This matches the Python logic reasonably well
-        for a ~100 Hz polling rate.
-    */
+    // Digital low-pass filter
     if (!bus.writeRegister(
             deviceAddress,
             0x1A,
@@ -120,7 +109,7 @@ bool GyroscopeSensor::init()
         return false;
     }
 
-    // No sample-rate division.
+    // No sample-rate division
     if (!bus.writeRegister(
             deviceAddress,
             0x19,
@@ -143,24 +132,6 @@ bool GyroscopeSensor::init()
 
 bool GyroscopeSensor::read()
 {
-    /*
-        Registers 0x3B -> 0x48:
-
-        AX high
-        AX low
-        AY high
-        AY low
-        AZ high
-        AZ low
-        TEMP high
-        TEMP low
-        GX high
-        GX low
-        GY high
-        GY low
-        GZ high
-        GZ low
-    */
     auto data =
         bus.readRegisters(
             deviceAddress,
@@ -173,19 +144,32 @@ bool GyroscopeSensor::read()
 
     if (data.size() != 14)
     {
+        lastReading.values.clear();
         lastReading.isValid = false;
+
         return false;
     }
 
-    int16_t rawAx = combineSigned(data[0], data[1]);
-    int16_t rawAy = combineSigned(data[2], data[3]);
-    int16_t rawAz = combineSigned(data[4], data[5]);
+    int16_t rawAx =
+        combineSigned(data[0], data[1]);
 
-    int16_t rawTemp = combineSigned(data[6], data[7]);
+    int16_t rawAy =
+        combineSigned(data[2], data[3]);
 
-    int16_t rawGx = combineSigned(data[8], data[9]);
-    int16_t rawGy = combineSigned(data[10], data[11]);
-    int16_t rawGz = combineSigned(data[12], data[13]);
+    int16_t rawAz =
+        combineSigned(data[4], data[5]);
+
+    int16_t rawTemp =
+        combineSigned(data[6], data[7]);
+
+    int16_t rawGx =
+        combineSigned(data[8], data[9]);
+
+    int16_t rawGy =
+        combineSigned(data[10], data[11]);
+
+    int16_t rawGz =
+        combineSigned(data[12], data[13]);
 
     accelX =
         static_cast<float>(rawAx) / ACCEL_LSB;
@@ -211,6 +195,18 @@ bool GyroscopeSensor::read()
     temperatureC =
         static_cast<float>(rawTemp) / 340.0f
         + 36.53f;
+
+    lastReading.values.clear();
+
+    lastReading.values["accel_x"] = accelX;
+    lastReading.values["accel_y"] = accelY;
+    lastReading.values["accel_z"] = accelZ;
+
+    lastReading.values["gyro_x"] = gyroX;
+    lastReading.values["gyro_y"] = gyroY;
+    lastReading.values["gyro_z"] = gyroZ;
+
+    lastReading.values["temperature_c"] = temperatureC;
 
     lastReading.isValid = true;
 
@@ -292,36 +288,15 @@ bool GyroscopeSensor::calibrateGyroscope(
 
     std::cout
         << "Gyro bias: "
-        << gyroBiasX << ", "
-        << gyroBiasY << ", "
+        << gyroBiasX
+        << ", "
+        << gyroBiasY
+        << ", "
         << gyroBiasZ
         << " dps"
         << std::endl;
 
     return true;
-}
-
-std::string GyroscopeSensor::serialize() const
-{
-    std::stringstream ss;
-
-    ss
-        << sensorID << ","
-        << lastReading.timestamp << ","
-
-        << accelX << ","
-        << accelY << ","
-        << accelZ << ","
-
-        << gyroX << ","
-        << gyroY << ","
-        << gyroZ << ","
-
-        << temperatureC << ","
-
-        << lastReading.isValid;
-
-    return ss.str();
 }
 
 int16_t GyroscopeSensor::combineSigned(

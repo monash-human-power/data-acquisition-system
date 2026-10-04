@@ -17,9 +17,10 @@ bool SensorManager::initAll()
 
         if (!success)
         {
-            std::cerr << "Failed to initialise sensor: "
-                      << sensor->getSensorID()
-                      << std::endl;
+            std::cerr
+                << "Failed to initialise sensor: "
+                << sensor->getSensorID()
+                << std::endl;
 
             allSuccessful = false;
         }
@@ -36,23 +37,28 @@ void SensorManager::readAll()
 
         if (!success)
         {
-            std::cerr << "Failed to read sensor: "
-                      << sensor->getSensorID()
-                      << std::endl;
+            std::cerr
+                << "Failed to read sensor: "
+                << sensor->getSensorID()
+                << std::endl;
         }
     }
 }
 
-std::vector<std::string> SensorManager::serializeAll() const
+std::vector<SensorReading> SensorManager::getReadings() const
 {
-    std::vector<std::string> output;
+    std::vector<SensorReading> readings;
+
+    readings.reserve(sensors.size());
 
     for (const auto& sensor : sensors)
     {
-        output.push_back(sensor->serialize());
+        readings.push_back(
+            sensor->getLastReading()
+        );
     }
 
-    return output;
+    return readings;
 }
 
 std::size_t SensorManager::getSensorCount() const

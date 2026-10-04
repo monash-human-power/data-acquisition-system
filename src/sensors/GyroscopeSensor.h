@@ -2,7 +2,6 @@
 
 #include "I2CSensor.h"
 
-#include <array>
 #include <cstdint>
 #include <string>
 
@@ -16,8 +15,6 @@ public:
 
     bool init() override;
     bool read() override;
-
-    std::string serialize() const override;
 
     bool calibrateGyroscope(
         int samples = 200,

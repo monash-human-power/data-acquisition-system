@@ -1,10 +1,10 @@
 #pragma once
 
 #include "../sensors/Sensor.h"
+#include "../data/SensorReading.h"
 
 #include <cstddef>
 #include <memory>
-#include <string>
 #include <vector>
 
 class SensorManager
@@ -16,7 +16,7 @@ public:
 
     void readAll();
 
-    std::vector<std::string> serializeAll() const;
+    std::vector<SensorReading> getReadings() const;
 
     std::size_t getSensorCount() const;
 

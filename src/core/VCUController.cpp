@@ -4,12 +4,14 @@
 #include <iostream>
 #include <memory>
 #include <thread>
+#include <vector>
 
 VCUController::VCUController()
     : config(),
       i2cBus(nullptr),
       gyroSensor(nullptr),
       sensorManager(),
+      dataSerialiser(),
       communicationManager(),
       running(false)
 {
@@ -19,7 +21,8 @@ void VCUController::setup()
 {
     std::cout << "Starting VCU system..." << std::endl;
 
-    bool communicationReady = communicationManager.init();
+    bool communicationReady =
+        communicationManager.init();
 
     if (!communicationReady)
     {
@@ -30,15 +33,22 @@ void VCUController::setup()
 
     try
     {
-        // Temporary direct MPU6050 connection on Raspberry Pi I2C bus 1.
-        i2cBus = std::make_unique<I2CBus>("/dev/i2c-1");
+        // Temporary direct MPU6050 connection
+        // on Raspberry Pi I2C bus 1.
+        i2cBus =
+            std::make_unique<I2CBus>(
+                "/dev/i2c-1"
+            );
 
-        gyroSensor = std::make_shared<GyroscopeSensor>(
-            "gyro_1",
-            *i2cBus
+        gyroSensor =
+            std::make_shared<GyroscopeSensor>(
+                "gyro_1",
+                *i2cBus
+            );
+
+        sensorManager.addSensor(
+            gyroSensor
         );
-
-        sensorManager.addSensor(gyroSensor);
     }
     catch (const std::exception& e)
     {
@@ -48,7 +58,8 @@ void VCUController::setup()
             << std::endl;
     }
 
-    bool initSuccess = sensorManager.initAll();
+    bool initSuccess =
+        sensorManager.initAll();
 
     if (!initSuccess)
     {
@@ -72,7 +83,9 @@ void VCUController::setup()
 
     running = true;
 
-    std::cout << "VCU setup complete." << std::endl;
+    std::cout
+        << "VCU setup complete."
+        << std::endl;
 }
 
 void VCUController::run()
@@ -81,12 +94,21 @@ void VCUController::run()
 
     while (running)
     {
+        // Read all sensors.
         sensorManager.readAll();
 
-        std::vector<std::string> packets =
-            sensorManager.serializeAll();
+        // Collect all latest readings.
+        std::vector<SensorReading> readings =
+            sensorManager.getReadings();
 
-        communicationManager.sendMessages(packets);
+        // Convert readings to JSON.
+        std::vector<std::string> messages =
+            DataSerialiser::toJSON(readings);
+
+        // Send JSON messages.
+        communicationManager.sendMessages(
+            messages
+        );
 
         std::this_thread::sleep_for(
             std::chrono::milliseconds(
