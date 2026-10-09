@@ -1,15 +1,4 @@
-*.csv
-*.h264
-.vscode
-*.xlsx
 
-node_modules/
-.eslintrc.*
-**/.DS_Store
-
-__pycache__
-
-*.egg-info
-
-# intelliJ configs
-.idea/
+vcu
+auto.crt
+auto.key
