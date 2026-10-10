@@ -20,20 +20,21 @@ public:
         uint8_t spiMode = 0
     );
 
-    ~SPIBus();
+    // Virtual so tests can substitute a simulated device.
+    virtual ~SPIBus();
 
     SPIBus(const SPIBus&) = delete;
     SPIBus& operator=(const SPIBus&) = delete;
 
-    bool openBus();
+    virtual bool openBus();
     void closeBus();
 
-    bool transfer(
+    virtual bool transfer(
         const std::vector<uint8_t>& tx,
         std::vector<uint8_t>& rx
     );
 
     bool write(const std::vector<uint8_t>& data);
 
-    bool isOpen() const;
+    virtual bool isOpen() const;
 };

@@ -9,7 +9,10 @@
 VCUController::VCUController()
     : config(),
       i2cBus(nullptr),
+      spiBus(nullptr),
+      strainDrdy(nullptr),
       gyroSensor(nullptr),
+      strainSensor(nullptr),
       sensorManager(),
       dataSerialiser(),
       communicationManager(),
@@ -58,6 +61,56 @@ void VCUController::setup()
             << std::endl;
     }
 
+    try
+    {
+        // ADS131M08 strain gauge ADC. The ADS131M08 uses SPI mode 1.
+        spiBus =
+            std::make_unique<SPIBus>(
+                config.getSPIDevicePath(),
+                config.getSPISpeedHz(),
+                1
+            );
+
+        strainDrdy =
+            std::make_unique<GPIOInput>(
+                config.getStrainDrdyChipLabel(),
+                config.getStrainDrdyLine()
+            );
+
+        // Single full bridge in bending on AIN0, excited from the same
+        // 2.5 V rail as REFIN, so the measurement is ratiometric.
+        // TODO: Replace the gauge factor with the value printed on the
+        // gauge packet (datasheet range 2.0-2.2), and raise the PGA gain
+        // once the strain range is known.
+        StrainChannelConfig bridge0;
+        bridge0.name = "strain_0";
+        bridge0.channel = 0;
+        bridge0.gaugeFactor = 2.1f;
+        bridge0.bridgeFactor = 1.0f;
+        bridge0.excitationVoltage = 2.5f;
+        bridge0.pgaGain = 32;
+
+        strainSensor =
+            std::make_shared<StrainGaugeSensor>(
+                "strain_1",
+                *spiBus,
+                std::vector<StrainChannelConfig>{bridge0},
+                StrainGaugeADCSettings(),
+                strainDrdy.get()
+            );
+
+        sensorManager.addSensor(
+            strainSensor
+        );
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr
+            << "Failed to set up strain gauges: "
+            << e.what()
+            << std::endl;
+    }
+
     bool initSuccess =
         sensorManager.initAll();
 
@@ -79,6 +132,15 @@ void VCUController::setup()
         std::cout
             << "Gyroscope calibration complete."
             << std::endl;
+    }
+
+    if (strainSensor && strainSensor->isInitialised())
+    {
+        std::cout
+            << "Keep strain gauges unloaded for taring..."
+            << std::endl;
+
+        strainSensor->tare();
     }
 
     running = true;
